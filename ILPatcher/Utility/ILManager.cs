@@ -81,6 +81,7 @@ namespace ILPatcher
 					case OperandInfoT.ParameterDefinition:
 					case OperandInfoT.ParameterReference:
 						Log.Write(Log.Level.Warning, "PT resolving is obsolete: ", MemberList[i].ToString());
+						//todo reenable
 						if (oi.resolved)
 							Reference(((ParameterReference)oi.operand).ParameterType);
 						else

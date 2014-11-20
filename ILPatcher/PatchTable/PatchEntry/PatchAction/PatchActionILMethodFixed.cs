@@ -47,6 +47,10 @@ namespace ILPatcher
 
 			for (int i = 0; i < c; i++)
 			{
+				if (i == 78)
+				{
+					Console.WriteLine("test");
+				}
 				InstructionInfo II = instructPatchList[i];
 				XmlElement xInstruction = xListPatched.InsertCompressedElement(SST.Instruction);
 
@@ -71,9 +75,8 @@ namespace ILPatcher
 						patchelem.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
 					}
 
-					if (PatchStatus != PatchStatus.Broken &&
-						II.OldInstruction.Operand != II.NewInstruction.Operand &&
-						II.OldInstruction.OpCode.OperandType != OperandType.InlineNone)
+					if (II.OldInstruction.OpCode.OperandType != OperandType.InlineNone &&
+						!II.OldInstruction.Operand.Equals(II.NewInstruction.Operand))
 					{
 						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
 						Operand2Node(patchelem, II.NewInstruction, false);
