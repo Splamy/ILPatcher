@@ -36,10 +36,8 @@ namespace ILPatcher
 					{
 						if (fi.FieldType == typeof(OpCode))
 						{
-							string dictname = fi.Name.Replace('_', '.');
-							OpCode dictopc = (OpCode)fi.GetValue(null);
-							_OpCodeLookup.Add(dictname, dictopc);
-							_OpCodeLookup.Add(dictname.ToLower(), dictopc);
+							OpCode oc = (OpCode)fi.GetValue(null);
+							_OpCodeLookup.Add(oc.Name, oc);
 						}
 					}
 				}
@@ -794,6 +792,11 @@ namespace ILPatcher
 		public bool Remove(ILNode node)
 		{
 			return _children.Remove(node);
+		}
+
+		public override string ToString()
+		{
+			return FullName;
 		}
 	}
 }

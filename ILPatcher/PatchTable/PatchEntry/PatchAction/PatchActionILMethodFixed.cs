@@ -167,10 +167,10 @@ namespace ILPatcher
 					{
 						XmlElement xpatchelem = xelem.ChildNodes[0] as XmlElement;
 
-						string instnum = xelem.GetAttribute(SST.InstructionNum);
-						string primval = xelem.GetAttribute(SST.PrimitiveValue);
-						string resolve = xelem.GetAttribute(SST.Resolve);
-						string patchopcode = xelem.GetAttribute(SST.OpCode);
+						string instnum = xpatchelem.GetAttribute(SST.InstructionNum);
+						string primval = xpatchelem.GetAttribute(SST.PrimitiveValue);
+						string resolve = xpatchelem.GetAttribute(SST.Resolve);
+						string patchopcode = xpatchelem.GetAttribute(SST.OpCode).Replace(".", "");
 
 						if (instnum == string.Empty)
 							nII.NewInstructionNum = nII.OldInstructionNum;

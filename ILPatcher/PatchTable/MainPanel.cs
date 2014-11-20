@@ -43,6 +43,12 @@ namespace ILPatcher
 			Log.Write(Log.Level.Warning, "Warningtest");
 			Log.Write(Log.Level.Error, "Errortest");*/
 
+			AnyArray<ILNode> testarr = new AnyArray<ILNode>();
+			for (int i = 0; i < 20; i++)
+			{
+				testarr[i] = new ILNode("", i.ToBaseAlph(), null, StructureView.all);
+			}
+
 			tablemgr = new TableManager();
 		}
 
@@ -284,7 +290,6 @@ namespace ILPatcher
 			}
 			if (Match)
 			{
-				ILManager.Instance.Load(BaseNode);
 				tablemgr.Read(BaseNode);
 			}
 			else

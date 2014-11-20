@@ -33,6 +33,8 @@ namespace ILPatcher
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
+			ILManager.Instance.Load(input);
+
 			foreach (XmlElement xnode in input.ChildNodes)
 			{
 				if (xnode.Name == nc[SST.PatchEntry])
