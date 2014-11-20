@@ -18,12 +18,25 @@ namespace ILPatcher
 		public InstructionInfo II;
 		private MListBox parent;
 		public int dragFrom = -1;
-		private Brush br = new HatchBrush(HatchStyle.Percent10, Color.Yellow);
+		private static HatchBrush _hbrMismatch = null;
+		private static HatchBrush hbrMismatch
+		{
+			get
+			{
+				if (_hbrMismatch == null)
+					_hbrMismatch = new HatchBrush(HatchStyle.Percent10, Color.Yellow, Color.Transparent);
+				return _hbrMismatch;
+			}
+			set { }
+		}
+
+
 
 		public OpCodeTableItem(MListBox nParent, InstructionInfo nII)
 		{
 			II = nII;
 			parent = nParent;
+
 		}
 
 		public override void Draw(System.Drawing.Graphics g, System.Drawing.RectangleF rec)
@@ -66,7 +79,11 @@ namespace ILPatcher
 			else
 				g.DrawString(II.NewInstruction.Operand.ToString(), Font, Brushes.Black, 102, rec.Top + 1);
 			if (II.OperandMismatch)
-				g.FillRectangle(br, 102, rec.Top + 1, rec.Right - 102, Height);
+			{
+				_hbrMismatch = new HatchBrush(HatchStyle.Percent25, Color.Orange , Color.Transparent);
+				g.FillRectangle(hbrMismatch, 102, rec.Top, rec.Right - 102, Height);
+			}
+
 		}
 
 		public override void RefreshHeight(System.Drawing.Graphics g, int nWidth)

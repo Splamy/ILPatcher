@@ -102,8 +102,7 @@ namespace ILPatcher
 			if (mEntryList.SelectedIndex >= 0)
 			{
 				PatchAction pa = patchEntry.ActionList[mEntryList.SelectedIndex];
-				PatchActionType pat = pa.GetPatchActionType();
-				switch (pat)
+				switch (pa.PatchActionType)
 				{
 					case PatchActionType.ILMethodFixed:
 						EditorILPattern.Instance.LoadPatchAction(pa as PatchActionILMethodFixed);

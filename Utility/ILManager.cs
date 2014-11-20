@@ -17,8 +17,9 @@ namespace ILPatcher
 {
 	class ILManager
 	{
-		private Dictionary<int, OperandInfo> MemberList;
-		private int MemberCount;
+		//private Dictionary<int, OperandInfo> MemberList;
+		private AnyArray<OperandInfo> MemberList;
+		//private int MemberCount;
 
 		private Dictionary<string, ILNode> ModuleList;
 
@@ -58,8 +59,9 @@ namespace ILPatcher
 
 		public ILManager()
 		{
-			MemberList = new Dictionary<int, OperandInfo>();
-			MemberCount = 0;
+			//MemberList = new Dictionary<int, OperandInfo>();
+			MemberList = new AnyArray<OperandInfo>();
+			//MemberCount = 0;
 			ModuleList = new Dictionary<string, ILNode>();
 		}
 
@@ -73,37 +75,53 @@ namespace ILPatcher
 			XmlElement xT = xNode.InsertCompressedElement(SST.TypeReference);
 			XmlElement xCS = xNode.InsertCompressedElement(SST.CallSite);
 
-			for (int i = 0; i < MemberList.Count; i++)
+			for (int i = 0; i < MemberList.Length; i++)
 			{
+				OperandInfo oi = MemberList[i];
 				switch (MemberList[i].oit)
 				{
-					/*case OperandInfoT.VariableDefinition:
-						xVD.CreateAttribute(I2N(i), ((VariableDefinition)OperandList[i].operand).Index.ToString());
-						break;*/
 					case OperandInfoT.ParameterDefinition:
 					case OperandInfoT.ParameterReference:
-						Reference(((ParameterReference)MemberList[i].operand).ParameterType);
+						if (oi.resolved)
+							Reference(((ParameterReference)oi.operand).ParameterType);
+						else
+							Log.Write(Log.Level.Info, "ParameterDef/Ref cannot be raw saved");
 						break;
 					case OperandInfoT.MethodDefinition:
 					case OperandInfoT.MethodReference:
 					case OperandInfoT.GenericInstanceMethod:
-						GenMChild(xM, (MethodReference)MemberList[i].operand, i);
+						if (oi.resolved)
+							GenMChild(xM, (MethodReference)oi.operand, i);
+						else
+							xM.AppendClonedChild(oi.rawData);
 						break;
 					case OperandInfoT.FieldDefinition:
 					case OperandInfoT.FieldReference:
-						GenFChild(xF, (FieldReference)MemberList[i].operand, i);
+						if (oi.resolved)
+							GenFChild(xF, (FieldReference)MemberList[i].operand, i);
+						else
+							xF.AppendClonedChild(oi.rawData);
 						break;
 					case OperandInfoT.TypeDefinition:
 					case OperandInfoT.TypeReference:
 					case OperandInfoT.GenericInstanceType:
 					case OperandInfoT.GenericParameter:
-						GenTChild(xT, (TypeReference)MemberList[i].operand, i);
+						if (oi.resolved)
+							GenTChild(xT, (TypeReference)MemberList[i].operand, i);
+						else
+							xT.AppendClonedChild(oi.rawData);
 						break;
 					case OperandInfoT.ArrayType:
-						GenAChild(xT, (ArrayType)MemberList[i].operand, i);
+						if (oi.resolved)
+							GenAChild(xT, (ArrayType)MemberList[i].operand, i);
+						else
+							xT.AppendClonedChild(oi.rawData);
 						break;
 					case OperandInfoT.CallSite:
-						xCS.CreateAttribute(i, ((CallSite)MemberList[i].operand).FullName);
+						if (oi.resolved)
+							xCS.CreateAttribute(i, ((CallSite)MemberList[i].operand).FullName);
+						else
+							xCS.AppendClonedChild(oi.rawData);
 						break;
 					default:
 						Log.Write(Log.Level.Error, "Not saved Member Entry: ", MemberList[i].oit.ToString());
@@ -114,7 +132,7 @@ namespace ILPatcher
 
 		public void GenMChild(XmlElement xGroup, MethodReference mr, int val)
 		{
-			XmlElement xElem = xGroup.OwnerDocument.CreateElement(val.ToBaseAlph());
+			XmlElement xElem = xGroup.InsertCompressedElement(val);
 
 			if (mr.IsGenericInstance)
 			{
@@ -154,22 +172,19 @@ namespace ILPatcher
 					xElem.CreateAttribute(i, mr.Parameters[i].ParameterType.Name);
 				else
 					xElem.CreateAttribute(i, Reference(mr.Parameters[i]).ToBaseAlph());
-			xGroup.AppendChild(xElem);
 		}
 
 		public void GenFChild(XmlElement xGroup, FieldReference fr, int val)
 		{
-			XmlElement xElem = xGroup.OwnerDocument.CreateElement(val.ToBaseAlph());
+			XmlElement xElem = xGroup.InsertCompressedElement(val);
 			xElem.CreateAttribute(SST.TYPE, Reference(fr.FieldType).ToBaseAlph());
 			xElem.CreateAttribute(SST.NAME, fr.Name);
 			xElem.CreateAttribute(SST.MODULE, Reference(fr.DeclaringType).ToBaseAlph());
-
-			xGroup.AppendChild(xElem);
 		}
 
 		public void GenTChild(XmlElement xGroup, TypeReference tr, int val)
 		{
-			XmlElement xElem = xGroup.OwnerDocument.CreateElement(val.ToBaseAlph());
+			XmlElement xElem = xGroup.InsertCompressedElement(val);
 			xElem.CreateAttribute(SST.TYPE, tr.Name);
 			StringBuilder strb = new StringBuilder();
 			if (tr.IsGenericInstance)
@@ -194,7 +209,6 @@ namespace ILPatcher
 				if (!tr.IsGenericParameter)
 					xElem.CreateAttribute(SST.NAMESPACE, tr.Namespace);
 			}
-			xGroup.AppendChild(xElem);
 		}
 
 		public void GenAChild(XmlElement xGroup, ArrayType at, int val)
@@ -214,10 +228,23 @@ namespace ILPatcher
 			{
 				Console.WriteLine("blub");
 			}*/
-			OperandInfo elem = null;
-			foreach (KeyValuePair<int, OperandInfo> entry in MemberList)
-				if (entry.Value.operand.ToString() == _operand.ToString())
-					return entry.Key;
+			for (int i = 0; i < MemberList.Length; i++)
+			{
+				if (!MemberList[i].resolved)
+				{
+					object res = Resolve(i);
+					if (res != null && res.ToString() == _operand.ToString())
+						return i;
+				}
+				else
+				{
+					if (MemberList[i].operand.ToString() == _operand.ToString())
+						return i;
+				}
+			}
+
+
+			//foreach (KeyValuePair<int, OperandInfo> entry in MemberList)
 
 			Type t = _operand.GetType();
 			OperandInfoT _oit;
@@ -226,10 +253,9 @@ namespace ILPatcher
 				Log.Write(Log.Level.Error, "Not Listed OperandType: ", t.Name);
 				return -1;
 			}
-			elem = new OperandInfo() { oit = _oit, operand = _operand };
-			MemberList.Add(MemberCount, elem);
-			MemberCount++;
-			return MemberCount - 1;
+			int len = MemberList.Length;
+			MemberList[len] = new OperandInfo() { oit = _oit, operand = _operand, Status = ResolveStatus.Resolved };
+			return len;
 		}
 
 		// LOAD METHODS ******************************************************
@@ -256,24 +282,23 @@ namespace ILPatcher
 						continue;
 					}
 					oi.rawData = xItem as XmlElement;
-					MemberList.Add(xItem.Name.ToBaseInt(), oi);
+					MemberList[xItem.Name.ToBaseInt()] = oi;
 				}
 			}
 		}
 
 		public object Resolve(int idNum)
 		{
-			if (idNum >= MemberList.Count) { Log.Write(Log.Level.Error, "Resolve number ", idNum.ToString(), " is not in Range."); return null; }
-
+			if (idNum >= MemberList.Length) { Log.Write(Log.Level.Error, "Resolve number ", idNum.ToString(), " is not in Range."); return null; }
 			OperandInfo oi = MemberList[idNum];
-			if (oi.resolved) return oi.operand;
+
+			if (oi.Status == ResolveStatus.Resolved) return oi.operand;
+			if (oi.Status != ResolveStatus.Unresolved) return null;
 
 			XmlElement xDataNode = oi.rawData;
 			MemberList[idNum].Status = ResolveStatus.UnkownError;
 
-
-			// get generic parameters, written in ToBaseAlph() = (a, b, c...)
-
+			// TODO get generic parameters, written in ToBaseAlph() = (a, b, c...)
 
 			#region MetRef
 			if (oi.oit == OperandInfoT.MethodReference)
@@ -307,10 +332,36 @@ namespace ILPatcher
 				return null;
 			}
 			#endregion
+			#region FldRef
 			else if (oi.oit == OperandInfoT.FieldReference)
 			{
+				string FieldType = xDataNode.GetAttribute(SST.TYPE);
+				string Name = xDataNode.GetAttribute(SST.NAME);
+				string DeclaringType = xDataNode.GetAttribute(SST.TYPE);
 
+				if (FieldType == string.Empty || Name == string.Empty || DeclaringType == string.Empty)
+				{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No FieldType/Name/DeclaringType"); }
+
+				TypeReference TypDefFT = Resolve(FieldType.ToBaseInt()) as TypeReference;
+				if (TypDefFT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "FieldType not found ", FieldType); return null; }
+
+				TypeDefinition TypDefDT = Resolve(DeclaringType.ToBaseInt()) as TypeDefinition;
+				if (TypDefDT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "DeclaringType not found ", DeclaringType); return null; }
+
+				foreach (FieldDefinition field in TypDefDT.Fields)
+				{
+					if (field.Name == Name && field.FieldType == TypDefFT)
+					{
+						Type t = field.GetType();
+						if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
+						oi.operand = field;
+						oi.Status = ResolveStatus.Resolved;
+						return field;
+					}
+				}
+				Log.Write(Log.Level.Error, "FieldDefinition ", Name, " coundn't be found in Type ", DeclaringType);
 			}
+			#endregion
 			#region TypRef
 			else if (oi.oit == OperandInfoT.TypeReference)
 			{
@@ -342,7 +393,7 @@ namespace ILPatcher
 					ModDef = MainPanel.AssemblyDef.MainModule;
 				else
 				{
-					AssemblyDefinition AssDef = MainPanel.AssemblyDef.MainModule.AssemblyResolver.Resolve(namesp);
+					AssemblyDefinition AssDef = MainPanel.AssemblyDef.MainModule.AssemblyResolver.Resolve(namesp); // fix if ns not found
 					foreach (ModuleDefinition moddef in AssDef.Modules)
 						if (moddef.Name == module)
 						{
@@ -350,14 +401,14 @@ namespace ILPatcher
 							break;
 						}
 				}
-				if (ModDef == null) { Log.Write(Log.Level.Careful, "ModuleDefinition not found ", module); return null; }
+				if (ModDef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "ModuleDefinition not found ", module); return null; }
 
 				string name = xDataNode.GetAttribute(SST.TYPE); // change to name
 				if (name == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
 
-				foreach(TypeDefinition typdef in ModDef.Types)
+				foreach (TypeDefinition typdef in ModDef.Types)
 				{
-					if(typdef.Name == name)
+					if (typdef.Name == name)
 					{
 						Type t = typdef.GetType();
 						if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
@@ -366,19 +417,24 @@ namespace ILPatcher
 						return typdef;
 					}
 				}
-
 				Log.Write(Log.Level.Error, "TypeDefinition ", name, " coundn't be found in Module ", module);
-				return null;
 			}
 			#endregion
 
-			//-----------------------------------------------------------
-
-			//TODO switch between Meth/Field/Type
-
-
-
+			oi.Status = ResolveStatus.ReferenceNotFound;
 			return null;
+		}
+
+		public void MergeDoubleElements()
+		{
+			/*
+			 * Doubled elements shouldn't appear unless the Resolving Function
+			 * fails to find a M/F/T which actually exists.
+			 * In this case we ignore the problem, merge both entries
+			 * and print a warning to get detailed info from feedback.
+			 */
+
+			//TODO
 		}
 
 		// LOAD MODULES ******************************************************
@@ -652,8 +708,7 @@ namespace ILPatcher
 
 		public void Clear()
 		{
-			MemberList.Clear();
-			MemberCount = 0;
+			MemberList.Length = 0;
 		}
 	}
 

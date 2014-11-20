@@ -13,9 +13,10 @@ namespace ILPatcher
 	public abstract class PatchAction : ISaveToFile
 	{
 		public string ActionName;
+		public abstract PatchActionType PatchActionType { get; protected set; }
+		public abstract PatchStatus PatchStatus { get; protected set; }
 
 		public abstract bool Execute();
-		public abstract PatchActionType GetPatchActionType();
 		public abstract bool Save(XmlNode output);
 		public abstract bool Read(XmlNode input);
 	}
@@ -26,5 +27,13 @@ namespace ILPatcher
 		ILMethodDynamic,
 		ILDynamicScan,
 		AoBRawScan,
+	}
+
+	public enum PatchStatus
+	{
+		Unset,
+		WoringPerfectly,
+		WorkingNoResolve,
+		Broken,
 	}
 }

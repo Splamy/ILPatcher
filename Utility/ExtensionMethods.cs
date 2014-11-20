@@ -70,6 +70,30 @@ namespace ILPatcher
 			return tmpnode;
 		}
 
+		public static XmlElement InsertCompressedElement(this XmlNode xelem, int name)
+		{
+			XmlElement tmpnode;
+			if (xelem.NodeType == XmlNodeType.Document)
+				tmpnode = ((XmlDocument)xelem).CreateElement(name.ToBaseAlph());
+			else	//if (xelem.NodeType == XmlNodeType.Element)
+				tmpnode = xelem.OwnerDocument.CreateElement(name.ToBaseAlph());
+			xelem.AppendChild(tmpnode);
+			return tmpnode;
+		}
+
+		public static void AppendClonedChild(this XmlElement xelem, XmlElement child)
+		{
+			XmlDocument xDoc = xelem.OwnerDocument;
+			XmlElement xnew = xDoc.CreateElement(child.Name);
+			foreach (XmlAttribute xatt in child.Attributes)
+			{
+				XmlAttribute NewAttribute = xDoc.CreateAttribute(xatt.Name);
+				NewAttribute.Value = xatt.Value;
+				xnew.Attributes.Append(NewAttribute);
+			}
+			xelem.AppendChild(xnew);
+		}
+
 		private const string abc = "abcdefghijklmnopqrstuvwxyz";
 		public static string ToBaseAlph(this int n)
 		{

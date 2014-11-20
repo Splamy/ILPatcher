@@ -22,18 +22,16 @@ namespace ILPatcher
 			NameCompressor nc = NameCompressor.Instance;
 
 			XmlElement xPatchTableNode = output.InsertCompressedElement(SST.PatchTable);
-			//ILManager.Instance.Clear(); // TODO do ful resolve / sort out defect patches
 			foreach (PatchEntry pe in EntryList)
 				pe.Save(xPatchTableNode);
 			ILManager.Instance.Save(xPatchTableNode);
+			ILManager.Instance.MergeDoubleElements();
 			return true;
 		}
 
 		public bool Read(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
-
-			//ILM Resolve
 
 			foreach (XmlElement xnode in input.ChildNodes)
 			{

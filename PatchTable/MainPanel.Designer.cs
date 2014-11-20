@@ -33,6 +33,7 @@
 			this.clbPatchList = new System.Windows.Forms.CheckedListBox();
 			this.tabInfoControl = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this.structureViever1 = new ILPatcher.StructureViewer();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this.rtbInfo = new System.Windows.Forms.TextBox();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
@@ -44,7 +45,6 @@
 			this.txtilaFile = new System.Windows.Forms.Label();
 			this.btnExecutePatches = new System.Windows.Forms.Button();
 			this.mLoading = new MetroObjects.MLoadingCircle();
-			this.structureViever1 = new ILPatcher.StructureViewer();
 			this.btnEditPatch = new System.Windows.Forms.Button();
 			this.tabInfoControl.SuspendLayout();
 			this.tabPage1.SuspendLayout();
@@ -97,6 +97,17 @@
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Assemblylist";
 			this.tabPage1.UseVisualStyleBackColor = true;
+			// 
+			// structureViever1
+			// 
+			this.structureViever1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.structureViever1.ImageIndex = 0;
+			this.structureViever1.Location = new System.Drawing.Point(3, 3);
+			this.structureViever1.Name = "structureViever1";
+			this.structureViever1.PathSeparator = ".";
+			this.structureViever1.SelectedImageIndex = 0;
+			this.structureViever1.Size = new System.Drawing.Size(283, 330);
+			this.structureViever1.TabIndex = 0;
 			// 
 			// tabPage2
 			// 
@@ -233,24 +244,13 @@
 			this.mLoading.TabIndex = 24;
 			this.mLoading.Text = "mLoadingCircle1";
 			// 
-			// structureViever1
-			// 
-			this.structureViever1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.structureViever1.ImageIndex = 0;
-			this.structureViever1.Location = new System.Drawing.Point(3, 3);
-			this.structureViever1.Name = "structureViever1";
-			this.structureViever1.PathSeparator = ".";
-			this.structureViever1.SelectedImageIndex = 0;
-			this.structureViever1.Size = new System.Drawing.Size(283, 330);
-			this.structureViever1.TabIndex = 0;
-			// 
 			// btnEditPatch
 			// 
 			this.btnEditPatch.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnEditPatch.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnEditPatch.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnEditPatch.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnEditPatch.Location = new System.Drawing.Point(474, 442);
+			this.btnEditPatch.Location = new System.Drawing.Point(474, 444);
 			this.btnEditPatch.Margin = new System.Windows.Forms.Padding(5);
 			this.btnEditPatch.Name = "btnEditPatch";
 			this.btnEditPatch.Size = new System.Drawing.Size(155, 22);

@@ -15,6 +15,10 @@ namespace ILPatcher
 {
 	public class PatchActionILMethodFixed : PatchAction, ISaveToFile
 	{
+		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodFixed; } protected set { } }
+		private PatchStatus _PatchStatus = PatchStatus.Unset;
+		public override PatchStatus PatchStatus { get { return _PatchStatus; } protected set { _PatchStatus = value; } }
+
 		public MethodDefinition MethodDef;
 		public List<InstructionInfo> instructPatchList;
 
@@ -27,16 +31,11 @@ namespace ILPatcher
 			return true;
 		}
 
-		public override PatchActionType GetPatchActionType()
-		{
-			return PatchActionType.ILMethodFixed;
-		}
-
 		public override bool Save(XmlNode output)
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
-			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ILMethodFixed.ToString();
+			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
 			output.Attributes[nc[SST.NAME]].Value = ActionName;
 
 			#region PatchList
@@ -72,7 +71,9 @@ namespace ILPatcher
 						patchelem.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
 					}
 
-					if (II.OldInstruction.Operand != II.NewInstruction.Operand && II.OldInstruction.OpCode.OperandType != OperandType.InlineNone)
+					if (PatchStatus != PatchStatus.Broken &&
+						II.OldInstruction.Operand != II.NewInstruction.Operand &&
+						II.OldInstruction.OpCode.OperandType != OperandType.InlineNone)
 					{
 						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
 						Operand2Node(patchelem, II.NewInstruction, false);
@@ -85,7 +86,8 @@ namespace ILPatcher
 				{
 					xInstruction.CreateAttribute(SST.InstructionNum, instructPatchList[i].NewInstructionNum.ToString());
 					xInstruction.CreateAttribute(SST.OpCode, instructPatchList[i].NewInstruction.OpCode.Name);
-					Operand2Node(xInstruction, II.NewInstruction, false);
+					if (PatchStatus != PatchStatus.Broken)
+						Operand2Node(xInstruction, II.NewInstruction, false);
 				}
 			}
 			#endregion
@@ -158,6 +160,7 @@ namespace ILPatcher
 					if (resolveparams)
 					{
 						Log.Write(Log.Level.Info, "Resolve not implemented yet.");
+						//todo PatchStatus = PatchStatus.Broken; of not found ref
 					}
 
 					if (xelem.ChildNodes.Count == 1)
@@ -204,7 +207,10 @@ namespace ILPatcher
 					if (primval != string.Empty)
 						nII.NewInstruction = ILManager.GenInstruction(opcode, primval);
 					else if (resolve != string.Empty)
+					{
 						nII.NewInstruction = ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(resolve.ToBaseInt()));
+						PatchStatus = PatchStatus.Broken;
+					}
 					else
 						nII.NewInstruction = ILManager.GenInstruction(opcode, null);
 				}
