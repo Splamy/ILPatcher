@@ -80,6 +80,7 @@ namespace ILPatcher
 				{
 					case OperandInfoT.ParameterDefinition:
 					case OperandInfoT.ParameterReference:
+						Log.Write(Log.Level.Warning, "PT resolving is obsolete: ", MemberList[i].ToString());
 						if (oi.resolved)
 							Reference(((ParameterReference)oi.operand).ParameterType);
 						else
@@ -136,7 +137,7 @@ namespace ILPatcher
 			{
 				GenericInstanceMethod git = mr as GenericInstanceMethod;
 				if (git == null)
-					Log.Write(Log.Level.Error, "GenericInstance Type could nt be converted: ", git.FullName);
+					Log.Write(Log.Level.Error, "GenericInstance Type couldn't be converted: ", git.FullName);
 				else
 				{
 					for (int i = 0; i < git.GenericArguments.Count && git.GenericArguments[i] != null; i++)
@@ -169,7 +170,7 @@ namespace ILPatcher
 				if (mr.Parameters[i].ParameterType.IsGenericParameter)
 					xElem.CreateAttribute(i, mr.Parameters[i].ParameterType.Name);
 				else
-					xElem.CreateAttribute(i, Reference(mr.Parameters[i]).ToBaseAlph());
+					xElem.CreateAttribute(i, Reference(mr.Parameters[i].ParameterType).ToBaseAlph());
 		}
 
 		public void GenFChild(XmlElement xGroup, FieldReference fr, int val)

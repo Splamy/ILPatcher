@@ -38,17 +38,6 @@ namespace ILPatcher
 		{
 			InitializeComponent();
 
-			/*Log.Write(Log.Level.Info, "Infotest");
-			Log.Write(Log.Level.Careful, "Carefultest");
-			Log.Write(Log.Level.Warning, "Warningtest");
-			Log.Write(Log.Level.Error, "Errortest");*/
-
-			AnyArray<ILNode> testarr = new AnyArray<ILNode>();
-			for (int i = 0; i < 20; i++)
-			{
-				testarr[i] = new ILNode("", i.ToBaseAlph(), null, StructureView.all);
-			}
-
 			tablemgr = new TableManager();
 		}
 
@@ -245,17 +234,21 @@ namespace ILPatcher
 			tabInfoControl.Width = Width - (clbPatchList.Width + 3 * space);
 			tabInfoControl.Height = Height - (tabInfoControl.Top + btnTestPatch.Height + btnCreatePatch.Height + 3 * space);
 
-			btnTestPatch.Top = Height - (btnTestPatch.Height + btnCreatePatch.Height + 2 * space);
-			btnTestPatch.Left = tabInfoControl.Left;
-			btnTestPatch.Width = tabInfoControl.Width / 2;
-
-			btnCreatePatch.Top = Height - (btnCreatePatch.Height + space);
+			btnCreatePatch.Top = Height - (btnCreatePatch.Height + btnTestPatch.Height + 2 * space);
 			btnCreatePatch.Left = tabInfoControl.Left;
-			btnCreatePatch.Width = btnTestPatch.Width;
+			btnCreatePatch.Width = tabInfoControl.Width / 2;
 
-			btnSavePatchList.Top = btnCreatePatch.Top;
-			btnSavePatchList.Left = btnCreatePatch.Right + space;
-			btnSavePatchList.Width = tabInfoControl.Width / 2 - space;
+			btnEditPatch.Top = btnCreatePatch.Top;
+			btnEditPatch.Left =  btnCreatePatch.Right + space;
+			btnEditPatch.Width = tabInfoControl.Width / 2 - space;
+
+			btnTestPatch.Top = Height - (btnTestPatch.Height + space);
+			btnTestPatch.Left = tabInfoControl.Left;
+			btnTestPatch.Width = btnCreatePatch.Width;
+
+			btnSavePatchList.Top = btnTestPatch.Top;
+			btnSavePatchList.Left = btnEditPatch.Left;
+			btnSavePatchList.Width = btnEditPatch.Width;
 		}
 
 		private void btnLoadilp_Click(object sender, EventArgs e)

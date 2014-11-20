@@ -57,7 +57,7 @@
 			this.btnCreatePatch.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnCreatePatch.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnCreatePatch.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnCreatePatch.Location = new System.Drawing.Point(332, 476);
+			this.btnCreatePatch.Location = new System.Drawing.Point(332, 444);
 			this.btnCreatePatch.Margin = new System.Windows.Forms.Padding(5);
 			this.btnCreatePatch.Name = "btnCreatePatch";
 			this.btnCreatePatch.Size = new System.Drawing.Size(132, 22);
@@ -159,7 +159,7 @@
 			this.btnTestPatch.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnTestPatch.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnTestPatch.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnTestPatch.Location = new System.Drawing.Point(332, 444);
+			this.btnTestPatch.Location = new System.Drawing.Point(332, 476);
 			this.btnTestPatch.Margin = new System.Windows.Forms.Padding(5);
 			this.btnTestPatch.Name = "btnTestPatch";
 			this.btnTestPatch.Size = new System.Drawing.Size(132, 22);
