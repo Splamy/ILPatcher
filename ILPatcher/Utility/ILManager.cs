@@ -111,6 +111,15 @@ namespace ILPatcher
 						else
 							xT.AppendClonedChild(oi.rawData);
 						break;
+					case OperandInfoT.VariableDefinition:
+					case OperandInfoT.VariableReference:
+						Log.Write(Log.Level.Warning, "VD resolving is obsolete: ", MemberList[i].ToString());
+						//todo reenable
+						if (oi.resolved)
+							Reference(((VariableReference)oi.operand).VariableType);
+						else
+							Log.Write(Log.Level.Info, "VariableDef/Ref cannot be raw saved");
+						break;
 					case OperandInfoT.ArrayType:
 						if (oi.resolved)
 							GenAChild(xT, (ArrayType)MemberList[i].operand, i);
@@ -224,9 +233,10 @@ namespace ILPatcher
 		public int Reference(object _operand)
 		{
 			// GenericInstanceMethod
-			/*if (_operand.ToString().Contains("!0"))
+			/*if (_operand.ToString().Contains("V_19"))
 			{
 				Console.WriteLine("blub");
+				//return 0;
 			}*/
 			for (int i = 0; i < MemberList.Length; i++)
 			{
@@ -741,7 +751,7 @@ namespace ILPatcher
 	enum OperandInfoT
 	{
 		ParameterDefinition,
-		ParameterReference,
+		ParameterReference, //(abstract)
 		MethodDefinition,
 		MethodReference,
 		GenericInstanceMethod,
@@ -751,6 +761,8 @@ namespace ILPatcher
 		TypeReference,
 		GenericInstanceType,
 		GenericParameter,
+		VariableDefinition,
+		VariableReference, //(abstract)
 		CallSite,
 		ArrayType,
 	}

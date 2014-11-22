@@ -47,10 +47,6 @@ namespace ILPatcher
 
 			for (int i = 0; i < c; i++)
 			{
-				if (i == 78)
-				{
-					Console.WriteLine("test");
-				}
 				InstructionInfo II = instructPatchList[i];
 				XmlElement xInstruction = xListPatched.InsertCompressedElement(SST.Instruction);
 
@@ -245,17 +241,33 @@ namespace ILPatcher
 			{
 				xParent.CreateAttribute(SST.PrimitiveValue, operand.ToString());
 			}
-			else if (oc.OperandType == OperandType.InlineArg ||
-					 oc.OperandType == OperandType.ShortInlineArg ||
-					 oc.OperandType == OperandType.InlineVar ||
-					 oc.OperandType == OperandType.ShortInlineVar ||
-					 oc.OperandType == OperandType.InlineMethod ||
+			else if (oc.OperandType == OperandType.InlineMethod ||
 					 oc.OperandType == OperandType.InlineType ||
 					 oc.OperandType == OperandType.InlineTok ||
 					 oc.OperandType == OperandType.InlineSig ||
 					 oc.OperandType == OperandType.InlineField)
 			{
 				xParent.CreateAttribute(SST.Resolve, ILManager.Instance.Reference(operand).ToBaseAlph());
+			}
+			else if (oc.OperandType == OperandType.InlineArg ||
+					 oc.OperandType == OperandType.ShortInlineArg)
+			{
+				ParameterReference parref = ((ParameterReference)operand);
+				StringBuilder strb = new StringBuilder();
+				strb.Append(parref.Index.ToString());
+				strb.Append(' ');
+				strb.Append(ILManager.Instance.Reference(parref.ParameterType).ToBaseAlph());
+				xParent.CreateAttribute(SST.Resolve, strb.ToString());
+			}
+			else if (oc.OperandType == OperandType.InlineVar ||
+					 oc.OperandType == OperandType.ShortInlineVar)
+			{
+				VariableReference varref = ((VariableReference)operand);
+				StringBuilder strb = new StringBuilder();
+				strb.Append(varref.Index.ToString());
+				strb.Append(' ');
+				strb.Append(ILManager.Instance.Reference(varref.VariableType).ToBaseAlph());
+				xParent.CreateAttribute(SST.Resolve, strb.ToString());
 			}
 			else if (oc.OperandType == OperandType.InlineBrTarget ||
 				oc.OperandType == OperandType.ShortInlineBrTarget)

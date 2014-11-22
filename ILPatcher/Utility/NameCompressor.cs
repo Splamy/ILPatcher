@@ -69,6 +69,7 @@ namespace ILPatcher
 			lowtable[(int)SST.PrimitiveValue] = new Tuple<string, string>("PrimitiveValue", "PV");
 
 			lowtable[(int)SST.Resolve] = new Tuple<string, string>("Resolve", "RS");
+			lowtable[(int)SST.ResolveExtended] = new Tuple<string, string>("ResolveExtended", "RE");
 			lowtable[(int)SST.MethodReference] = new Tuple<string, string>("MethodReference", "MR");
 			//lowtable[(int)SST.FieldDefinition] = new Tuple<string, string>("FieldDefinition", "FD");
 			lowtable[(int)SST.FieldReference] = new Tuple<string, string>("FieldReference", "FR");
@@ -148,6 +149,7 @@ namespace ILPatcher
 		PrimitiveValue,
 
 		Resolve,
+		ResolveExtended,
 		//MethodDefinition,
 		MethodReference,
 		//FieldDefinition,
