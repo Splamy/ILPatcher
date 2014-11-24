@@ -33,6 +33,7 @@ namespace ILPatcher
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
+			ILManager.Instance.Clear();
 			ILManager.Instance.Load(input);
 
 			foreach (XmlElement xnode in input.ChildNodes)

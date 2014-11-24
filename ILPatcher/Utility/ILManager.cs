@@ -342,6 +342,7 @@ namespace ILPatcher
 				return null;
 			}
 			#endregion
+			// FldRef seems to be done!
 			#region FldRef
 			else if (oi.oit == OperandInfoT.FieldReference)
 			{
