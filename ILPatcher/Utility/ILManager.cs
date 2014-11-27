@@ -200,7 +200,7 @@ namespace ILPatcher
 			{
 				GenericInstanceType git = tr as GenericInstanceType;
 				if (git == null)
-					Log.Write(Log.Level.Error, "GenericInstance Type could nt be converted: ", tr.FullName);
+					Log.Write(Log.Level.Error, "GenericInstance Type couldn't be converted: ", tr.FullName);
 				else
 				{
 					for (int i = 0; i < git.GenericArguments.Count && git.GenericArguments[i] != null; i++)
@@ -376,59 +376,111 @@ namespace ILPatcher
 			#region TypRef
 			else if (oi.oit == OperandInfoT.TypeReference)
 			{
-				string namesp = xDataNode.GetAttribute(SST.NAMESPACE);
-				if (namesp == string.Empty) Log.Write(Log.Level.Careful, "No Namespace defined! Will use first matching Item(!)");
-
-				/*List<string> values = new List<string>();
-				bool attok = true;
-				int attcnt = 0;
-				while (attok)
-				{
-					namesp = xDataNode.GetAttribute(attcnt.ToBaseAlph());
-					//xNSAtt = xDataNode.Attributes[];
-					if (namesp != string.Empty)
-					{
-						values.Add(namesp);
-						attcnt++;
-					}
-					else
-						attok = false;
-				}*/
-
-				string module = xDataNode.GetAttribute(SST.MODULE);
-				if (module == string.Empty) { MemberList[idNum].Status = ResolveStatus.SaveFileError; return null; }
-				//values.Add(module);
-
-				ModuleDefinition ModDef = null;
-				if (MainPanel.AssemblyDef.MainModule.Name == module)
-					ModDef = MainPanel.AssemblyDef.MainModule;
-				else
-				{
-					AssemblyDefinition AssDef = MainPanel.AssemblyDef.MainModule.AssemblyResolver.Resolve(namesp); // fix if ns not found
-					foreach (ModuleDefinition moddef in AssDef.Modules)
-						if (moddef.Name == module)
-						{
-							ModDef = moddef;
-							break;
-						}
-				}
-				if (ModDef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "ModuleDefinition not found ", module); return null; }
+				Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
 
 				string name = xDataNode.GetAttribute(SST.TYPE); // change to name
 				if (name == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
 
-				foreach (TypeDefinition typdef in ModDef.Types)
+				// 1] search in
+				#region search_in
+				string nestedin = xDataNode.GetAttribute(SST.NESTEDIN);
+				if (nestedin == string.Empty) // type is module subtype
 				{
+					string module = xDataNode.GetAttribute(SST.MODULE);
+					if (module == string.Empty) { oi.Status = ResolveStatus.SaveFileError; return null; }
+
+					string namesp = xDataNode.GetAttribute(SST.NAMESPACE);
+					if (namesp == string.Empty) Log.Write(Log.Level.Careful, "No Namespace defined! Will use first matching Item(!)");
+
+					ModuleDefinition ModDef = null;
+					if (MainPanel.AssemblyDef.MainModule.Name == module)
+						ModDef = MainPanel.AssemblyDef.MainModule;
+					else
+					{
+						try
+						{
+							AssemblyDefinition AssDef = MainPanel.AssemblyDef.MainModule.AssemblyResolver.Resolve(namesp); // fix if ns not found
+							foreach (ModuleDefinition moddef in AssDef.Modules)
+								if (moddef.Name == module)
+								{
+									ModDef = moddef;
+									break;
+								}
+							if (ModDef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "ModuleDefinition not found ", module); return null; }
+						}
+						catch
+						{
+							oi.Status = ResolveStatus.ReferenceNotFound;
+							Log.Write(Log.Level.Error, "An Assembly with the Namespace ", namesp, " couldn't be found");
+							return null;
+						}
+					}
+
+					searchCollection = ModDef.Types;
+				}
+				else // type is nested
+				{
+					TypeDefinition nestintyp = Resolve(nestedin.ToBaseInt()) as TypeDefinition;
+					if (nestintyp == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "Nestparent not found ", nestedin); return null; }
+
+					searchCollection = nestintyp.NestedTypes;
+				}
+				#endregion
+
+				// 2] search further generics (and deref)
+				#region search_generics
+				AnyArray<string> values = new AnyArray<string>();
+				bool attok = true;
+				int attcnt = 0;
+				while (attok) // gibt alle tobasseaplh zahlen des nodes in die strlist aus;
+				{
+					string tmpstr = xDataNode.GetAttribute(attcnt.ToBaseAlph());
+					if (tmpstr != string.Empty)
+					{
+						values[attcnt] = tmpstr;
+						attcnt++;
+					}
+					else
+						attok = false;
+				}
+				#endregion
+
+				// 3] compare
+				#region compare
+				foreach (TypeDefinition typdef in searchCollection)
+				{
+					//GenericInstanceType git;
+					if(values.Length > 0)
+					{
+					// todo somehow get generic instance types
+						//git = typdef as GenericInstanceType;
+						//if(git == null) continue;
+					}
 					if (typdef.Name == name)
 					{
+						bool TheTypeFulfillsMyDemands = true;
+						for (int i = 0; i < values.Length; i++)
+						{
+							if (values[i].StartsWith("!"))
+							{
+								//if(values[i] == typdef.ge)
+							}
+							else
+							{
+
+							}
+						}
+						if (!TheTypeFulfillsMyDemands) continue;
+
 						Type t = typdef.GetType();
 						if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
 						oi.operand = typdef;
 						oi.Status = ResolveStatus.Resolved;
 						return typdef;
 					}
+					Log.Write(Log.Level.Error, "TypeDefinition ", name, " coundn't be found in the Module");
 				}
-				Log.Write(Log.Level.Error, "TypeDefinition ", name, " coundn't be found in Module ", module);
+				#endregion
 			}
 			#endregion
 
