@@ -303,6 +303,11 @@ namespace ILPatcher
 				((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
 			}
 		}
+
+		private void btnExecutePatches_Click(object sender, EventArgs e)
+		{
+
+		}
 	}
 
 	public enum AssemblyStatus
