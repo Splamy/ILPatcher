@@ -233,11 +233,11 @@ namespace ILPatcher
 		public int Reference(object _operand)
 		{
 			// GenericInstanceMethod
-			/*if (_operand.ToString().Contains("V_19"))
+			if (_operand as GenericInstanceType != null)
 			{
 				Console.WriteLine("blub");
 				//return 0;
-			}*/
+			}
 			for (int i = 0; i < MemberList.Length; i++)
 			{
 				if (!MemberList[i].resolved)

@@ -32,9 +32,9 @@ namespace ILPatcher
 			this.ImageList = imgl;
 		}
 
-		public void RebuildHalfAsync()
+		public void RebuildHalfAsync(bool mainmodonly = false)
 		{
-			System.Threading.Thread t = new System.Threading.Thread(() => Rebuild(true));
+			System.Threading.Thread t = new System.Threading.Thread(() => RebuildInternal(mainmodonly, true));
 			Nodes.Clear();
 			t.Start();
 			while (t.IsAlive)
@@ -44,9 +44,14 @@ namespace ILPatcher
 			}
 		}
 
-		public void Rebuild(bool invoke = false)
+		public void Rebuild(bool mainmodonly = false)
 		{
-			if(!invoke)
+			RebuildInternal(mainmodonly, false);
+		}
+
+		private void RebuildInternal(bool mainmodonly, bool invoke)
+		{
+			if (!invoke)
 				Nodes.Clear();
 			foreach (ILNode iln in ILManager.Instance.getAllNodes())
 			{
@@ -63,6 +68,7 @@ namespace ILPatcher
 					else
 						Nodes.Add(nMain);
 				}
+				if(mainmodonly) break;
 			}
 		}
 

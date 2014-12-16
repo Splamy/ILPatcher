@@ -59,7 +59,11 @@ namespace ILPatcher
 				LoadAsmOrigin();
 				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
 				{
+#if DEBUG
+					ILManager.Instance.InitTreeHalfAsync(AssemblyDef, 0);
+#else
 					ILManager.Instance.InitTreeHalfAsync(AssemblyDef, 1);
+#endif
 					structureViever1.RebuildHalfAsync();
 				}
 				if (AwaitingAssemblySelect)
@@ -239,7 +243,7 @@ namespace ILPatcher
 			btnCreatePatch.Width = tabInfoControl.Width / 2;
 
 			btnEditPatch.Top = btnCreatePatch.Top;
-			btnEditPatch.Left =  btnCreatePatch.Right + space;
+			btnEditPatch.Left = btnCreatePatch.Right + space;
 			btnEditPatch.Width = tabInfoControl.Width / 2 - space;
 
 			btnTestPatch.Top = Height - (btnTestPatch.Height + space);

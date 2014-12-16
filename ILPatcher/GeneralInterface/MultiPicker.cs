@@ -21,7 +21,7 @@ namespace ILPatcher
 			Owner = MainForm.Instance;
 
 			ILManager.Instance.InitTree(MainPanel.AssemblyDef, 1); // TODO CHECK REFRESH
-			structureViever1.Rebuild();
+			structureViever1.Rebuild(true);
 			structureViever1.AfterSelect += structureViever1_AfterSelect;
 		}
 
