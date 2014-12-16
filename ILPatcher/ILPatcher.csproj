@@ -136,6 +136,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PatchTable\TableManager.cs" />
+    <Compile Include="Utility\ErrorLoggerItem.cs" />
     <EmbeddedResource Include="PatchTable\PatchEntry\EditorEntry.resx">
       <DependentUpon>EditorEntry.cs</DependentUpon>
     </EmbeddedResource>

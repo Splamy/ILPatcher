@@ -239,7 +239,7 @@ namespace ILPatcher
 			btnCreatePatch.Width = tabInfoControl.Width / 2;
 
 			btnEditPatch.Top = btnCreatePatch.Top;
-			btnEditPatch.Left =  btnCreatePatch.Right + space;
+			btnEditPatch.Left = btnCreatePatch.Right + space;
 			btnEditPatch.Width = tabInfoControl.Width / 2 - space;
 
 			btnTestPatch.Top = Height - (btnTestPatch.Height + space);
@@ -298,6 +298,11 @@ namespace ILPatcher
 					tablemgr.EntryList[clbPatchList.SelectedIndex]);
 				((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
 			}
+		}
+
+		private void btnExecutePatches_Click(object sender, EventArgs e)
+		{
+
 		}
 	}
 

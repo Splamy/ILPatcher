@@ -39,15 +39,20 @@ namespace ILPatcher
 				strb.Append(": ");
 				spaceup[i] = strb.ToString();
 				strb.Clear();
-			 }
+			}
 		}
 
 		public static void Write(Level lvl, string errText, params string[] infos)
 		{
 			if (!Active) return;
 			StringBuilder strb = new StringBuilder();
-			strb.Append(Instance.spaceup[(int)lvl]);
+			strb.Append(errText);
+			foreach (string s in infos)
+				strb.Append(s);
+			string inputbuffer = strb.ToString();
+			strb.Clear();
 
+			strb.Append(Instance.spaceup[(int)lvl]);
 			for (int i = level; i >= 1; i--)
 			{
 				StackFrame frame = new StackFrame(i);
@@ -61,10 +66,11 @@ namespace ILPatcher
 				else
 					strb.Append(": ");
 			}
-			strb.Append(errText);
-			foreach (string s in infos)
-				strb.Append(s);
+			string stackbuffer = strb.ToString();
+			strb.Append(inputbuffer);
 			strb.Append("\r\n");
+			MainPanel.Instance.lbxErrors.AddItem(new ErrorLoggerItem(lvl, inputbuffer));
+			MainPanel.Instance.lbxErrors.InvalidateChildren();
 			File.AppendAllText("Output.log", strb.ToString(), Encoding.UTF8);
 		}
 

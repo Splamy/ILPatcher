@@ -46,7 +46,7 @@ namespace ILPatcher
 
 		public void Rebuild(bool invoke = false)
 		{
-			if(!invoke)
+			if (!invoke)
 				Nodes.Clear();
 			foreach (ILNode iln in ILManager.Instance.getAllNodes())
 			{
@@ -54,8 +54,8 @@ namespace ILPatcher
 				{
 					TreeNode nMain = new TreeNode(UseFullName ? iln.FullName : iln.Name);
 					nMain.Tag = iln.Value;
-					TypeDefinition td = iln.Value as TypeDefinition;
-					if (td != null) nMain.ImageIndex = nMain.SelectedImageIndex = GetImage(td);
+					MemberReference mr = iln.Value as MemberReference;
+					if (mr != null) nMain.ImageIndex = nMain.SelectedImageIndex = GetImage(mr);
 					RecursiveRebuild(nMain, iln);
 
 					if (invoke)
@@ -79,25 +79,28 @@ namespace ILPatcher
 				{
 					TreeNode tnSub = new TreeNode(UseFullName ? iln.FullName : iln.Name);
 					tnSub.Tag = iln.Value;
-					TypeDefinition td = iln.Value as TypeDefinition;
-					if (td != null) tnSub.ImageIndex = tnSub.SelectedImageIndex = GetImage(td);
+					MemberReference mr = iln.Value as MemberReference;
+					if (mr != null) tnSub.ImageIndex = tnSub.SelectedImageIndex = GetImage(mr);
 					RecursiveRebuild(tnSub, iln);
 					tnParent.Nodes.Add(tnSub);
 				}
 		}
 
-		private int GetImage(TypeDefinition TypeDef)
+		private int GetImage(MemberReference MemRef)
 		{
-			if (TypeDef.IsArray)
-				return 0;
-			//if (TypeDef.IsAbstract)
-			//	return 1;
-			if (TypeDef.IsClass)
+			if ((MemRef as FieldReference) != null) //isField
+				return 3;
+			if ((MemRef as MethodReference) != null) //isMethod
+				return 4;
+			if ((MemRef as TypeDefinition) != null) //isClassOrSub
+			{
+				TypeDefinition TD = MemRef as TypeDefinition;
+				if (TD.IsEnum)
+					return 2;
 				return 1;
-			if (TypeDef.IsEnum)
-				return 2;
-			if (TypeDef.IsInterface)
-				return 5;
+			}
+			if ((MemRef as TypeReference) != null) //isClass
+				return 1;
 			return 3;
 		}
 	}

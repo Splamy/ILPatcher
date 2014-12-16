@@ -55,7 +55,6 @@ namespace ILPatcher
 			lowtable[(int)SST.PatchType] = new Tuple<string, string>("PatchType", "PT");
 			lowtable[(int)SST.PatchStatus] = new Tuple<string, string>("PatchStatus", "PS");
 
-			//lowtable[(int)SST.PatchData] = new Tuple<string, string>("PatchData", "Pd");
 			lowtable[(int)SST.MethodPath] = new Tuple<string, string>("MethodPath", "MP");
 
 			lowtable[(int)SST.PatchList] = new Tuple<string, string>("PatchList", "PL");
@@ -71,16 +70,11 @@ namespace ILPatcher
 			lowtable[(int)SST.Resolve] = new Tuple<string, string>("Resolve", "RS");
 			lowtable[(int)SST.ResolveExtended] = new Tuple<string, string>("ResolveExtended", "RE");
 			lowtable[(int)SST.MethodReference] = new Tuple<string, string>("MethodReference", "MR");
-			//lowtable[(int)SST.FieldDefinition] = new Tuple<string, string>("FieldDefinition", "FD");
 			lowtable[(int)SST.FieldReference] = new Tuple<string, string>("FieldReference", "FR");
 			lowtable[(int)SST.TypeReference] = new Tuple<string, string>("TypeReference", "TR");
-			//lowtable[(int)SST.GenericInstanceType] = new Tuple<string, string>("GenericInstanceType", "GT");
 			lowtable[(int)SST.CallSite] = new Tuple<string, string>("CallSite", "CS");
-			//lowtable[(int)SST.ParameterDefinition] = new Tuple<string, string>("ParameterDefinition", "PD");
-			//lowtable[(int)SST.VariableDefinition] = new Tuple<string, string>("VariableDefinition", "VD");
 			lowtable[(int)SST.BrTargetIndex] = new Tuple<string, string>("BrTargetIndex", "BI");
 			lowtable[(int)SST.BrTargetArray] = new Tuple<string, string>("BrTargetArray", "BA");
-			//lowtable[(int)SST.InlineTok] = new Tuple<string, string>("InlineTok", "Tk");
 
 			lowtable[(int)SST.RETURN] = new Tuple<string, string>("RETURN", "R");
 			lowtable[(int)SST.MODULE] = new Tuple<string, string>("MODULE", "M");
@@ -150,18 +144,12 @@ namespace ILPatcher
 
 		Resolve,
 		ResolveExtended,
-		//MethodDefinition,
 		MethodReference,
-		//FieldDefinition,
 		FieldReference,
 		TypeReference,
-		//GenericInstanceType,
 		CallSite,
-		//ParameterDefinition,
-		//VariableDefinition,
 		BrTargetIndex,
 		BrTargetArray,
-		//InlineTok,
 
 		RETURN,
 		MODULE,

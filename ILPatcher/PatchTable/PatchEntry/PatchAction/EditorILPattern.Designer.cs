@@ -54,7 +54,7 @@
 			this.lblDelete = new System.Windows.Forms.Label();
 			this.btnNewOpCode = new System.Windows.Forms.Button();
 			this.lblwip = new System.Windows.Forms.Label();
-			this.instructionEditor = new InspectorHolder();
+			this.instructionEditor = new ILPatcher.InspectorHolder();
 			this.contextMenuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -411,7 +411,6 @@
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox txtPatchActionName;
 		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.TextBox txtMethodFullName;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Button btnPickMethod;
 		private System.Windows.Forms.Button btnDone;
@@ -433,5 +432,6 @@
 		private System.Windows.Forms.Label lblDelete;
 		private System.Windows.Forms.Button btnNewOpCode;
 		private System.Windows.Forms.Label lblwip;
+		public System.Windows.Forms.TextBox txtMethodFullName;
 	}
 }

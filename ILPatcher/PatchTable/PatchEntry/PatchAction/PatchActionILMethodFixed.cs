@@ -113,6 +113,7 @@ namespace ILPatcher
 			if (metpathunres == string.Empty) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); return false; }
 			MethodDef = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
 			if (MethodDef == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); return false; }
+			EditorILPattern.Instance.txtMethodFullName.Text = MethodDef.FullName;
 
 			//TODO init useful
 			int instructioncount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
