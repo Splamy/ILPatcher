@@ -18,14 +18,9 @@ namespace ILPatcher
 			EntryName = string.Empty;
 		}
 
-		public bool Enable()
+		public void Execute()
 		{
-			return true;
-		}
-
-		public bool Disable()
-		{
-			return true;
+			ActionList.ForEach(pa => pa.Execute());
 		}
 
 		public bool Save(XmlNode output)
@@ -43,7 +38,7 @@ namespace ILPatcher
 			return true;
 		}
 
-		public bool Read(XmlNode input)
+		public bool Load(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
@@ -65,23 +60,23 @@ namespace ILPatcher
 					PatchAction pa = null;
 					switch (pat)
 					{
-						case PatchActionType.ILMethodFixed:
-							pa = new PatchActionILMethodFixed();
-							break;
-						case PatchActionType.ILMethodDynamic:
-							Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
-							continue;
-						case PatchActionType.ILDynamicScan:
-							Log.Write(Log.Level.Info, "ILDynamicScan not implemented");
-							continue;
-						case PatchActionType.AoBRawScan:
-							Log.Write(Log.Level.Info, "AoBRawScan not implemented");
-							continue;
-						default:
-							continue;
+					case PatchActionType.ILMethodFixed:
+						pa = new PatchActionILMethodFixed();
+						break;
+					case PatchActionType.ILMethodDynamic:
+						Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
+						continue;
+					case PatchActionType.ILDynamicScan:
+						Log.Write(Log.Level.Info, "ILDynamicScan not implemented");
+						continue;
+					case PatchActionType.AoBRawScan:
+						Log.Write(Log.Level.Info, "AoBRawScan not implemented");
+						continue;
+					default:
+						continue;
 					}
 					pa.ActionName = xnode.GetAttribute(SST.NAME);
-					pa.Read(xnode);
+					pa.Load(xnode);
 					ActionList.Add(pa);
 				}
 			}

@@ -130,7 +130,7 @@ namespace ILPatcher
 
 			PatchAction.ActionName = txtPatchActionName.Text;
 
-			EditorEntry.Instance.Add(PatchAction); // add also refreshes list
+			EditorEntry.Instance.Add(PatchAction); // TODO refresh patchaction-list
 			((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
 		}
 
@@ -171,32 +171,32 @@ namespace ILPatcher
 				c.Visible = false;
 			switch (inpt)
 			{
-				case InputType.None:
-					break;
-				case InputType.Box:
-					txtOperand.Visible = true;
-					break;
-				case InputType.IntructList:
-					lblwip.Visible = true;
-					break;
-				case InputType.VarList:
-					lblwip.Visible = true;
-					break;
-				case InputType.ParamList:
-					lblwip.Visible = true;
-					break;
-				case InputType.FieldList:
-					lblwip.Visible = true;
-					break;
-				case InputType.MethodList:
-					lblwip.Visible = true;
-					break;
-				case InputType.TypeList:
-					lblwip.Visible = true;
-					break;
-				default:
-					lblwip.Visible = true;
-					break;
+			case InputType.None:
+				break;
+			case InputType.Box:
+				txtOperand.Visible = true;
+				break;
+			case InputType.IntructList:
+				lblwip.Visible = true;
+				break;
+			case InputType.VarList:
+				lblwip.Visible = true;
+				break;
+			case InputType.ParamList:
+				lblwip.Visible = true;
+				break;
+			case InputType.FieldList:
+				lblwip.Visible = true;
+				break;
+			case InputType.MethodList:
+				lblwip.Visible = true;
+				break;
+			case InputType.TypeList:
+				lblwip.Visible = true;
+				break;
+			default:
+				lblwip.Visible = true;
+				break;
 			}
 			Controls_Reorganize();
 		}
@@ -220,19 +220,19 @@ namespace ILPatcher
 			{
 				InstructionInfo nII = new InstructionInfo();
 				nII.OldInstruction = MetDef.Body.Instructions[i];
-				nII.NewInstruction = MetDef.Body.Instructions[i].Clone();
+				nII.NewInstruction = nII.OldInstruction.Clone();
 				nII.OldInstructionNum = i;
 				nII.NewInstructionNum = i;
 				mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, nII));
 			}
 		}
 
-		private void button5_Click(object sender, EventArgs e)
+		private void btnCancel_Click(object sender, EventArgs e)
 		{
 
 		}
 
-		private void button2_Click(object sender, EventArgs e)
+		private void btnDebug_Click(object sender, EventArgs e)
 		{
 			XmlDocument xDoc = MainPanel.ReadFromFile("testEntry.xml");
 			PatchAction = new PatchActionILMethodFixed();
@@ -241,49 +241,48 @@ namespace ILPatcher
 				if (xNode.Name == "PatchAction")
 				{
 					ILManager.Instance.Load(xNode);
-					PatchAction.Read(xNode);
+					PatchAction.Load(xNode);
 				}
 			}
-
 		}
 
 		private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			switch ((PickOperandType)cbxOperandType.SelectedIndex)
 			{
-				case PickOperandType.None:
-					ShowInput(InputType.None);
-					break;
-				case PickOperandType.Byte:
-				case PickOperandType.SByte:
-				case PickOperandType.Int32:
-				case PickOperandType.Int64:
-				case PickOperandType.Single:
-				case PickOperandType.Double:
-				case PickOperandType.String:
-					ShowInput(InputType.Box);
-					break;
-				case PickOperandType.InstructionReference:
-					ShowInput(InputType.IntructList);
-					break;
-				case PickOperandType.VariableReference:
-					ShowInput(InputType.VarList);
-					break;
-				case PickOperandType.ParameterReference:
-					ShowInput(InputType.ParamList);
-					break;
-				case PickOperandType.FieldReference:
-					ShowInput(InputType.FieldList);
-					break;
-				case PickOperandType.MethodReference:
-					ShowInput(InputType.MethodList);
-					break;
-				case PickOperandType.TypeReference:
-					ShowInput(InputType.TypeList);
-					break;
-				default:
-					Log.Write(Log.Level.Warning, "Not switced PickOperadType in combobox");
-					break;
+			case PickOperandType.None:
+				ShowInput(InputType.None);
+				break;
+			case PickOperandType.Byte:
+			case PickOperandType.SByte:
+			case PickOperandType.Int32:
+			case PickOperandType.Int64:
+			case PickOperandType.Single:
+			case PickOperandType.Double:
+			case PickOperandType.String:
+				ShowInput(InputType.Box);
+				break;
+			case PickOperandType.InstructionReference:
+				ShowInput(InputType.IntructList);
+				break;
+			case PickOperandType.VariableReference:
+				ShowInput(InputType.VarList);
+				break;
+			case PickOperandType.ParameterReference:
+				ShowInput(InputType.ParamList);
+				break;
+			case PickOperandType.FieldReference:
+				ShowInput(InputType.FieldList);
+				break;
+			case PickOperandType.MethodReference:
+				ShowInput(InputType.MethodList);
+				break;
+			case PickOperandType.TypeReference:
+				ShowInput(InputType.TypeList);
+				break;
+			default:
+				Log.Write(Log.Level.Warning, "Not switced PickOperadType in combobox");
+				break;
 			}
 		}
 
@@ -302,8 +301,7 @@ namespace ILPatcher
 
 			if (loadpa.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", loadpa.ActionName, " is not initialized correctly"); return; }
 
-			PatchAction.instructPatchList.ForEach((instr)
-			=> { mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, instr)); });
+			PatchAction.instructPatchList.ForEach((instr) => { mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, instr)); });
 		}
 
 		private void Controls_Reorganize()

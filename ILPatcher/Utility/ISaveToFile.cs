@@ -11,6 +11,6 @@ namespace ILPatcher
 		bool Save(XmlNode output);
 		/// <summary>Reads the requierd data from the XMLnode's Childnodes</summary>
 		/// <returns>Return true if no errors occoured during the read</returns>
-		bool Read(XmlNode input);
+		bool Load(XmlNode input);
 	}
 }

@@ -26,9 +26,21 @@ namespace ILPatcher
 		{
 		}
 
-		public override bool Execute()
+		public override void Execute()
 		{
-			return true;
+			if (_PatchStatus == PatchStatus.WoringPerfectly)
+			{
+				AnyArray<Instruction> cpyBuffer = new AnyArray<Instruction>();
+				foreach (InstructionInfo II in instructPatchList)
+				{
+					if (II.Delete) continue;
+					cpyBuffer[II.NewInstructionNum] = II.NewInstruction;
+				}
+				Mono.Collections.Generic.Collection<Instruction> nList = MethodDef.Body.Instructions;
+				nList.Clear();
+				for (int i = 0; i < cpyBuffer.Length; i++)
+					if (cpyBuffer[i] != null) nList.Add(cpyBuffer[i]);
+			}
 		}
 
 		public override bool Save(XmlNode output)
@@ -38,7 +50,6 @@ namespace ILPatcher
 			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
 			output.Attributes[nc[SST.NAME]].Value = ActionName;
 
-			#region PatchList
 			int c = instructPatchList.Count;
 
 			XmlElement xListPatched = output.InsertCompressedElement(SST.PatchList);
@@ -89,12 +100,11 @@ namespace ILPatcher
 						Operand2Node(xInstruction, II.NewInstruction, false);
 				}
 			}
-			#endregion
 
 			return true;
 		}
 
-		public override bool Read(XmlNode input)
+		public override bool Load(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
@@ -107,40 +117,48 @@ namespace ILPatcher
 					PatchList = input.ChildNodes[i] as XmlElement;
 					break;
 				}
-			if (PatchList == null) { Log.Write(Log.Level.Error, "No PatchList Child found"); return false; }
+			if (PatchList == null) { Log.Write(Log.Level.Error, "No PatchList Child found"); PatchStatus = PatchStatus.Broken; return false; }
 
 			string metpathunres = PatchList.GetAttribute(SST.MethodPath);
-			if (metpathunres == string.Empty) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); return false; }
+			if (metpathunres == string.Empty) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); PatchStatus = PatchStatus.Broken; return false; }
 			MethodDef = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
-			if (MethodDef == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); return false; }
+			if (MethodDef == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
 			EditorILPattern.Instance.txtMethodFullName.Text = MethodDef.FullName;
 
-			//TODO init useful
 			int instructioncount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
 			InstructionInfo[] iibuffer = new InstructionInfo[instructioncount];
+
+			//TODO init with given params, instead of static
 			bool checkopcdes = true;
 			bool resolveparams = false; // resolves types/methods/...
 			bool checkprimitives = true; // checks if primitive types are identical
 
-			List<InstructionInfo> postinitderef = new List<InstructionInfo>();
+			List<PostInitData> postinitbrs = new List<PostInitData>();
+			Instruction iDummy = Instruction.Create(OpCodes.Nop);
 			XmlElement xDummy = PatchList.CreateCompressedElement(SST.NAME);
 
 			for (int i = 0; i < instructioncount; i++)
 			{
 				XmlElement xelem = PatchList.ChildNodes[i] as XmlElement;
-				if (xelem == null) { Log.Write(Log.Level.Warning, "PatchList elemtent nr.", i.ToString(), " couldn't be found"); continue; }
+				if (xelem == null) { Log.Write(Log.Level.Warning, "PatchList elemtent nr.", i.ToString(), " couldn't be found"); PatchStatus = PatchStatus.Broken; continue; }
 
 				InstructionInfo nII = new InstructionInfo();
 				XmlAttribute xdelatt = xelem.Attributes[nc[SST.Delete]];
 				OpCode opcode = ILManager.OpCodeLookup[xelem.GetAttribute(SST.OpCode)];
 
-				if (xdelatt != null) // is an old instriction
+				if (xdelatt != null)
+				#region Old_Instruction
 				{
 					nII.OldInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
 					if (nII.OldInstructionNum < MethodDef.Body.Instructions.Count)
 					{
 						nII.OldInstruction = MethodDef.Body.Instructions[nII.OldInstructionNum];
-						if (checkopcdes && opcode != nII.OldInstruction.OpCode) { Log.Write(Log.Level.Careful, "Opcode of Instruction ", nII.OldInstructionNum.ToString(), " has changed"); }  // TODO set mismatch | from-to log
+						if (checkopcdes && opcode != nII.OldInstruction.OpCode)
+						{
+							PatchStatus = PatchStatus.Broken;
+							Log.Write(Log.Level.Careful, "Opcode of Instruction ", nII.OldInstructionNum.ToString(), " has changed");
+							nII.OpCodeMismatch = true;
+						}  // TODO set mismatch | from-to log
 					}
 					nII.Delete = xdelatt.Value == nc[SST.True];
 
@@ -168,9 +186,7 @@ namespace ILPatcher
 						XmlElement xpatchelem = xelem.ChildNodes[0] as XmlElement;
 
 						string instnum = xpatchelem.GetAttribute(SST.InstructionNum);
-						string primval = xpatchelem.GetAttribute(SST.PrimitiveValue);
-						string resolve = xpatchelem.GetAttribute(SST.Resolve);
-						string patchopcode = xpatchelem.GetAttribute(SST.OpCode).Replace(".", "");
+						string patchopcode = xpatchelem.GetAttribute(SST.OpCode);
 
 						if (instnum == string.Empty)
 							nII.NewInstructionNum = nII.OldInstructionNum;
@@ -183,10 +199,29 @@ namespace ILPatcher
 						else
 							patchopc = ILManager.OpCodeLookup[patchopcode];
 
-						if (primval != string.Empty)
-							nII.NewInstruction = ILManager.GenInstruction(patchopc, primval);
-						else if (resolve != string.Empty)
-							nII.NewInstruction = ILManager.GenInstruction(patchopc, ILManager.Instance.Resolve(resolve.ToBaseInt()));
+						string operandvalue;
+						if ((operandvalue = xpatchelem.GetAttribute(SST.PrimitiveValue)) != string.Empty)
+							nII.NewInstruction = ILManager.GenInstruction(patchopc, operandvalue);
+						else if ((operandvalue = xpatchelem.GetAttribute(SST.Resolve)) != string.Empty)
+							nII.NewInstruction = ILManager.GenInstruction(patchopc, ILManager.Instance.Resolve(operandvalue.ToBaseInt()));
+						else if ((operandvalue = xpatchelem.GetAttribute(SST.BrTargetIndex)) != string.Empty)
+						{
+							nII.NewInstruction = ILManager.GenInstruction(patchopc, iDummy);
+							PostInitData pid = new PostInitData();
+							pid.InstructionNum = nII.NewInstructionNum;
+							pid.isArray = false;
+							pid.targetNum = int.Parse(operandvalue);
+							postinitbrs.Add(pid);
+						}
+						else if ((operandvalue = xpatchelem.GetAttribute(SST.BrTargetArray)) != string.Empty)
+						{
+							nII.NewInstruction = ILManager.GenInstruction(patchopc, new[] { iDummy });
+							PostInitData pid = new PostInitData();
+							pid.InstructionNum = nII.NewInstructionNum;
+							pid.isArray = true;
+							pid.targetArray = Array.ConvertAll<string, int>(operandvalue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
+							postinitbrs.Add(pid);
+						}
 						else if (nII.OldInstruction.Operand != null)
 							nII.NewInstruction = nII.OldInstruction.Clone();
 						else
@@ -198,29 +233,59 @@ namespace ILPatcher
 						nII.NewInstruction = nII.OldInstruction.Clone();
 					}
 				}
-				else // new nstruction
+				#endregion
+				else
+				#region New_Instruction
 				{
 					nII.OldInstructionNum = -1;
 					nII.NewInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
-					string primval = xelem.GetAttribute(SST.PrimitiveValue);
-					string resolve = xelem.GetAttribute(SST.Resolve);
-					if (primval != string.Empty)
-						nII.NewInstruction = ILManager.GenInstruction(opcode, primval);
-					else if (resolve != string.Empty)
+
+					string operandvalue;
+					if ((operandvalue = xelem.GetAttribute(SST.PrimitiveValue)) != string.Empty)
+						nII.NewInstruction = ILManager.GenInstruction(opcode, operandvalue);
+					else if ((operandvalue = xelem.GetAttribute(SST.Resolve)) != string.Empty)
 					{
-						nII.NewInstruction = ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(resolve.ToBaseInt()));
-						PatchStatus = PatchStatus.Broken;
+						nII.NewInstruction = ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(operandvalue.ToBaseInt()));
+						PatchStatus = PatchStatus.Broken; // TODO temporary, when resolving works -> do properly
+					}
+					else if ((operandvalue = xelem.GetAttribute(SST.BrTargetIndex)) != string.Empty)
+					{
+						nII.NewInstruction = nII.NewInstruction = ILManager.GenInstruction(opcode, iDummy);
+						PostInitData pid = new PostInitData();
+						pid.InstructionNum = nII.NewInstructionNum;
+						pid.isArray = false;
+						pid.targetNum = int.Parse(operandvalue);
+						postinitbrs.Add(pid);
+					}
+					else if ((operandvalue = xelem.GetAttribute(SST.BrTargetArray)) != string.Empty)
+					{
+						nII.NewInstruction = nII.NewInstruction = ILManager.GenInstruction(opcode, new[] { iDummy });
+						PostInitData pid = new PostInitData();
+						pid.InstructionNum = nII.NewInstructionNum;
+						pid.isArray = true;
+						pid.targetArray = Array.ConvertAll<string, int>(operandvalue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
+						postinitbrs.Add(pid);
 					}
 					else
 						nII.NewInstruction = ILManager.GenInstruction(opcode, null);
 				}
+				#endregion
 
 				iibuffer[i] = nII;
 			}
 
-			// TODO do postreferene
+			foreach (PostInitData pid in postinitbrs)
+			{
+				if (pid.isArray)
+					iibuffer[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll<int, Instruction>(pid.targetArray, a => iibuffer[a].NewInstruction);
+				else
+					iibuffer[pid.InstructionNum].NewInstruction.Operand = iibuffer[pid.targetNum];
+			}
 
 			instructPatchList = new List<InstructionInfo>(iibuffer);
+
+			if (PatchStatus == PatchStatus.Unset)
+				PatchStatus = PatchStatus.WoringPerfectly;
 
 			return true;
 		}
@@ -292,89 +357,6 @@ namespace ILPatcher
 			}
 		}
 
-		/*public void Opernad2NodeObsolete(XmlElement xParent, Instruction i, bool OldI)
-		{
-			OpCode oc = i.OpCode;
-			object operand = i.Operand;
-			XmlDocument xDoc = xParent.OwnerDocument;
-			NameCompressor nc = NameCompressor.Instance;
-
-			if (oc.OperandType == OperandType.InlineNone)
-				return;
-			else if (oc.OperandType == OperandType.InlineI ||
-			oc.OperandType == OperandType.InlineI8 ||
-			oc.OperandType == OperandType.InlineString ||
-			oc.OperandType == OperandType.InlineR ||
-			oc.OperandType == OperandType.ShortInlineI ||
-			oc.OperandType == OperandType.ShortInlineR)
-			{
-				xParent.CreateAttribute(SST.PrimitiveValue, operand.ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineArg ||
-				oc.OperandType == OperandType.ShortInlineArg)
-			{
-				ParameterDefinition ParDef = (ParameterDefinition)operand;
-				xParent.CreateAttribute(SST.ParameterDefinition, ILManager.Instance.Reference(ParDef).ToBaseAlph());
-			}
-			else if (oc.OperandType == OperandType.InlineVar ||
-			   oc.OperandType == OperandType.ShortInlineVar)
-			{
-				VariableDefinition VarDef = (VariableDefinition)operand;
-				xParent.CreateAttribute(SST.VariableDefinition, VarDef.Index.ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineMethod)
-			{
-				//Type t = operand.GetType(); // MethodDefinition : MethodReference
-				if (operand is MethodDefinition)
-					xParent.CreateAttribute(SST.MethodDefinition, ILManager.Instance.Reference(operand).ToBaseAlph());
-				else if (operand is MethodReference)
-					xParent.CreateAttribute(SST.MethodReference, ILManager.Instance.Reference(operand).ToBaseAlph());
-				else
-					Log.Write("Operand not processed: ", operand.GetType().Name, " at <InlineMethod>");
-			}
-			else if (oc.OperandType == OperandType.InlineType)
-			{
-				xParent.CreateAttribute(SST.TypeReference, ILManager.Instance.Reference(operand).ToBaseAlph());
-			}
-			else if (oc.OperandType == OperandType.InlineBrTarget ||
-				oc.OperandType == OperandType.ShortInlineBrTarget)
-			{
-				xParent.CreateAttribute(SST.BrTargetIndex, FindInstruction((Instruction)i.Operand, OldI).ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineSwitch)
-			{
-				StringBuilder strb = new StringBuilder();
-				Instruction[] arr = (Instruction[])operand;
-				foreach (Instruction instr in arr)
-				{
-					strb.Append(FindInstruction(instr, OldI));
-					strb.Append(' ');
-				}
-				xParent.CreateAttribute(SST.BrTargetArray, strb.ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineTok)
-			{
-				xParent.CreateAttribute(SST.InlineTok, ILManager.Instance.Reference(operand).ToBaseAlph());
-			}
-			else if (oc.OperandType == OperandType.InlineSig)
-			{
-				xParent.CreateAttribute(SST.CallSite, ILManager.Instance.Reference(operand).ToBaseAlph());
-			}
-			else if (oc.OperandType == OperandType.InlineField)
-			{
-				if (operand is FieldDefinition)
-					xParent.CreateAttribute(SST.FieldDefinition, ILManager.Instance.Reference(operand).ToBaseAlph());
-				else if (operand is FieldReference)
-					xParent.CreateAttribute(SST.FieldReference, ILManager.Instance.Reference(operand).ToBaseAlph());
-				else
-					Log.Write("Operand not processed: ", operand.GetType().Name, " at <InlineField>");
-			}
-			else
-			{
-				Log.Write("Opcode not processed: ", oc.OperandType.ToString());
-			}
-		}*/
-
 		private int FindInstruction(Instruction i, bool OldI)
 		{
 			if (OldI)
@@ -397,6 +379,14 @@ namespace ILPatcher
 			Log.Write(Log.Level.Warning, "Instruction not found: ", i.Offset.ToString());
 			return -1;
 		}
+
+		private class PostInitData
+		{
+			public int InstructionNum;
+			public bool isArray;
+			public int targetNum;
+			public int[] targetArray;
+		}
 	}
 
 	// IDEA Maybe put them into <OpCodeTableItem>
@@ -406,8 +396,18 @@ namespace ILPatcher
 		public Instruction NewInstruction;
 		public int OldInstructionNum;
 		public int NewInstructionNum;
-		public bool Delete = false;
 
+		//PatchInfo
+		public bool Delete = false;
+		public bool InstructionPatch
+		{
+			get { return OldInstruction.OpCode != NewInstruction.OpCode && OldInstruction.Operand != NewInstruction.Operand; }
+			protected set { }
+		}
+		public bool InstructionNumPatch { get { return OldInstructionNum != NewInstructionNum; } protected set { } }
+
+		//LoadInfo
+		public bool OpCodeMismatch = false;
 		public bool PrimitiveMismatch = false;
 		public bool ReferenceMismatch = false;
 		public bool OperandMismatch { get { return PrimitiveMismatch || ReferenceMismatch; } protected set { } }

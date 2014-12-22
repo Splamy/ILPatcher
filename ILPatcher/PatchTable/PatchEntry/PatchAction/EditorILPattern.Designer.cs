@@ -162,7 +162,7 @@
 			this.btnCancel.TabIndex = 20;
 			this.btnCancel.Text = "Cancel";
 			this.btnCancel.UseVisualStyleBackColor = false;
-			this.btnCancel.Click += new System.EventHandler(this.button5_Click);
+			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
 			// 
 			// cbxOperand
 			// 
@@ -302,7 +302,7 @@
 			this.btnDebug.TabIndex = 23;
 			this.btnDebug.Text = "Debug_Load";
 			this.btnDebug.UseVisualStyleBackColor = false;
-			this.btnDebug.Click += new System.EventHandler(this.button2_Click);
+			this.btnDebug.Click += new System.EventHandler(this.btnDebug_Click);
 			// 
 			// txtOperand
 			// 

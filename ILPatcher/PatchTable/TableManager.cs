@@ -17,6 +17,11 @@ namespace ILPatcher
 			EntryList = new List<PatchEntry>();
 		}
 
+		public void Execute()
+		{
+			EntryList.ForEach(pe => pe.Execute());
+		}
+
 		public bool Save(XmlNode output)
 		{
 			NameCompressor nc = NameCompressor.Instance;
@@ -29,7 +34,7 @@ namespace ILPatcher
 			return true;
 		}
 
-		public bool Read(XmlNode input)
+		public bool Load(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
@@ -42,7 +47,7 @@ namespace ILPatcher
 				{
 					PatchEntry tmpPE = new PatchEntry();
 					tmpPE.EntryName = xnode.GetAttribute(SST.NAME);
-					tmpPE.Read(xnode);
+					tmpPE.Load(xnode);
 					MainPanel.Instance.Add(tmpPE);
 				}
 			}

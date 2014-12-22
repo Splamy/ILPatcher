@@ -50,7 +50,7 @@ namespace ILPatcher
 		{
 			status = AssemblyStatus.Uninitialized;
 			OpenFileDialog openAsm = new OpenFileDialog();
-			openAsm.Filter = "C# Managed Code | *.exe;*.dll";
+			openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
 			if (openAsm.ShowDialog() == DialogResult.OK)
 			{
 				mLoading.ON = true;
@@ -128,12 +128,18 @@ namespace ILPatcher
 				Instruction instruction2 = cilProcess.Create(OpCodes.Call, method2);
 				Instruction instr = cilProcess.Create(OpCodes.Pop);
 				ILProcessor cilWorker2 = cilProcess;
-				cilWorker2.InsertBefore(MetDef.Body.Instructions[0], instruction);
+				/*cilWorker2.InsertBefore(MetDef.Body.Instructions[0], instruction);
 				cilWorker2.InsertAfter(instruction, instruction1);
 				cilWorker2.InsertAfter(instruction1, instruction11);
 				cilWorker2.InsertAfter(instruction11, instruction111);
 				cilWorker2.InsertAfter(instruction111, instruction2);
-				cilWorker2.InsertAfter(instruction2, instr);
+				cilWorker2.InsertAfter(instruction2, instr);*/
+				MetDef.Body.Instructions.Insert(0, instruction);
+				MetDef.Body.Instructions.Insert(1, instruction1);
+				MetDef.Body.Instructions.Insert(2, instruction11);
+				MetDef.Body.Instructions.Insert(3, instruction111);
+				MetDef.Body.Instructions.Insert(4, instruction2);
+				MetDef.Body.Instructions.Insert(5, instr);
 			}
 			catch
 			{
@@ -198,7 +204,6 @@ namespace ILPatcher
 		{
 			EditorEntry.Instance.LoadEntry(null);
 			((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
-			//new EditorEntry(this, null).Show(); TODO
 		}
 
 		public void Add(PatchEntry pe)
@@ -287,7 +292,7 @@ namespace ILPatcher
 			}
 			if (Match)
 			{
-				tablemgr.Read(BaseNode);
+				tablemgr.Load(BaseNode);
 			}
 			else
 				Log.Write(Log.Level.Error, "No PatchTable found!");
@@ -306,7 +311,22 @@ namespace ILPatcher
 
 		private void btnExecutePatches_Click(object sender, EventArgs e)
 		{
-
+			//check if backup file exists
+			try
+			{
+				string backupPath = AssemblyPath + "_ilpbackup";
+				if (File.Exists(backupPath))
+				{
+					PatchQuestionWindow pqw = new PatchQuestionWindow();
+					DialogResult dr = pqw.ShowDialog(this);
+				}
+				else
+				{
+					File.Copy(AssemblyPath, backupPath);
+					//					tablemgr.
+				}
+			}
+			catch (Exception ex) { MessageBox.Show(ex.Message); }
 		}
 	}
 
@@ -315,7 +335,7 @@ namespace ILPatcher
 		Uninitialized,
 		RawAssemblyLoaded,
 		AssemblyAndDataLoaded,
-		Operatable = RawAssemblyLoaded | AssemblyAndDataLoaded,
+		//Operatable = RawAssemblyLoaded | AssemblyAndDataLoaded,
 		LoadFailed,
 	}
 }
