@@ -380,6 +380,11 @@ namespace ILPatcher
 			return -1;
 		}
 
+		public void SetInitWorking()
+		{
+			_PatchStatus = PatchStatus.WoringPerfectly;
+		}
+
 		private class PostInitData
 		{
 			public int InstructionNum;

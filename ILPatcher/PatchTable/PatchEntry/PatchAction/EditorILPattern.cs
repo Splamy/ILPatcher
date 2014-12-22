@@ -113,6 +113,7 @@ namespace ILPatcher
 			if (PatchAction == null)
 			{
 				PatchAction = new PatchActionILMethodFixed();
+				PatchAction.SetInitWorking();
 
 				int c = mInstructBox.Items.Count;
 				List<InstructionInfo> instructPatchList = new List<InstructionInfo>(c);

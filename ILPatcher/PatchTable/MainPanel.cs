@@ -53,9 +53,18 @@ namespace ILPatcher
 			openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
 			if (openAsm.ShowDialog() == DialogResult.OK)
 			{
-				mLoading.ON = true;
 				AssemblyPath = openAsm.FileName;
 				txtilaFile.Text = AssemblyPath;
+				string backupPath = AssemblyPath + "_ilpbackup";
+				if (File.Exists(backupPath))
+				{
+					PatchQuestionWindow pqw = new PatchQuestionWindow();
+					DialogResult dr = pqw.ShowDialog(this);
+					if (dr == DialogResult.Cancel) return;
+					else if (dr == DialogResult.Yes) File.Copy(backupPath, AssemblyPath, true);
+				}
+
+				mLoading.ON = true;
 				LoadAsmOrigin();
 				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
 				{
@@ -78,7 +87,7 @@ namespace ILPatcher
 		{
 			try
 			{
-				AssemblyDef = AssemblyDefinition.ReadAssembly(txtilaFile.Text);
+				AssemblyDef = AssemblyDefinition.ReadAssembly(AssemblyPath);
 				status = AssemblyStatus.RawAssemblyLoaded;
 
 				rtbInfo.Clear();
@@ -110,42 +119,30 @@ namespace ILPatcher
 
 		private void button2_Click(object sender, EventArgs e)
 		{
+			if (structureViever1.SelectedNode == null) return;
 			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
 			if (MetDef == null) return;
 
-			ILProcessor cilProcess = MetDef.Body.GetILProcessor();
+			//ILProcessor cilProcess = MetDef.Body.GetILProcessor();
 			//MessageBox.Show("Test",);
 			MethodInfo method = typeof(MessageBox).GetMethod("Show",
 			 new Type[] { typeof(string), typeof(string), typeof(MessageBoxButtons), typeof(MessageBoxIcon) });
 			MethodReference method2 = AssemblyDef.MainModule.Import(method);
-			Instruction instruction = cilProcess.Create(OpCodes.Ldstr, "test");
-			Instruction instruction1 = cilProcess.Create(OpCodes.Ldstr, "test2");
-			Instruction instruction11 = cilProcess.Create(OpCodes.Ldc_I4_0);
-			Instruction instruction111 = cilProcess.Create(OpCodes.Ldc_I4_S, (sbyte)64);
 
-			try
-			{
-				Instruction instruction2 = cilProcess.Create(OpCodes.Call, method2);
-				Instruction instr = cilProcess.Create(OpCodes.Pop);
-				ILProcessor cilWorker2 = cilProcess;
-				/*cilWorker2.InsertBefore(MetDef.Body.Instructions[0], instruction);
-				cilWorker2.InsertAfter(instruction, instruction1);
-				cilWorker2.InsertAfter(instruction1, instruction11);
-				cilWorker2.InsertAfter(instruction11, instruction111);
-				cilWorker2.InsertAfter(instruction111, instruction2);
-				cilWorker2.InsertAfter(instruction2, instr);*/
-				MetDef.Body.Instructions.Insert(0, instruction);
-				MetDef.Body.Instructions.Insert(1, instruction1);
-				MetDef.Body.Instructions.Insert(2, instruction11);
-				MetDef.Body.Instructions.Insert(3, instruction111);
-				MetDef.Body.Instructions.Insert(4, instruction2);
-				MetDef.Body.Instructions.Insert(5, instr);
-			}
-			catch
-			{
-				MessageBox.Show("Error");
-				return;
-			}
+			MetDef.Body.Instructions.Clear();
+			/*MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldstr, "test"));
+			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldstr, "test2"));
+			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldc_I4_0));
+			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldc_I4_S, (sbyte)64));
+			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Call, method2));
+			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Pop));*/
+
+			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "test3"));
+			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "test4"));
+			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)64));
+			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Call, method2));
+			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Pop));
 
 			using (SaveFileDialog saveFileDialog = new SaveFileDialog
 			{
@@ -311,20 +308,16 @@ namespace ILPatcher
 
 		private void btnExecutePatches_Click(object sender, EventArgs e)
 		{
-			//check if backup file exists
 			try
 			{
 				string backupPath = AssemblyPath + "_ilpbackup";
-				if (File.Exists(backupPath))
-				{
-					PatchQuestionWindow pqw = new PatchQuestionWindow();
-					DialogResult dr = pqw.ShowDialog(this);
-				}
-				else
-				{
+				if (!File.Exists(backupPath))
 					File.Copy(AssemblyPath, backupPath);
-					//					tablemgr.
-				}
+				tabInfoControl.SelectedIndex = 2;
+				for (int i = 0; i < tablemgr.EntryList.Count; i++)
+					if (clbPatchList.GetSelected(i))
+						tablemgr.EntryList[i].Execute();
+				AssemblyDef.Write(AssemblyPath);
 			}
 			catch (Exception ex) { MessageBox.Show(ex.Message); }
 		}
