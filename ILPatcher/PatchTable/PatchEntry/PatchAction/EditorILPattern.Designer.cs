@@ -63,6 +63,7 @@
 			this.mInstructBox.Location = new System.Drawing.Point(95, 60);
 			this.mInstructBox.Margin = new System.Windows.Forms.Padding(5);
 			this.mInstructBox.MinimumSize = new System.Drawing.Size(50, 50);
+			this.mInstructBox.MultiSelect = true;
 			this.mInstructBox.Name = "mInstructBox";
 			this.mInstructBox.Size = new System.Drawing.Size(503, 190);
 			this.mInstructBox.TabIndex = 8;

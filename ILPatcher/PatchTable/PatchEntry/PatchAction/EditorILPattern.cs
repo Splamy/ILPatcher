@@ -49,15 +49,15 @@ namespace ILPatcher
 				cbxOpcode.Items.Add(dn);
 		}
 
-		void mInstructBox_OnItemDropFailed(DragItem di)
+		void mInstructBox_OnItemDropFailed(DragItem[] di)
 		{
-			OpCodeTableItem octi = di as OpCodeTableItem;
+			OpCodeTableItem octi = di[0] as OpCodeTableItem;
 			if (octi == null)
 			{
 				Log.Write(Log.Level.Careful, "Not OCTI Type Element in List");
 				return;
 			}
-			mInstructBox.Items.Insert(octi.dragFrom, di);
+			mInstructBox.Items.Insert(octi.dragFrom, octi);
 		}
 
 		void instructionEditor_OnItemDrop()
@@ -68,12 +68,11 @@ namespace ILPatcher
 
 		void chbDelete_OnChange(MCheckBox source, bool value)
 		{
-			if (mInstructBox.SelectedIndex == -1)
+			if (mInstructBox.SelectedItems.Count <= 0)
 				BoxSetHelper(false);
 			else
 			{
-				OpCodeTableItem octi = (mInstructBox.SelectedElement) as OpCodeTableItem;
-				octi.II.Delete = value;
+				mInstructBox.SelectedItems.ForEach(x => ((OpCodeTableItem)x).II.Delete = value);
 				mInstructBox.InvalidateChildren();
 			}
 		}

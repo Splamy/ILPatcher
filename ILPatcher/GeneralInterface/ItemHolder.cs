@@ -59,12 +59,12 @@ namespace ILPatcher
 			this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
 		}
 
-		public bool DropToPreview(DragItem lbe)
+		public bool DropToPreview(DragItem[] lbe)
 		{
 			drawOnHover = false;
 			if (!AllowDrop) return false;
 
-			di = lbe;
+			di = lbe[0];
 			if (OnItemDrop != null)
 				OnItemDrop();
 			Invalidate();
@@ -118,7 +118,7 @@ namespace ILPatcher
 			Point location = FindForm().PointToClient(Parent.PointToScreen(Location));
 			location.X = location.X + e.X - Width / 2;
 			location.Y = location.Y + e.Y - Height / 2;
-			DragItemHolder lbed = new DragItemHolder(di, this, location);
+			DragItemHolder lbed = new DragItemHolder(new[] { di }, this, location);
 			di = null;
 			Invalidate();
 		}
@@ -127,10 +127,10 @@ namespace ILPatcher
 		{
 			Drag = false;
 		}
-	
-		public void OnItemDropFailedReceiver(DragItem di)
+
+		public void OnItemDropFailedReceiver(DragItem[] di)
 		{
-			DragItem = di;
+			DragItem = di[0];
 		}
 	}
 

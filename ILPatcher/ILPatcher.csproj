@@ -58,7 +58,7 @@
     </Reference>
     <Reference Include="MetroObjects, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\MetroObjects.dll</HintPath>
+      <HintPath>..\libraries\MetroObjects.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.9.5.2\lib\net40\Mono.Cecil.dll</HintPath>
