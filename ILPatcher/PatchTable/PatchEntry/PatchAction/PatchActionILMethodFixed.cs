@@ -128,6 +128,13 @@ namespace ILPatcher
 			int instructioncount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
 			InstructionInfo[] iibuffer = new InstructionInfo[instructioncount];
 
+			if (MethodDef.Body.Instructions.Count < instructioncount)
+			{
+				// new method body is smaller than the old one -> patching the new assembly will not work
+
+				Log.Write(Log.Level.Error, "The patch script cannot be applied to the changend method"); PatchStatus = PatchStatus.Broken; return false;
+			}
+
 			//TODO init with given params, instead of static
 			bool checkopcdes = true;
 			bool resolveparams = false; // resolves types/methods/...

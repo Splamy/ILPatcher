@@ -78,63 +78,63 @@ namespace ILPatcher
 				OperandInfo oi = MemberList[i];
 				switch (MemberList[i].oit)
 				{
-					case OperandInfoT.ParameterDefinition:
-					case OperandInfoT.ParameterReference:
-						Log.Write(Log.Level.Warning, "PT resolving is obsolete: ", MemberList[i].ToString());
-						//todo reenable
-						if (oi.resolved)
-							Reference(((ParameterReference)oi.operand).ParameterType);
-						else
-							Log.Write(Log.Level.Info, "ParameterDef/Ref cannot be raw saved");
-						break;
-					case OperandInfoT.MethodDefinition:
-					case OperandInfoT.MethodReference:
-					case OperandInfoT.GenericInstanceMethod:
-						if (oi.resolved)
-							GenMChild(xM, (MethodReference)oi.operand, i);
-						else
-							xM.AppendClonedChild(oi.rawData);
-						break;
-					case OperandInfoT.FieldDefinition:
-					case OperandInfoT.FieldReference:
-						if (oi.resolved)
-							GenFChild(xF, (FieldReference)MemberList[i].operand, i);
-						else
-							xF.AppendClonedChild(oi.rawData);
-						break;
-					case OperandInfoT.TypeDefinition:
-					case OperandInfoT.TypeReference:
-					case OperandInfoT.GenericInstanceType:
-					case OperandInfoT.GenericParameter:
-						if (oi.resolved)
-							GenTChild(xT, (TypeReference)MemberList[i].operand, i);
-						else
-							xT.AppendClonedChild(oi.rawData);
-						break;
-					case OperandInfoT.VariableDefinition:
-					case OperandInfoT.VariableReference:
-						Log.Write(Log.Level.Warning, "VD resolving is obsolete: ", MemberList[i].ToString());
-						//todo reenable
-						if (oi.resolved)
-							Reference(((VariableReference)oi.operand).VariableType);
-						else
-							Log.Write(Log.Level.Info, "VariableDef/Ref cannot be raw saved");
-						break;
-					case OperandInfoT.ArrayType:
-						if (oi.resolved)
-							GenAChild(xT, (ArrayType)MemberList[i].operand, i);
-						else
-							xT.AppendClonedChild(oi.rawData);
-						break;
-					case OperandInfoT.CallSite:
-						if (oi.resolved)
-							xCS.CreateAttribute(i, ((CallSite)MemberList[i].operand).FullName);
-						else
-							xCS.AppendClonedChild(oi.rawData);
-						break;
-					default:
-						Log.Write(Log.Level.Error, "Not saved Member Entry: ", MemberList[i].oit.ToString());
-						break;
+				case OperandInfoT.ParameterDefinition:
+				case OperandInfoT.ParameterReference:
+					Log.Write(Log.Level.Warning, "PT resolving is obsolete: ", MemberList[i].ToString());
+					//todo reenable
+					if (oi.resolved)
+						Reference(((ParameterReference)oi.operand).ParameterType);
+					else
+						Log.Write(Log.Level.Info, "ParameterDef/Ref cannot be raw saved");
+					break;
+				case OperandInfoT.MethodDefinition:
+				case OperandInfoT.MethodReference:
+				case OperandInfoT.GenericInstanceMethod:
+					if (oi.resolved)
+						GenMChild(xM, (MethodReference)oi.operand, i);
+					else
+						xM.AppendClonedChild(oi.rawData);
+					break;
+				case OperandInfoT.FieldDefinition:
+				case OperandInfoT.FieldReference:
+					if (oi.resolved)
+						GenFChild(xF, (FieldReference)MemberList[i].operand, i);
+					else
+						xF.AppendClonedChild(oi.rawData);
+					break;
+				case OperandInfoT.TypeDefinition:
+				case OperandInfoT.TypeReference:
+				case OperandInfoT.GenericInstanceType:
+				case OperandInfoT.GenericParameter:
+					if (oi.resolved)
+						GenTChild(xT, (TypeReference)MemberList[i].operand, i);
+					else
+						xT.AppendClonedChild(oi.rawData);
+					break;
+				case OperandInfoT.VariableDefinition:
+				case OperandInfoT.VariableReference:
+					Log.Write(Log.Level.Warning, "VD resolving is obsolete: ", MemberList[i].ToString());
+					//todo reenable
+					if (oi.resolved)
+						Reference(((VariableReference)oi.operand).VariableType);
+					else
+						Log.Write(Log.Level.Info, "VariableDef/Ref cannot be raw saved");
+					break;
+				case OperandInfoT.ArrayType:
+					if (oi.resolved)
+						GenAChild(xT, (ArrayType)MemberList[i].operand, i);
+					else
+						xT.AppendClonedChild(oi.rawData);
+					break;
+				case OperandInfoT.CallSite:
+					if (oi.resolved)
+						xCS.CreateAttribute(i, ((CallSite)MemberList[i].operand).FullName);
+					else
+						xCS.AppendClonedChild(oi.rawData);
+					break;
+				default:
+					Log.Write(Log.Level.Error, "Not saved Member Entry: ", MemberList[i].oit.ToString());
+					break;
 				}
 			}
 		}
@@ -450,9 +450,9 @@ namespace ILPatcher
 				foreach (TypeDefinition typdef in searchCollection)
 				{
 					//GenericInstanceType git;
-					if(values.Length > 0)
+					if (values.Length > 0)
 					{
-					// todo somehow get generic instance types
+						// todo somehow get generic instance types
 						//git = typdef as GenericInstanceType;
 						//if(git == null) continue;
 					}
@@ -619,107 +619,107 @@ namespace ILPatcher
 
 			switch (opc.OperandType)
 			{
-				case OperandType.InlineArg: // (uint16) Argument/Parameter
-					//TODO String/Int interpreter
-					if (t.IsAssignableFrom(typeof(ParameterDefinition)))
-						retIntr = Instruction.Create(opc, (ParameterDefinition)val);
-					break;
-				case OperandType.InlineBrTarget: // (int32) Instruction target
-					//TODO String/Int interpreter
-					if (t == typeof(string))
-						retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-					else if (t == typeof(Int32))
-						retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-					else if (t.IsAssignableFrom(typeof(Instruction)))
-						retIntr = Instruction.Create(opc, (Instruction)val);
-					break;
-				case OperandType.InlineField: // Field 
-					if (t.IsAssignableFrom(typeof(FieldReference)))
-						retIntr = Instruction.Create(opc, (FieldReference)val);
-					break;
-				case OperandType.InlineI: //Int32
-					if (t == typeof(string))
-						retIntr = Instruction.Create(opc, Int32.Parse((string)val));
-					else if (t == typeof(Int32))
-						retIntr = Instruction.Create(opc, (Int32)val);
-					break;
-				case OperandType.InlineI8: //Int64
-					if (t.IsAssignableFrom(typeof(string)))
-						retIntr = Instruction.Create(opc, Int64.Parse((string)val));
-					else if (t.IsAssignableFrom(typeof(Int64)))
-						retIntr = Instruction.Create(opc, (Int64)val);
-					break;
-				case OperandType.InlineMethod: // Methode
-					if (t.IsAssignableFrom(typeof(MethodReference)))
-						retIntr = Instruction.Create(opc, (MethodReference)val);
-					break;
-				case OperandType.InlineNone: // None
-					retIntr = Instruction.Create(opc);
-					break;
-				case OperandType.InlinePhi: // ----
-					break;
-				case OperandType.InlineR: // Double
-					if (t.IsAssignableFrom(typeof(string)))
-						retIntr = Instruction.Create(opc, double.Parse((string)val));
-					else if (t.IsAssignableFrom(typeof(double)))
-						retIntr = Instruction.Create(opc, (double)val);
-					break;
-				case OperandType.InlineSig:
-					if (t.IsAssignableFrom(typeof(CallSite)))
-						retIntr = Instruction.Create(opc, (CallSite)val);
-					break;
-				case OperandType.InlineString: // String
-					if (t.IsAssignableFrom(typeof(string)))
-						retIntr = Instruction.Create(opc, (string)val);
-					break;
-				case OperandType.InlineSwitch: // Instruction[]
-					if (t == typeof(Instruction[]))
-						retIntr = Instruction.Create(opc, (Instruction[])val);
-					break;
-				case OperandType.InlineTok: // ???
-					Log.Write(Log.Level.Careful, "Fuck, a Token! I have no idea what to do with dat...");
-					break;
-				case OperandType.InlineType: // Type
-					if (t.IsAssignableFrom(typeof(TypeReference)))
-						retIntr = Instruction.Create(opc, (TypeReference)val);
-					break;
-				case OperandType.InlineVar: // (uint16) Local Variable
-					//TODO String/Int interpreter
-					if (t.IsAssignableFrom(typeof(VariableDefinition)))
-						retIntr = Instruction.Create(opc, (VariableDefinition)val);
-					break;
-				case OperandType.ShortInlineArg: // (uint8) Argument/Parameter
-					//TODO String/Int interpreter
-					if (t.IsAssignableFrom(typeof(ParameterDefinition)))
-						retIntr = Instruction.Create(opc, (ParameterDefinition)val);
-					break;
-				case OperandType.ShortInlineBrTarget:  // (int8) Instruction target
-					if (t.IsAssignableFrom(typeof(string)))
-						retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-					else if (t.IsAssignableFrom(typeof(Int32)))
-						retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-					else if (t.IsAssignableFrom(typeof(Instruction)))
-						retIntr = Instruction.Create(opc, (Instruction)val);
-					break;
-				case OperandType.ShortInlineI: // SByte
-					if (t.IsAssignableFrom(typeof(string)))
-						retIntr = Instruction.Create(opc, sbyte.Parse((string)val));
-					else if (t.IsAssignableFrom(typeof(sbyte)))
-						retIntr = Instruction.Create(opc, (sbyte)val);
-					break;
-				case OperandType.ShortInlineR: // Float
-					if (t.IsAssignableFrom(typeof(string)))
-						retIntr = Instruction.Create(opc, float.Parse((string)val));
-					else if (t.IsAssignableFrom(typeof(sbyte)))
-						retIntr = Instruction.Create(opc, (float)val);
-					break;
-				case OperandType.ShortInlineVar:// (uint8) Local Variable
-					//TODO String/Int interpreter
-					if (t.IsAssignableFrom(typeof(VariableDefinition)))
-						retIntr = Instruction.Create(opc, (VariableDefinition)val);
-					break;
-				default:
-					break;
+			case OperandType.InlineArg: // (uint16) Argument/Parameter
+				//TODO String/Int interpreter
+				if (t.IsAssignableFrom(typeof(ParameterDefinition)))
+					retIntr = Instruction.Create(opc, (ParameterDefinition)val);
+				break;
+			case OperandType.InlineBrTarget: // (int32) Instruction target
+				//TODO String/Int interpreter
+				if (t == typeof(string))
+					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
+				else if (t == typeof(Int32))
+					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
+				else if (t.IsAssignableFrom(typeof(Instruction)))
+					retIntr = Instruction.Create(opc, (Instruction)val);
+				break;
+			case OperandType.InlineField: // Field 
+				if (t.IsAssignableFrom(typeof(FieldReference)))
+					retIntr = Instruction.Create(opc, (FieldReference)val);
+				break;
+			case OperandType.InlineI: //Int32
+				if (t == typeof(string))
+					retIntr = Instruction.Create(opc, Int32.Parse((string)val));
+				else if (t == typeof(Int32))
+					retIntr = Instruction.Create(opc, (Int32)val);
+				break;
+			case OperandType.InlineI8: //Int64
+				if (t.IsAssignableFrom(typeof(string)))
+					retIntr = Instruction.Create(opc, Int64.Parse((string)val));
+				else if (t.IsAssignableFrom(typeof(Int64)))
+					retIntr = Instruction.Create(opc, (Int64)val);
+				break;
+			case OperandType.InlineMethod: // Methode
+				if (t.IsAssignableFrom(typeof(MethodReference)))
+					retIntr = Instruction.Create(opc, (MethodReference)val);
+				break;
+			case OperandType.InlineNone: // None
+				retIntr = Instruction.Create(opc);
+				break;
+			case OperandType.InlinePhi: // ----
+				break;
+			case OperandType.InlineR: // Double
+				if (t.IsAssignableFrom(typeof(string)))
+					retIntr = Instruction.Create(opc, double.Parse((string)val));
+				else if (t.IsAssignableFrom(typeof(double)))
+					retIntr = Instruction.Create(opc, (double)val);
+				break;
+			case OperandType.InlineSig:
+				if (t.IsAssignableFrom(typeof(CallSite)))
+					retIntr = Instruction.Create(opc, (CallSite)val);
+				break;
+			case OperandType.InlineString: // String
+				if (t.IsAssignableFrom(typeof(string)))
+					retIntr = Instruction.Create(opc, (string)val);
+				break;
+			case OperandType.InlineSwitch: // Instruction[]
+				if (t == typeof(Instruction[]))
+					retIntr = Instruction.Create(opc, (Instruction[])val);
+				break;
+			case OperandType.InlineTok: // ???
+				Log.Write(Log.Level.Careful, "Fuck, a Token! I have no idea what to do with dat...");
+				break;
+			case OperandType.InlineType: // Type
+				if (t.IsAssignableFrom(typeof(TypeReference)))
+					retIntr = Instruction.Create(opc, (TypeReference)val);
+				break;
+			case OperandType.InlineVar: // (uint16) Local Variable
+				//TODO String/Int interpreter
+				if (t.IsAssignableFrom(typeof(VariableDefinition)))
+					retIntr = Instruction.Create(opc, (VariableDefinition)val);
+				break;
+			case OperandType.ShortInlineArg: // (uint8) Argument/Parameter
+				//TODO String/Int interpreter
+				if (t.IsAssignableFrom(typeof(ParameterDefinition)))
+					retIntr = Instruction.Create(opc, (ParameterDefinition)val);
+				break;
+			case OperandType.ShortInlineBrTarget:  // (int8) Instruction target
+				if (t.IsAssignableFrom(typeof(string)))
+					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
+				else if (t.IsAssignableFrom(typeof(Int32)))
+					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
+				else if (t.IsAssignableFrom(typeof(Instruction)))
+					retIntr = Instruction.Create(opc, (Instruction)val);
+				break;
+			case OperandType.ShortInlineI: // SByte
+				if (t.IsAssignableFrom(typeof(string)))
+					retIntr = Instruction.Create(opc, sbyte.Parse((string)val));
+				else if (t.IsAssignableFrom(typeof(sbyte)))
+					retIntr = Instruction.Create(opc, (sbyte)val);
+				break;
+			case OperandType.ShortInlineR: // Float
+				if (t.IsAssignableFrom(typeof(string)))
+					retIntr = Instruction.Create(opc, float.Parse((string)val));
+				else if (t.IsAssignableFrom(typeof(sbyte)))
+					retIntr = Instruction.Create(opc, (float)val);
+				break;
+			case OperandType.ShortInlineVar:// (uint8) Local Variable
+				//TODO String/Int interpreter
+				if (t.IsAssignableFrom(typeof(VariableDefinition)))
+					retIntr = Instruction.Create(opc, (VariableDefinition)val);
+				break;
+			default:
+				break;
 			}
 			return retIntr;
 		}
@@ -772,6 +772,12 @@ namespace ILPatcher
 		public void Clear()
 		{
 			MemberList.Length = 0;
+		}
+
+		public void ClearAll() // check if necessary
+		{
+			MemberList.Length = 0;
+			ModuleList.Clear();
 		}
 	}
 
