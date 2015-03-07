@@ -13,6 +13,7 @@ namespace ILPatcher
 	public abstract class PatchAction : ISaveToFile
 	{
 		public string ActionName;
+		public string DisplayName { get { return ActionName + " " + PatchStatus; } protected set { } }
 		public abstract PatchActionType PatchActionType { get; protected set; }
 		public abstract PatchStatus PatchStatus { get; protected set; }
 

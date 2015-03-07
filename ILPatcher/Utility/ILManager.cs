@@ -65,6 +65,8 @@ namespace ILPatcher
 
 		// SAVE METHODS ******************************************************
 
+		/// <summary>Saves the current reference list of this ILM into a xml parent node</summary>
+		/// <param name="xNode">The parent node for the new reference nodes</param>
 		public void Save(XmlNode xNode)
 		{
 			NameCompressor nc = NameCompressor.Instance;
@@ -139,10 +141,19 @@ namespace ILPatcher
 			}
 		}
 
-		public void GenMChild(XmlElement xGroup, MethodReference mr, int val)
+		/// <summary>Inserts the xml formatted reference for a MethodReference into a xml parent</summary>
+		/// <param name="xGroup">The xml parent for the new generated element</param>
+		/// <param name="mr">The MethodReference which will be xml formatted</param>
+		/// <param name="val">The ID of the MethodReference in the ILM list</param>
+		private void GenMChild(XmlElement xGroup, MethodReference mr, int val)
 		{
 			XmlElement xElem = xGroup.InsertCompressedElement(val);
+			StringBuilder strb = new StringBuilder();
 
+			xElem.CreateAttribute(SST.TYPE, Reference(mr.DeclaringType).ToBaseAlph());
+			xElem.CreateAttribute(SST.NAME, mr.Name);
+
+			#region GENERICS
 			if (mr.IsGenericInstance)
 			{
 				GenericInstanceMethod git = mr as GenericInstanceMethod;
@@ -150,40 +161,73 @@ namespace ILPatcher
 					Log.Write(Log.Level.Error, "GenericInstance Type couldn't be converted: ", git.FullName);
 				else
 				{
-					for (int i = 0; i < git.GenericArguments.Count && git.GenericArguments[i] != null; i++)
+					strb.Clear();
+					for (int i = 0; i < git.GenericArguments.Count; i++) // && git.GenericArguments[i] != null
 						if (git.GenericArguments[i].IsGenericParameter)
-							xElem.CreateAttribute(i, git.GenericArguments[i].Name);
+						{
+							strb.Append('$'); // Instance $ ?
+							strb.Append(git.GenericArguments[i].Name);
+						}
 						else
-							xElem.CreateAttribute(i, Reference(git.GenericArguments[i]).ToBaseAlph());
+						{
+							strb.Append(Reference(git.GenericArguments[i]).ToBaseAlph());
+						}
+					xElem.CreateAttribute(SST.GENERICS, strb.ToString());
 				}
 			}
-
-			if (mr.HasGenericParameters)
+			else if (mr.HasGenericParameters)
 			{
-				StringBuilder strb = new StringBuilder();
+				strb.Clear();
 				for (int i = 0; i < mr.GenericParameters.Count; i++)
 				{
-					strb.Append(Reference(mr.GenericParameters[i].Type).ToBaseAlph());
+					strb.Append('%'); // Definition % ?
+					strb.Append(mr.GenericParameters[i].Name);
+					//strb.Append(Reference(mr.GenericParameters[i].Type).ToBaseAlph()); // type is of GenericParameterType enum
 					strb.Append(' ');
 				}
 				xElem.CreateAttribute(SST.GENERICS, strb.ToString());
 			}
+			#endregion
 
+			#region RETURN
+			strb.Clear();
 			if (mr.ReturnType.IsGenericParameter)
-				xElem.CreateAttribute(SST.RETURN, mr.ReturnType.Name);
+			{
+				strb.Append('$'); // Definition % ?
+				strb.Append(mr.ReturnType.Name);
+			}
 			else
-				xElem.CreateAttribute(SST.RETURN, Reference(mr.ReturnType).ToBaseAlph());
-			xElem.CreateAttribute(SST.TYPE, Reference(mr.DeclaringType).ToBaseAlph());
-			xElem.CreateAttribute(SST.NAME, mr.Name);
+				strb.Append(Reference(mr.ReturnType).ToBaseAlph());
+			xElem.CreateAttribute(SST.RETURN, strb.ToString());
+			#endregion
 
-			for (int i = 0; i < mr.Parameters.Count; i++)
-				if (mr.Parameters[i].ParameterType.IsGenericParameter)
-					xElem.CreateAttribute(i, mr.Parameters[i].ParameterType.Name);
-				else
-					xElem.CreateAttribute(i, Reference(mr.Parameters[i].ParameterType).ToBaseAlph());
+			#region PARAMETER
+			if (mr.Parameters.Count > 0)
+			{
+				strb.Clear();
+				for (int i = 0; i < mr.Parameters.Count; i++)
+				{
+					if (mr.Parameters[i].ParameterType.IsGenericParameter)
+					{
+						strb.Append('%'); // Definition % ?
+						strb.Append(mr.Parameters[i].ParameterType.Name); // should be ignorable, but look for a better way to store
+					}
+					else
+					{
+						strb.Append(Reference(mr.Parameters[i].ParameterType).ToBaseAlph());
+					}
+					strb.Append(' ');
+				}
+				xElem.CreateAttribute(SST.PARAMETER, strb.ToString());
+			}
+			#endregion
 		}
 
-		public void GenFChild(XmlElement xGroup, FieldReference fr, int val)
+		/// <summary>Inserts the xml formatted reference for a FieldReference into a xml parent</summary>
+		/// <param name="xGroup">The xml parent for the new generated element</param>
+		/// <param name="fr">The FieldReference which will be xml formatted</param>
+		/// <param name="val">The ID of the FieldReference in the ILM list</param>
+		private void GenFChild(XmlElement xGroup, FieldReference fr, int val)
 		{
 			XmlElement xElem = xGroup.InsertCompressedElement(val);
 			xElem.CreateAttribute(SST.TYPE, Reference(fr.FieldType).ToBaseAlph());
@@ -191,25 +235,57 @@ namespace ILPatcher
 			xElem.CreateAttribute(SST.MODULE, Reference(fr.DeclaringType).ToBaseAlph());
 		}
 
-		public void GenTChild(XmlElement xGroup, TypeReference tr, int val)
+		/// <summary>Inserts the xml formatted reference for a TypeReference into a xml parent</summary>
+		/// <param name="xGroup">The xml parent for the new generated element</param>
+		/// <param name="tr">The TypeReference which will be xml formatted</param>
+		/// <param name="val">The ID of the TypeReference in the ILM list</param>
+		private void GenTChild(XmlElement xGroup, TypeReference tr, int val)
 		{
 			XmlElement xElem = xGroup.InsertCompressedElement(val);
-			xElem.CreateAttribute(SST.TYPE, tr.Name);
+			xElem.CreateAttribute(SST.NAME, tr.Name);
+
 			StringBuilder strb = new StringBuilder();
 			if (tr.IsGenericInstance)
 			{
+				// This is a instanced form of a Type, it can still have unspecified (generic) Parameters
+				// but also specified Parameters like a int32
+				if (tr.HasGenericParameters) // debug
+					Console.WriteLine("Woah");
 				GenericInstanceType git = tr as GenericInstanceType;
 				if (git == null)
 					Log.Write(Log.Level.Error, "GenericInstance Type couldn't be converted: ", tr.FullName);
 				else
 				{
 					for (int i = 0; i < git.GenericArguments.Count && git.GenericArguments[i] != null; i++)
+					{
 						if (git.GenericArguments[i].IsGenericParameter)
-							xElem.CreateAttribute(i, git.GenericArguments[i].Name);
+						{
+							// this is a unspecified gen Paramater, we have to take it as-is
+							strb.Append('$'); // Instance $
+							strb.Append(git.GenericArguments[i].Name);
+						}
 						else
-							xElem.CreateAttribute(i, Reference(git.GenericArguments[i]).ToBaseAlph());
+						{
+							// this is a specified gen Paramater and thus can be ILM referenced
+							strb.Append(Reference(git.GenericArguments[i]).ToBaseAlph());
+						}
+						strb.Append(' ');
+					}
+					xElem.CreateAttribute(SST.GENERICS, strb.ToString());
 				}
 			}
+			else if (tr.HasGenericParameters)
+			{
+				// This is the Definition on a Type with Generic parameters
+				for (int i = 0; i < tr.GenericParameters.Count; i++)
+				{
+					strb.Append('%'); // Definition %
+					strb.Append(tr.GenericParameters[i].Name);
+					strb.Append(' ');
+				}
+				xElem.CreateAttribute(SST.GENERICS, strb.ToString());
+			}
+
 			if (tr.IsNested)
 				xElem.CreateAttribute(SST.NESTEDIN, Reference(tr.DeclaringType).ToBaseAlph());
 			else
@@ -217,12 +293,18 @@ namespace ILPatcher
 				xElem.CreateAttribute(SST.MODULE, tr.Scope.Name);
 				if (!tr.IsGenericParameter)
 					xElem.CreateAttribute(SST.NAMESPACE, tr.Namespace);
+				else
+					Log.Write(Log.Level.Error, "A GenericParameter(Type) has been passed. It will be dismissed.");
 			}
 		}
 
-		public void GenAChild(XmlElement xGroup, ArrayType at, int val)
+		/// <summary>Inserts the xml formatted reference for an ArrayType into a xml parent</summary>
+		/// <param name="xGroup">The xml parent for the new generated element</param>
+		/// <param name="at">The ArrayType which will be xml formatted</param>
+		/// <param name="val">The ID of the ArrayType in the ILM list</param>
+		private void GenAChild(XmlElement xGroup, ArrayType at, int val)
 		{
-			XmlElement xElem = xGroup.OwnerDocument.CreateElement(val.ToBaseAlph());
+			XmlElement xElem = xGroup.InsertCompressedElement(val);
 			xElem.CreateAttribute(SST.TYPE, Reference(at.ElementType).ToBaseAlph());
 			if (at.IsVector)
 				xElem.CreateAttribute(SST.ARRAY, "0");
@@ -230,6 +312,10 @@ namespace ILPatcher
 				xElem.CreateAttribute(SST.ARRAY, at.Dimensions.Count.ToString());
 		}
 
+		/// <summary>Looks for the given object in the ILM list and returns its ID,
+		/// if the object doesn't exists the method saves it and returns the new ID</summary>
+		/// <param name="_operand">The object to be referenced</param>
+		/// <returns>Unique ID for each object</returns>
 		public int Reference(object _operand)
 		{
 			// GenericInstanceMethod
@@ -270,6 +356,9 @@ namespace ILPatcher
 
 		// LOAD METHODS ******************************************************
 
+		/// <summary>Loads the reference table from a node and itserts the unresolved
+		/// references into the ILM list. Those can then be resoved on demand</summary>
+		/// <param name="xNode">The reference table containing node</param>
 		public void Load(XmlNode xNode)
 		{
 			Clear();
@@ -288,7 +377,7 @@ namespace ILPatcher
 						oi.oit = OperandInfoT.TypeReference;
 					else // CalliSite
 					{
-						Log.Write(Log.Level.Error, "Unknown Resolving Node: ", xElem.Name);
+						Log.Write(Log.Level.Careful, "Unknown Resolving Node: ", xElem.Name);
 						continue;
 					}
 					oi.rawData = xItem as XmlElement;
@@ -297,6 +386,10 @@ namespace ILPatcher
 			}
 		}
 
+		/// <summary>Looks for an reference with the given ID. If the reference is unresolved,
+		/// it will try to resolve it. When no match exists it will return null.<summary>
+		/// <param name="idNum">The ID to be searched.</param>
+		/// <returns>The referenced object if it exists, otherwise null.</returns>
 		public object Resolve(int idNum)
 		{
 			if (idNum >= MemberList.Length) { Log.Write(Log.Level.Error, "Resolve number ", idNum.ToString(), " is not in Range."); return null; }
@@ -322,27 +415,50 @@ namespace ILPatcher
 			return null;
 		}
 
-		public object ResMElement(OperandInfo oi)
+		private object ResMElement(OperandInfo oi)
 		{
 			XmlElement xDataNode = oi.rawData;
 
-			//generics here
-
-			//generic return
-			//beginswith !
-
 			string name = xDataNode.GetAttribute(SST.NAME);
 			string type = xDataNode.GetAttribute(SST.TYPE);
-
 			if (name == string.Empty || type == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name or Parenttype"); return null; }
 
+			bool isGeneric;
+			bool isGenericInstance;
+
+			// 1] search in
+			#region search_in
 			TypeDefinition typdef = Resolve(type.ToBaseInt()) as TypeDefinition;
 			if (typdef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, name, "-Type couldn't be resolved"); return null; }
+			#endregion
 
+			// 2] search generics
+			#region search_generics
+			string genericvalstr = xDataNode.GetAttribute(SST.GENERICS);
+			string[] genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			isGeneric = genericValues.Length != 0;
+			if (isGeneric) isGenericInstance = !genericvalstr.Contains('%'); // TDOD: check if this is true
+			else isGenericInstance = false;
+			#endregion
+
+			// 3] compare
+			#region compare
 			foreach (MethodReference metdef in typdef.Methods)
 			{
 				if (metdef.Name == name)
 				{
+					if (isGeneric)
+					{
+						if (isGenericInstance)
+						{
+							// TODO: same as ResTElement
+						}
+						else
+						{
+							if (metdef.GenericParameters.Count != genericValues.Length) continue;
+						}
+					}
+
 					Type t = metdef.GetType();
 					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " couldn't found"); }
 					oi.operand = metdef;
@@ -350,19 +466,19 @@ namespace ILPatcher
 					return metdef;
 				}
 			}
+			#endregion
 
 			Log.Write(Log.Level.Error, "MethodDefinition ", name, " couldn't be found in Type ", typdef.Name);
 			return null;
 		}
 
-		// FldRef seems to be done!
-		public object ResFElement(OperandInfo oi)
+		private object ResFElement(OperandInfo oi) // FldRef seems to be done!
 		{
 			XmlElement xDataNode = oi.rawData;
 
 			string FieldType = xDataNode.GetAttribute(SST.TYPE);
 			string Name = xDataNode.GetAttribute(SST.NAME);
-			string DeclaringType = xDataNode.GetAttribute(SST.TYPE);
+			string DeclaringType = xDataNode.GetAttribute(SST.MODULE);
 
 			if (FieldType == string.Empty || Name == string.Empty || DeclaringType == string.Empty)
 			{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No FieldType/Name/DeclaringType"); }
@@ -389,25 +505,39 @@ namespace ILPatcher
 			return null;
 		}
 
-		public object ResTElement(OperandInfo oi)
+		private object ResTElement(OperandInfo oi)
 		{
 			XmlElement xDataNode = oi.rawData;
 
 			Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
 
-			string name = xDataNode.GetAttribute(SST.TYPE); // change to name
+			string name = xDataNode.GetAttribute(SST.NAME);
 			if (name == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
+
+			string namesp = string.Empty;
+			// TODO enable namespace comparison, atm the algorithm will always take the first element.
+
+			bool isGeneric;
+			bool isGenericInstance;
+			bool isNested;
+			bool noNamespaceGiven = false;
 
 			// 1] search in
 			#region search_in
 			string nestedin = xDataNode.GetAttribute(SST.NESTEDIN);
 			if (nestedin == string.Empty) // type is module subtype
 			{
+				isNested = false;
+
 				string module = xDataNode.GetAttribute(SST.MODULE);
 				if (module == string.Empty) { oi.Status = ResolveStatus.SaveFileError; return null; }
 
-				string namesp = xDataNode.GetAttribute(SST.NAMESPACE);
-				if (namesp == string.Empty) Log.Write(Log.Level.Careful, "No Namespace defined! Will use first matching Item(!)");
+				namesp = xDataNode.GetAttribute(SST.NAMESPACE);
+				if (namesp == string.Empty)
+				{
+					noNamespaceGiven = true;
+					Log.Write(Log.Level.Careful, "No Namespace defined! Will use first matching Item(!)");
+				}
 
 				ModuleDefinition ModDef = null;
 				if (MainPanel.AssemblyDef.MainModule.Name == module)
@@ -429,7 +559,7 @@ namespace ILPatcher
 					catch
 					{
 						oi.Status = ResolveStatus.ReferenceNotFound;
-						Log.Write(Log.Level.Error, "An Assembly with the Namespace ", namesp, " couldn't be found");
+						Log.Write(Log.Level.Error, "An Assembly is missing: ", module);
 						return null;
 					}
 				}
@@ -438,6 +568,8 @@ namespace ILPatcher
 			}
 			else // type is nested
 			{
+				isNested = true;
+
 				TypeDefinition nestintyp = Resolve(nestedin.ToBaseInt()) as TypeDefinition;
 				if (nestintyp == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "Nestparent not found ", nestedin); return null; }
 
@@ -445,52 +577,38 @@ namespace ILPatcher
 			}
 			#endregion
 
-			// 2] search further generics (and deref)
+			// 2] search generics
 			#region search_generics
-			AnyArray<string> values = new AnyArray<string>();
-			bool attok = true;
-			int attcnt = 0;
-			while (attok) // gibt alle tobasseaplh zahlen des nodes in die strlist aus;
-			{
-				string tmpstr = xDataNode.GetAttribute(attcnt.ToBaseAlph());
-				if (tmpstr != string.Empty)
-				{
-					values[attcnt] = tmpstr;
-					attcnt++;
-				}
-				else
-					attok = false;
-			}
+			string genericvalstr = xDataNode.GetAttribute(SST.GENERICS);
+			string[] genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			isGeneric = genericValues.Length != 0;
+			if (isGeneric) isGenericInstance = !genericvalstr.Contains('%'); // TDOD: check if this is true
+			else isGenericInstance = false;
 			#endregion
 
 			// 3] compare
 			#region compare
 			foreach (TypeDefinition typdef in searchCollection)
 			{
-				//GenericInstanceType git = new GenericInstanceType()
+				// TODO: find out what !-beginning params mean
 
-				GenericInstanceType git = null;
-				if (values.Length > 0)
+				if (typdef.Name == name && (isNested || noNamespaceGiven || typdef.Namespace == namesp))
 				{
-					// todo somehow get generic instance types
-					//git = typdef as GenericInstanceType;
-					if (git == null) continue;
-				}
-				if (typdef.Name == name)
-				{
-					bool TheTypeFulfillsMyDemands = true;
-					for (int i = 0; i < values.Length; i++)
+					if (isGeneric)
 					{
-						if (values[i].StartsWith("!"))
+						if (isGenericInstance)
 						{
-							//if(values[i] == typdef.ge)
+							// TODO: either find one or create new (better not new, because new will be a diferent object from the cecil existing)
+							// also deref elements not starting with $ and check if they match
+							// another problem is that this part will never be reached because GITs aren't stored in the searchCollection
+							// think about a solution later
+							continue;
 						}
 						else
 						{
-
+							if (typdef.GenericParameters.Count != genericValues.Length) continue;
 						}
 					}
-					if (!TheTypeFulfillsMyDemands) continue;
 
 					Type t = typdef.GetType();
 					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
@@ -502,6 +620,13 @@ namespace ILPatcher
 			#endregion
 
 			Log.Write(Log.Level.Error, "TypeDefinition ", name, " coundn't be found in the Module");
+			return null;
+		}
+
+		private object ResAElement(OperandInfo oi)
+		{
+			// TODO: uhm yes
+			Log.Write(Log.Level.Warning, "Array deref not implemented");
 			return null;
 		}
 
@@ -619,127 +744,6 @@ namespace ILPatcher
 		}
 
 		// SUPPORT FUNCTIONS *************************************************
-
-		public static Instruction GenInstructionObsolete(OpCode opc, object val)
-		{
-			Instruction retIntr = null;
-			//OperandType
-			//retIntr.OpCode.OperandType.
-			Type t = null;
-			if (val != null)
-				t = val.GetType();
-
-			//dummy table for all stuff like
-			//to-be-added before instructions for jumps
-			//to-be-created local var
-			Instruction dummy = Instruction.Create(OpCodes.Nop);
-
-			switch (opc.OperandType)
-			{
-			case OperandType.InlineArg: // (uint16) Argument/Parameter
-				//TODO String/Int interpreter
-				if (t.IsAssignableFrom(typeof(ParameterDefinition)))
-					retIntr = Instruction.Create(opc, (ParameterDefinition)val);
-				break;
-			case OperandType.InlineBrTarget: // (int32) Instruction target
-				//TODO String/Int interpreter
-				if (t == typeof(string))
-					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-				else if (t == typeof(Int32))
-					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-				else if (t.IsAssignableFrom(typeof(Instruction)))
-					retIntr = Instruction.Create(opc, (Instruction)val);
-				break;
-			case OperandType.InlineField: // Field 
-				if (t.IsAssignableFrom(typeof(FieldReference)))
-					retIntr = Instruction.Create(opc, (FieldReference)val);
-				break;
-			case OperandType.InlineI: //Int32
-				if (t == typeof(string))
-					retIntr = Instruction.Create(opc, Int32.Parse((string)val));
-				else if (t == typeof(Int32))
-					retIntr = Instruction.Create(opc, (Int32)val);
-				break;
-			case OperandType.InlineI8: //Int64
-				if (t.IsAssignableFrom(typeof(string)))
-					retIntr = Instruction.Create(opc, Int64.Parse((string)val));
-				else if (t.IsAssignableFrom(typeof(Int64)))
-					retIntr = Instruction.Create(opc, (Int64)val);
-				break;
-			case OperandType.InlineMethod: // Methode
-				if (t.IsAssignableFrom(typeof(MethodReference)))
-					retIntr = Instruction.Create(opc, (MethodReference)val);
-				break;
-			case OperandType.InlineNone: // None
-				retIntr = Instruction.Create(opc);
-				break;
-			case OperandType.InlinePhi: // ----
-				break;
-			case OperandType.InlineR: // Double
-				if (t.IsAssignableFrom(typeof(string)))
-					retIntr = Instruction.Create(opc, double.Parse((string)val));
-				else if (t.IsAssignableFrom(typeof(double)))
-					retIntr = Instruction.Create(opc, (double)val);
-				break;
-			case OperandType.InlineSig:
-				if (t.IsAssignableFrom(typeof(CallSite)))
-					retIntr = Instruction.Create(opc, (CallSite)val);
-				break;
-			case OperandType.InlineString: // String
-				if (t.IsAssignableFrom(typeof(string)))
-					retIntr = Instruction.Create(opc, (string)val);
-				break;
-			case OperandType.InlineSwitch: // Instruction[]
-				if (t == typeof(Instruction[]))
-					retIntr = Instruction.Create(opc, (Instruction[])val);
-				break;
-			case OperandType.InlineTok: // ???
-				Log.Write(Log.Level.Careful, "Fuck, a Token! I have no idea what to do with dat...");
-				break;
-			case OperandType.InlineType: // Type
-				if (t.IsAssignableFrom(typeof(TypeReference)))
-					retIntr = Instruction.Create(opc, (TypeReference)val);
-				break;
-			case OperandType.InlineVar: // (uint16) Local Variable
-				//TODO String/Int interpreter
-				if (t.IsAssignableFrom(typeof(VariableDefinition)))
-					retIntr = Instruction.Create(opc, (VariableDefinition)val);
-				break;
-			case OperandType.ShortInlineArg: // (uint8) Argument/Parameter
-				//TODO String/Int interpreter
-				if (t.IsAssignableFrom(typeof(ParameterDefinition)))
-					retIntr = Instruction.Create(opc, (ParameterDefinition)val);
-				break;
-			case OperandType.ShortInlineBrTarget:  // (int8) Instruction target
-				if (t.IsAssignableFrom(typeof(string)))
-					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-				else if (t.IsAssignableFrom(typeof(Int32)))
-					retIntr = Instruction.Create(opc, dummy); // TODO add to dummylist
-				else if (t.IsAssignableFrom(typeof(Instruction)))
-					retIntr = Instruction.Create(opc, (Instruction)val);
-				break;
-			case OperandType.ShortInlineI: // SByte
-				if (t.IsAssignableFrom(typeof(string)))
-					retIntr = Instruction.Create(opc, sbyte.Parse((string)val));
-				else if (t.IsAssignableFrom(typeof(sbyte)))
-					retIntr = Instruction.Create(opc, (sbyte)val);
-				break;
-			case OperandType.ShortInlineR: // Float
-				if (t.IsAssignableFrom(typeof(string)))
-					retIntr = Instruction.Create(opc, float.Parse((string)val));
-				else if (t.IsAssignableFrom(typeof(sbyte)))
-					retIntr = Instruction.Create(opc, (float)val);
-				break;
-			case OperandType.ShortInlineVar:// (uint8) Local Variable
-				//TODO String/Int interpreter
-				if (t.IsAssignableFrom(typeof(VariableDefinition)))
-					retIntr = Instruction.Create(opc, (VariableDefinition)val);
-				break;
-			default:
-				break;
-			}
-			return retIntr;
-		}
 
 		public static Instruction GenInstruction(OpCode opc, object val)
 		{

@@ -41,7 +41,13 @@ namespace ILPatcher
 				for (int i = 0; i < cpyBuffer.Length; i++)
 					if (cpyBuffer[i] != null) nList.Add(cpyBuffer[i]);
 			}
+			else
+			{
+				Log.Write(Log.Level.Info, "Patch <", ActionName, "> is broken and won't be executed");
+			}
 		}
+
+		//TODO: FIX Brachnes: something is broken, offsets dont work...
 
 		public override bool Save(XmlNode output)
 		{
@@ -50,40 +56,41 @@ namespace ILPatcher
 			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
 			output.Attributes[nc[SST.NAME]].Value = ActionName;
 
-			int c = instructPatchList.Count;
+			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.OldInstructionNum != -1);
 
 			XmlElement xListPatched = output.InsertCompressedElement(SST.PatchList);
 			xListPatched.CreateAttribute(SST.MethodPath, ILManager.Instance.Reference(MethodDef).ToBaseAlph());
-			xListPatched.CreateAttribute(SST.InstructionCount, c.ToString());
+			xListPatched.CreateAttribute(SST.InstructionCount, MethodDef.Body.Instructions.Count.ToString());
 
-			for (int i = 0; i < c; i++)
+			int instructionPos = 0;
+			foreach (InstructionInfo II in instructPatchList)
 			{
-				InstructionInfo II = instructPatchList[i];
 				XmlElement xInstruction = xListPatched.InsertCompressedElement(SST.Instruction);
+				II.NewInstructionNum = instructionPos++;
 
 				if (II.OldInstructionNum != -1)
 				{
 					//OldInstructionNum/OriginalInstructionNum: -1 if new command
+
 					xInstruction.CreateAttribute(SST.InstructionNum, II.OldInstructionNum.ToString());
 					xInstruction.CreateAttribute(SST.OpCode, II.OldInstruction.OpCode.Name);
 					xInstruction.CreateAttribute(SST.Delete, nc[II.Delete ? SST.True : SST.False]);
 					Operand2Node(xInstruction, II.OldInstruction, true);
 
 					XmlElement patchelem = null;
-					if (II.OldInstructionNum != II.NewInstructionNum)
+					if (II.InstructionNumPatch)
 					{
 						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
 						patchelem.CreateAttribute(SST.InstructionNum, II.NewInstructionNum.ToString());
 					}
 
-					if (II.OldInstruction.OpCode != II.NewInstruction.OpCode)
+					if (II.InstructionOpCodePatch)
 					{
 						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
 						patchelem.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
 					}
 
-					if (II.OldInstruction.OpCode.OperandType != OperandType.InlineNone &&
-						!II.OldInstruction.Operand.Equals(II.NewInstruction.Operand))
+					if (II.InstructionOperandPatch)
 					{
 						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
 						Operand2Node(patchelem, II.NewInstruction, false);
@@ -94,9 +101,9 @@ namespace ILPatcher
 				}
 				else
 				{
-					xInstruction.CreateAttribute(SST.InstructionNum, instructPatchList[i].NewInstructionNum.ToString());
-					xInstruction.CreateAttribute(SST.OpCode, instructPatchList[i].NewInstruction.OpCode.Name);
-					if (PatchStatus != PatchStatus.Broken)
+					xInstruction.CreateAttribute(SST.InstructionNum, II.NewInstructionNum.ToString());
+					xInstruction.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
+					if (PatchStatus != PatchStatus.Broken) // maby safer if == PatchStatus.WoringPerfectly 
 						Operand2Node(xInstruction, II.NewInstruction, false);
 				}
 			}
@@ -128,10 +135,9 @@ namespace ILPatcher
 			int instructioncount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
 			InstructionInfo[] iibuffer = new InstructionInfo[instructioncount];
 
-			if (MethodDef.Body.Instructions.Count < instructioncount)
+			if (MethodDef.Body.Instructions.Count != instructioncount)
 			{
-				// new method body is smaller than the old one -> patching the new assembly will not work
-
+				// new method body has changed -> patching the new assembly will not work
 				Log.Write(Log.Level.Error, "The patch script cannot be applied to the changend method"); PatchStatus = PatchStatus.Broken; return false;
 			}
 
@@ -411,11 +417,12 @@ namespace ILPatcher
 
 		//PatchInfo
 		public bool Delete = false;
-		public bool InstructionPatch
+		public bool InstructionOperandPatch
 		{
-			get { return OldInstruction.OpCode != NewInstruction.OpCode && OldInstruction.Operand != NewInstruction.Operand; }
+			get { return OldInstruction.OpCode.OperandType != OperandType.InlineNone && !OldInstruction.Operand.Equals(NewInstruction.Operand); }
 			protected set { }
 		}
+		public bool InstructionOpCodePatch { get { return OldInstruction.OpCode != NewInstruction.OpCode; } protected set { } }
 		public bool InstructionNumPatch { get { return OldInstructionNum != NewInstructionNum; } protected set { } }
 
 		//LoadInfo

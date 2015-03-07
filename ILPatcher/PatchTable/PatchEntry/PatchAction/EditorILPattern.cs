@@ -5,7 +5,6 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
-using System.Xml; // TODO TMP
 
 using Mono;
 using Mono.Cecil;
@@ -49,24 +48,14 @@ namespace ILPatcher
 				cbxOpcode.Items.Add(dn);
 		}
 
-		void mInstructBox_OnItemDropFailed(DragItem[] di)
+		private void EditorILPattern_Resize(object sender, EventArgs e)
 		{
-			OpCodeTableItem octi = di[0] as OpCodeTableItem;
-			if (octi == null)
-			{
-				Log.Write(Log.Level.Careful, "Not OCTI Type Element in List");
-				return;
-			}
-			mInstructBox.Items.Insert(octi.dragFrom, octi);
+			Controls_Reorganize();
 		}
 
-		void instructionEditor_OnItemDrop()
-		{
-			instructionEditor.AllowDrag = false;
-			loadInstructionInfo();
-		}
+		// INTERFACE *********************************************************
 
-		void chbDelete_OnChange(MCheckBox source, bool value)
+		private void chbDelete_OnChange(MCheckBox source, bool value)
 		{
 			if (mInstructBox.SelectedItems.Count <= 0)
 				BoxSetHelper(false);
@@ -77,36 +66,6 @@ namespace ILPatcher
 			}
 		}
 
-		void mInstructBox_MouseClick(object sender, MouseEventArgs e)
-		{
-			if (e.Button == MouseButtons.Right)
-			{
-				OpCodeTableItem octi = mInstructBox.SelectedElement as OpCodeTableItem;
-				if (octi == null) return;
-				contextMenuStrip1.Show(Cursor.Position);
-			}
-			else
-			{
-				instructionEditor.DragItem = mInstructBox.SelectedElement;
-				instructionEditor_OnItemDrop();
-			}
-		}
-
-		private void loadInstructionInfo()
-		{
-			OpCodeTableItem octi = instructionEditor.DragItem as OpCodeTableItem;
-			if (octi == null) return;
-			BoxSetHelper(octi.II.Delete);
-			cbxOpcode.Text = octi.II.NewInstruction.OpCode.Name;
-		}
-
-		private void BoxSetHelper(bool val)
-		{
-			chbDelete.OnChange -= chbDelete_OnChange;
-			chbDelete.ON = val;
-			chbDelete.OnChange += chbDelete_OnChange;
-		}
-
 		private void btnDone_Click(object sender, EventArgs e)
 		{
 			if (PatchAction == null)
@@ -114,17 +73,7 @@ namespace ILPatcher
 				PatchAction = new PatchActionILMethodFixed();
 				PatchAction.SetInitWorking();
 
-				int c = mInstructBox.Items.Count;
-				List<InstructionInfo> instructPatchList = new List<InstructionInfo>(c);
-
-				for (int i = 0; i < c; i++)
-				{
-					OpCodeTableItem octi = (OpCodeTableItem)mInstructBox.Items[i];
-					octi.II.NewInstructionNum = i;
-					instructPatchList.Add(octi.II);
-				}
-
-				PatchAction.instructPatchList = instructPatchList;
+				PatchAction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => ((OpCodeTableItem)x).II);
 				PatchAction.MethodDef = MetDef;
 			}
 
@@ -134,73 +83,6 @@ namespace ILPatcher
 			((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
 		}
 
-		private void MakeItemAvailable()
-		{
-			if (instructionEditor.DragItem == null)
-			{
-				InstructionInfo nII = new InstructionInfo();
-				nII.OldInstructionNum = -1;
-				nII.NewInstructionNum = -1;
-				nII.NewInstruction = ILManager.GenInstruction(OpCodes.Nop, null);
-				instructionEditor.DragItem = new OpCodeTableItem(mInstructBox, nII);
-			}
-		}
-
-		private void comboBox3_ValueChanged(object sender, EventArgs e)
-		{
-			UpdateDragItem();
-		}
-
-		private void UpdateDragItem()
-		{
-			MakeItemAvailable();
-			OpCodeTableItem ocp = instructionEditor.DragItem as OpCodeTableItem;
-			string lowtxt = cbxOpcode.Text.ToLower();
-			if (ILManager.OpCodeLookup.ContainsKey(lowtxt))
-				ocp.II.NewInstruction.OpCode = ILManager.OpCodeLookup[lowtxt];
-			else
-				ocp.II.NewInstruction.OpCode = OpCodes.Nop;
-
-			instructionEditor.Invalidate();
-			mInstructBox.InvalidateChildren();
-		}
-
-		private void ShowInput(InputType inpt)
-		{
-			foreach (Control c in OperandCList)
-				c.Visible = false;
-			switch (inpt)
-			{
-			case InputType.None:
-				break;
-			case InputType.Box:
-				txtOperand.Visible = true;
-				break;
-			case InputType.IntructList:
-				lblwip.Visible = true;
-				break;
-			case InputType.VarList:
-				lblwip.Visible = true;
-				break;
-			case InputType.ParamList:
-				lblwip.Visible = true;
-				break;
-			case InputType.FieldList:
-				lblwip.Visible = true;
-				break;
-			case InputType.MethodList:
-				lblwip.Visible = true;
-				break;
-			case InputType.TypeList:
-				lblwip.Visible = true;
-				break;
-			default:
-				lblwip.Visible = true;
-				break;
-			}
-			Controls_Reorganize();
-		}
-
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
 			if (btn1MultiPicker == null || btn1MultiPicker.IsDisposed)
@@ -208,35 +90,16 @@ namespace ILPatcher
 			btn1MultiPicker.Show();
 		}
 
-		public void LoadMetDef(MethodDefinition MetDef)
-		{
-			mInstructBox.ClearItems();
-
-			PatchAction = null;
-
-			txtMethodFullName.Text = MetDef.FullName;
-			this.MetDef = MetDef;
-			for (int i = 0; i < MetDef.Body.Instructions.Count; i++)
-			{
-				InstructionInfo nII = new InstructionInfo();
-				nII.OldInstruction = MetDef.Body.Instructions[i];
-				nII.NewInstruction = nII.OldInstruction.Clone();
-				nII.OldInstructionNum = i;
-				nII.NewInstructionNum = i;
-				mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, nII));
-			}
-		}
-
 		private void btnCancel_Click(object sender, EventArgs e)
 		{
-
+			// TODO ^^
 		}
 
 		private void btnDebug_Click(object sender, EventArgs e)
 		{
-			XmlDocument xDoc = MainPanel.ReadFromFile("testEntry.xml");
+			System.Xml.XmlDocument xDoc = MainPanel.ReadFromFile("testEntry.xml");
 			PatchAction = new PatchActionILMethodFixed();
-			foreach (XmlNode xNode in xDoc.ChildNodes)
+			foreach (System.Xml.XmlNode xNode in xDoc.ChildNodes)
 			{
 				if (xNode.Name == "PatchAction")
 				{
@@ -286,22 +149,21 @@ namespace ILPatcher
 			}
 		}
 
-		private void EditorILPattern_Resize(object sender, EventArgs e)
+		private void btnNewOpCode_Click(object sender, EventArgs e)
 		{
-			Controls_Reorganize();
+			instructionEditor.DragItem = null;
+			instructionEditor.AllowDrag = true;
+			cbxOpcode.Text = string.Empty;
+			MakeItemAvailable();
 		}
 
-		public void LoadPatchAction(PatchActionILMethodFixed loadpa)
+		// INTERFACE TOOLS ***************************************************
+
+		private void BoxSetHelper(bool val)
 		{
-			mInstructBox.ClearItems();
-
-			PatchAction = loadpa;
-			MetDef = loadpa.MethodDef;
-			txtPatchActionName.Text = loadpa.ActionName;
-
-			if (loadpa.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", loadpa.ActionName, " is not initialized correctly"); return; }
-
-			PatchAction.instructPatchList.ForEach((instr) => { mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, instr)); });
+			chbDelete.OnChange -= chbDelete_OnChange;
+			chbDelete.ON = val;
+			chbDelete.OnChange += chbDelete_OnChange;
 		}
 
 		private void Controls_Reorganize()
@@ -352,13 +214,151 @@ namespace ILPatcher
 			instructionEditor.Invalidate();
 		}
 
-		private void btnNewOpCode_Click(object sender, EventArgs e)
+		// DRAG N DROP *******************************************************
+
+		void mInstructBox_OnItemDropFailed(DragItem[] di)
 		{
-			instructionEditor.DragItem = null;
-			instructionEditor.AllowDrag = true;
-			cbxOpcode.Text = string.Empty;
-			MakeItemAvailable();
+			OpCodeTableItem octi = di[0] as OpCodeTableItem;
+			if (octi == null)
+			{
+				Log.Write(Log.Level.Careful, "Not OCTI Type Element in List");
+				return;
+			}
+			mInstructBox.Items.Insert(octi.dragFrom, octi);
 		}
+
+		void instructionEditor_OnItemDrop()
+		{
+			instructionEditor.AllowDrag = false;
+			loadInstructionInfo();
+		}
+
+		void mInstructBox_MouseClick(object sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Right)
+			{
+				OpCodeTableItem octi = mInstructBox.SelectedElement as OpCodeTableItem;
+				if (octi == null) return;
+				contextMenuStrip1.Show(Cursor.Position);
+			}
+			else
+			{
+				instructionEditor.DragItem = mInstructBox.SelectedElement;
+				instructionEditor_OnItemDrop();
+			}
+		}
+
+		private void MakeItemAvailable()
+		{
+			if (instructionEditor.DragItem == null)
+			{
+				InstructionInfo nII = new InstructionInfo();
+				nII.OldInstructionNum = -1;
+				nII.NewInstructionNum = -1;
+				nII.NewInstruction = ILManager.GenInstruction(OpCodes.Nop, null);
+				instructionEditor.DragItem = new OpCodeTableItem(mInstructBox, nII);
+			}
+		}
+
+		// LOAD METHODS ******************************************************
+
+		public void LoadPatchAction(PatchActionILMethodFixed loadpa)
+		{
+			mInstructBox.ClearItems();
+
+			PatchAction = loadpa;
+			MetDef = loadpa.MethodDef;
+			txtPatchActionName.Text = loadpa.ActionName;
+
+			if (loadpa.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", loadpa.ActionName, " is not initialized correctly"); return; }
+
+			PatchAction.instructPatchList.ForEach((instr) => { mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, instr)); });
+		}
+
+		public void LoadMetDef(MethodDefinition MetDef)
+		{
+			mInstructBox.ClearItems();
+
+			PatchAction = null;
+
+			txtMethodFullName.Text = MetDef.FullName;
+			this.MetDef = MetDef;
+			for (int i = 0; i < MetDef.Body.Instructions.Count; i++)
+			{
+				InstructionInfo nII = new InstructionInfo();
+				nII.OldInstruction = MetDef.Body.Instructions[i];
+				nII.NewInstruction = nII.OldInstruction.Clone();
+				nII.OldInstructionNum = i;
+				nII.NewInstructionNum = i;
+				mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, nII));
+			}
+		}
+
+		// OPERAND TOOLS *****************************************************
+
+		private void loadInstructionInfo()
+		{
+			OpCodeTableItem octi = instructionEditor.DragItem as OpCodeTableItem;
+			if (octi == null) return;
+			BoxSetHelper(octi.II.Delete);
+			cbxOpcode.Text = octi.II.NewInstruction.OpCode.Name;
+		}
+
+		private void UpdateDragItem()
+		{
+			MakeItemAvailable();
+			OpCodeTableItem ocp = instructionEditor.DragItem as OpCodeTableItem;
+			string lowtxt = cbxOpcode.Text.ToLower();
+			if (ILManager.OpCodeLookup.ContainsKey(lowtxt))
+				ocp.II.NewInstruction.OpCode = ILManager.OpCodeLookup[lowtxt];
+			else
+				ocp.II.NewInstruction.OpCode = OpCodes.Nop;
+
+			instructionEditor.Invalidate();
+			mInstructBox.InvalidateChildren();
+		}
+
+		private void comboBox3_ValueChanged(object sender, EventArgs e)
+		{
+			UpdateDragItem();
+		}
+
+		private void ShowInput(InputType inpt)
+		{
+			foreach (Control c in OperandCList)
+				c.Visible = false;
+			switch (inpt)
+			{
+			case InputType.None:
+				break;
+			case InputType.Box:
+				txtOperand.Visible = true;
+				break;
+			case InputType.IntructList:
+				lblwip.Visible = true;
+				break;
+			case InputType.VarList:
+				lblwip.Visible = true;
+				break;
+			case InputType.ParamList:
+				lblwip.Visible = true;
+				break;
+			case InputType.FieldList:
+				lblwip.Visible = true;
+				break;
+			case InputType.MethodList:
+				lblwip.Visible = true;
+				break;
+			case InputType.TypeList:
+				lblwip.Visible = true;
+				break;
+			default:
+				lblwip.Visible = true;
+				break;
+			}
+			Controls_Reorganize();
+		}
+
 	}
 
 	public enum PickOperandType

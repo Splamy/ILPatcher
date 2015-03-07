@@ -80,7 +80,7 @@ namespace ILPatcher
 			{
 				txtPatchEntryName.Text = loadpe.EntryName;
 				foreach (PatchAction pa in loadpe.ActionList)
-					mEntryList.AddItem(pa.ActionName);
+					mEntryList.AddItem(pa.DisplayName);
 			}
 			mEntryList.InvalidateChildren();
 		}
