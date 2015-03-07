@@ -33,7 +33,6 @@
 			this.clbPatchList = new System.Windows.Forms.CheckedListBox();
 			this.tabInfoControl = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
-			this.structureViever1 = new ILPatcher.StructureViewer();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this.rtbInfo = new System.Windows.Forms.TextBox();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
@@ -47,6 +46,7 @@
 			this.btnExecutePatches = new System.Windows.Forms.Button();
 			this.mLoading = new MetroObjects.MLoadingCircle();
 			this.btnEditPatch = new System.Windows.Forms.Button();
+			this.structureViever1 = new ILPatcher.StructureViewer();
 			this.tabInfoControl.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -100,17 +100,6 @@
 			this.tabPage1.Text = "Assemblylist";
 			this.tabPage1.UseVisualStyleBackColor = true;
 			// 
-			// structureViever1
-			// 
-			this.structureViever1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.structureViever1.ImageIndex = 0;
-			this.structureViever1.Location = new System.Drawing.Point(3, 3);
-			this.structureViever1.Name = "structureViever1";
-			this.structureViever1.PathSeparator = ".";
-			this.structureViever1.SelectedImageIndex = 0;
-			this.structureViever1.Size = new System.Drawing.Size(283, 330);
-			this.structureViever1.TabIndex = 0;
-			// 
 			// tabPage2
 			// 
 			this.tabPage2.Controls.Add(this.rtbInfo);
@@ -143,6 +132,7 @@
 			// 
 			// lbxErrors
 			// 
+			this.lbxErrors.AllowDrag = false;
 			this.lbxErrors.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.lbxErrors.Location = new System.Drawing.Point(0, 0);
 			this.lbxErrors.MinimumSize = new System.Drawing.Size(50, 50);
@@ -272,6 +262,17 @@
 			this.btnEditPatch.Text = "edit ILPatch";
 			this.btnEditPatch.UseVisualStyleBackColor = false;
 			this.btnEditPatch.Click += new System.EventHandler(this.btnEditPatch_Click);
+			// 
+			// structureViever1
+			// 
+			this.structureViever1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.structureViever1.ImageIndex = 0;
+			this.structureViever1.Location = new System.Drawing.Point(3, 3);
+			this.structureViever1.Name = "structureViever1";
+			this.structureViever1.PathSeparator = ".";
+			this.structureViever1.SelectedImageIndex = 0;
+			this.structureViever1.Size = new System.Drawing.Size(283, 330);
+			this.structureViever1.TabIndex = 0;
 			// 
 			// MainPanel
 			// 

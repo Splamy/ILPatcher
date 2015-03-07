@@ -84,10 +84,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PatchTable\PatchQuestionWindow.cs">
+    <Compile Include="GeneralInterface\PatchQuestionWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PatchTable\PatchQuestionWindow.Designer.cs">
+    <Compile Include="GeneralInterface\PatchQuestionWindow.Designer.cs">
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Utility\AnyArray.cs" />
@@ -158,7 +158,7 @@
     <EmbeddedResource Include="GeneralInterface\MultiPicker.resx">
       <DependentUpon>MultiPicker.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PatchTable\PatchQuestionWindow.resx">
+    <EmbeddedResource Include="GeneralInterface\PatchQuestionWindow.resx">
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

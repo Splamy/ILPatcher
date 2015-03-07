@@ -162,6 +162,7 @@ namespace ILPatcher
 
 		private void button3_Click(object sender, EventArgs e)
 		{
+			// TODO: make stf dialog
 			NameCompressor.Compress = false;
 			XmlDocument xDoc = new XmlDocument();
 			tablemgr.Save(xDoc);

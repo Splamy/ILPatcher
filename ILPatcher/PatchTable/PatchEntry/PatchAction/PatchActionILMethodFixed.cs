@@ -172,9 +172,9 @@ namespace ILPatcher
 					if (checkprimitives) // 3 cases >> Old:PV // New:PV_same | New:PV_change | New:AnyVal
 					{
 						XmlAttribute xprim = xelem.Attributes[nc[SST.PrimitiveValue]];
-						if (xprim != null && nII.NewInstructionNum < MethodDef.Body.Instructions.Count)
+						if (xprim != null && nII.OldInstructionNum < MethodDef.Body.Instructions.Count)
 						{
-							Operand2Node(xDummy, MethodDef.Body.Instructions[nII.NewInstructionNum], false);
+							Operand2Node(xDummy, MethodDef.Body.Instructions[nII.OldInstructionNum], false);
 
 							XmlAttribute xprimcmp = xDummy.Attributes[nc[SST.PrimitiveValue]];
 							nII.PrimitiveMismatch = xprimcmp == null || xprimcmp.Value != xprim.Value;

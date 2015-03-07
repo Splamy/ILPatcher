@@ -18,13 +18,13 @@ namespace ILPatcher
 		public InstructionInfo II;
 		private MListBox parent;
 		public int dragFrom = -1;
-		private static HatchBrush _hbrMismatch = null;
-		private static HatchBrush hbrMismatch
+		private static Brush _hbrMismatch = null;
+		private static Brush hbrMismatch
 		{
 			get
 			{
 				if (_hbrMismatch == null)
-					_hbrMismatch = new HatchBrush(HatchStyle.Percent10, Color.Yellow, Color.Transparent);
+					_hbrMismatch = new SolidBrush(Color.Orange); //HatchBrush(HatchStyle.Percent10, Color.Yellow, Color.Transparent);
 				return _hbrMismatch;
 			}
 			set { }
@@ -74,16 +74,15 @@ namespace ILPatcher
 			bool unchangedOpcode = (II.OldInstruction == null) || (II.OldInstruction.OpCode == II.NewInstruction.OpCode);
 			g.DrawString(II.NewInstruction.OpCode.Name, Font, unchangedOpcode ? Brushes.Black : Brushes.Red, split + 2, rec.Top + 1);
 			g.DrawLine(Pens.Black, 100, rec.Top, 100, rec.Bottom);
+			if (II.OperandMismatch)
+			{
+				//_hbrMismatch = new HatchBrush(HatchStyle.Percent25, Color.Orange, Color.Transparent);
+				g.FillRectangle(hbrMismatch, 102, rec.Top, rec.Right - 102, Height);
+			}
 			if (II.NewInstruction.Operand == null)
 				g.DrawString("-", Font, Brushes.Black, 102, rec.Top + 1);
 			else
-				g.DrawString(II.NewInstruction.Operand.ToString(), Font, Brushes.Black, 102, rec.Top + 1);
-			if (II.OperandMismatch)
-			{
-				_hbrMismatch = new HatchBrush(HatchStyle.Percent25, Color.Orange , Color.Transparent);
-				g.FillRectangle(hbrMismatch, 102, rec.Top, rec.Right - 102, Height);
-			}
-
+				g.DrawString(II.NewInstruction.Operand.GetType().Name + " " + II.NewInstruction.Operand.ToString(), Font, Brushes.Black, 102, rec.Top + 1);
 		}
 
 		public override void RefreshHeight(System.Drawing.Graphics g, int nWidth)

@@ -85,7 +85,7 @@ namespace ILPatcher
 					if (oi.resolved)
 						Reference(((ParameterReference)oi.operand).ParameterType);
 					else
-						Log.Write(Log.Level.Info, "ParameterDef/Ref cannot be raw saved");
+						Log.Write(Log.Level.Error, "ParameterDef/Ref cannot be raw saved");
 					break;
 				case OperandInfoT.MethodDefinition:
 				case OperandInfoT.MethodReference:
@@ -214,7 +214,7 @@ namespace ILPatcher
 				xElem.CreateAttribute(SST.NESTEDIN, Reference(tr.DeclaringType).ToBaseAlph());
 			else
 			{
-				xElem.CreateAttribute(SST.MODULE, tr.Module.Name);
+				xElem.CreateAttribute(SST.MODULE, tr.Scope.Name);
 				if (!tr.IsGenericParameter)
 					xElem.CreateAttribute(SST.NAMESPACE, tr.Namespace);
 			}
@@ -288,7 +288,7 @@ namespace ILPatcher
 						oi.oit = OperandInfoT.TypeReference;
 					else // CalliSite
 					{
-						//Log.Write("Unknown Resolving Node: ", xElem.Name);
+						Log.Write(Log.Level.Error, "Unknown Resolving Node: ", xElem.Name);
 						continue;
 					}
 					oi.rawData = xItem as XmlElement;
@@ -310,181 +310,198 @@ namespace ILPatcher
 
 			// TODO get generic parameters, written in ToBaseAlph() = (a, b, c...)
 
-			#region MetRef
 			if (oi.oit == OperandInfoT.MethodReference)
-			{
-				//generics here
-
-				//generic return
-				//beginswith !
-
-				string name = xDataNode.GetAttribute(SST.NAME);
-				string type = xDataNode.GetAttribute(SST.TYPE);
-
-				if (name == string.Empty || type == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name or Parenttype"); return null; }
-
-				TypeDefinition typdef = Resolve(type.ToBaseInt()) as TypeDefinition;
-				if (typdef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, name, "-Type coudn't be resolved"); return null; }
-
-				foreach (MethodReference metdef in typdef.Methods)
-				{
-					if (metdef.Name == name)
-					{
-						Type t = metdef.GetType();
-						if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
-						oi.operand = metdef;
-						oi.Status = ResolveStatus.Resolved;
-						return metdef;
-					}
-				}
-
-				Log.Write(Log.Level.Error, "MethodDefinition ", name, " coundn't be found in Type ", typdef.Name);
-				return null;
-			}
-			#endregion
-			// FldRef seems to be done!
-			#region FldRef
+				return ResMElement(oi);
 			else if (oi.oit == OperandInfoT.FieldReference)
-			{
-				string FieldType = xDataNode.GetAttribute(SST.TYPE);
-				string Name = xDataNode.GetAttribute(SST.NAME);
-				string DeclaringType = xDataNode.GetAttribute(SST.TYPE);
-
-				if (FieldType == string.Empty || Name == string.Empty || DeclaringType == string.Empty)
-				{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No FieldType/Name/DeclaringType"); }
-
-				TypeReference TypDefFT = Resolve(FieldType.ToBaseInt()) as TypeReference;
-				if (TypDefFT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "FieldType not found ", FieldType); return null; }
-
-				TypeDefinition TypDefDT = Resolve(DeclaringType.ToBaseInt()) as TypeDefinition;
-				if (TypDefDT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "DeclaringType not found ", DeclaringType); return null; }
-
-				foreach (FieldDefinition field in TypDefDT.Fields)
-				{
-					if (field.Name == Name && field.FieldType == TypDefFT)
-					{
-						Type t = field.GetType();
-						if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
-						oi.operand = field;
-						oi.Status = ResolveStatus.Resolved;
-						return field;
-					}
-				}
-				Log.Write(Log.Level.Error, "FieldDefinition ", Name, " coundn't be found in Type ", DeclaringType);
-			}
-			#endregion
-			#region TypRef
+				return ResFElement(oi);
 			else if (oi.oit == OperandInfoT.TypeReference)
+				return ResTElement(oi);
+
+			Log.Write(Log.Level.Error, "Resolve element ", idNum.ToString(), " is failed init.");
+			oi.Status = ResolveStatus.ReferenceNotFound;
+			return null;
+		}
+
+		public object ResMElement(OperandInfo oi)
+		{
+			XmlElement xDataNode = oi.rawData;
+
+			//generics here
+
+			//generic return
+			//beginswith !
+
+			string name = xDataNode.GetAttribute(SST.NAME);
+			string type = xDataNode.GetAttribute(SST.TYPE);
+
+			if (name == string.Empty || type == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name or Parenttype"); return null; }
+
+			TypeDefinition typdef = Resolve(type.ToBaseInt()) as TypeDefinition;
+			if (typdef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, name, "-Type couldn't be resolved"); return null; }
+
+			foreach (MethodReference metdef in typdef.Methods)
 			{
-				Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
-
-				string name = xDataNode.GetAttribute(SST.TYPE); // change to name
-				if (name == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
-
-				// 1] search in
-				#region search_in
-				string nestedin = xDataNode.GetAttribute(SST.NESTEDIN);
-				if (nestedin == string.Empty) // type is module subtype
+				if (metdef.Name == name)
 				{
-					string module = xDataNode.GetAttribute(SST.MODULE);
-					if (module == string.Empty) { oi.Status = ResolveStatus.SaveFileError; return null; }
-
-					string namesp = xDataNode.GetAttribute(SST.NAMESPACE);
-					if (namesp == string.Empty) Log.Write(Log.Level.Careful, "No Namespace defined! Will use first matching Item(!)");
-
-					ModuleDefinition ModDef = null;
-					if (MainPanel.AssemblyDef.MainModule.Name == module)
-						ModDef = MainPanel.AssemblyDef.MainModule;
-					else
-					{
-						try
-						{
-							AssemblyDefinition AssDef = MainPanel.AssemblyDef.MainModule.AssemblyResolver.Resolve(namesp); // fix if ns not found
-							foreach (ModuleDefinition moddef in AssDef.Modules)
-								if (moddef.Name == module)
-								{
-									ModDef = moddef;
-									break;
-								}
-							if (ModDef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "ModuleDefinition not found ", module); return null; }
-						}
-						catch
-						{
-							oi.Status = ResolveStatus.ReferenceNotFound;
-							Log.Write(Log.Level.Error, "An Assembly with the Namespace ", namesp, " couldn't be found");
-							return null;
-						}
-					}
-
-					searchCollection = ModDef.Types;
+					Type t = metdef.GetType();
+					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " couldn't found"); }
+					oi.operand = metdef;
+					oi.Status = ResolveStatus.Resolved;
+					return metdef;
 				}
-				else // type is nested
-				{
-					TypeDefinition nestintyp = Resolve(nestedin.ToBaseInt()) as TypeDefinition;
-					if (nestintyp == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "Nestparent not found ", nestedin); return null; }
+			}
 
-					searchCollection = nestintyp.NestedTypes;
+			Log.Write(Log.Level.Error, "MethodDefinition ", name, " couldn't be found in Type ", typdef.Name);
+			return null;
+		}
+
+		// FldRef seems to be done!
+		public object ResFElement(OperandInfo oi)
+		{
+			XmlElement xDataNode = oi.rawData;
+
+			string FieldType = xDataNode.GetAttribute(SST.TYPE);
+			string Name = xDataNode.GetAttribute(SST.NAME);
+			string DeclaringType = xDataNode.GetAttribute(SST.TYPE);
+
+			if (FieldType == string.Empty || Name == string.Empty || DeclaringType == string.Empty)
+			{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No FieldType/Name/DeclaringType"); }
+
+			TypeReference TypDefFT = Resolve(FieldType.ToBaseInt()) as TypeReference;
+			if (TypDefFT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "FieldType not found ", FieldType); return null; }
+
+			TypeDefinition TypDefDT = Resolve(DeclaringType.ToBaseInt()) as TypeDefinition;
+			if (TypDefDT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "DeclaringType not found ", DeclaringType); return null; }
+
+			foreach (FieldDefinition field in TypDefDT.Fields)
+			{
+				if (field.Name == Name && field.FieldType == TypDefFT)
+				{
+					Type t = field.GetType();
+					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
+					oi.operand = field;
+					oi.Status = ResolveStatus.Resolved;
+					return field;
 				}
-				#endregion
+			}
 
-				// 2] search further generics (and deref)
-				#region search_generics
-				AnyArray<string> values = new AnyArray<string>();
-				bool attok = true;
-				int attcnt = 0;
-				while (attok) // gibt alle tobasseaplh zahlen des nodes in die strlist aus;
-				{
-					string tmpstr = xDataNode.GetAttribute(attcnt.ToBaseAlph());
-					if (tmpstr != string.Empty)
-					{
-						values[attcnt] = tmpstr;
-						attcnt++;
-					}
-					else
-						attok = false;
-				}
-				#endregion
+			Log.Write(Log.Level.Error, "FieldDefinition ", Name, " coundn't be found in Type ", DeclaringType);
+			return null;
+		}
 
-				// 3] compare
-				#region compare
-				foreach (TypeDefinition typdef in searchCollection)
+		public object ResTElement(OperandInfo oi)
+		{
+			XmlElement xDataNode = oi.rawData;
+
+			Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
+
+			string name = xDataNode.GetAttribute(SST.TYPE); // change to name
+			if (name == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
+
+			// 1] search in
+			#region search_in
+			string nestedin = xDataNode.GetAttribute(SST.NESTEDIN);
+			if (nestedin == string.Empty) // type is module subtype
+			{
+				string module = xDataNode.GetAttribute(SST.MODULE);
+				if (module == string.Empty) { oi.Status = ResolveStatus.SaveFileError; return null; }
+
+				string namesp = xDataNode.GetAttribute(SST.NAMESPACE);
+				if (namesp == string.Empty) Log.Write(Log.Level.Careful, "No Namespace defined! Will use first matching Item(!)");
+
+				ModuleDefinition ModDef = null;
+				if (MainPanel.AssemblyDef.MainModule.Name == module)
+					ModDef = MainPanel.AssemblyDef.MainModule;
+				else
 				{
-					//GenericInstanceType git;
-					if (values.Length > 0)
+					try
 					{
-						// todo somehow get generic instance types
-						//git = typdef as GenericInstanceType;
-						//if(git == null) continue;
-					}
-					if (typdef.Name == name)
-					{
-						bool TheTypeFulfillsMyDemands = true;
-						for (int i = 0; i < values.Length; i++)
-						{
-							if (values[i].StartsWith("!"))
+						// fix if ns not found
+						foreach (AssemblyNameReference anr in MainPanel.AssemblyDef.MainModule.AssemblyReferences)
+							if (anr.Name == module)
 							{
-								//if(values[i] == typdef.ge)
+								AssemblyDefinition AssDef = MainPanel.AssemblyDef.MainModule.AssemblyResolver.Resolve(anr);
+								ModDef = AssDef.MainModule;
+								break;
 							}
-							else
-							{
-
-							}
-						}
-						if (!TheTypeFulfillsMyDemands) continue;
-
-						Type t = typdef.GetType();
-						if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
-						oi.operand = typdef;
-						oi.Status = ResolveStatus.Resolved;
-						return typdef;
+						if (ModDef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "ModuleDefinition not found ", module); return null; }
 					}
-					Log.Write(Log.Level.Error, "TypeDefinition ", name, " coundn't be found in the Module");
+					catch
+					{
+						oi.Status = ResolveStatus.ReferenceNotFound;
+						Log.Write(Log.Level.Error, "An Assembly with the Namespace ", namesp, " couldn't be found");
+						return null;
+					}
 				}
-				#endregion
+
+				searchCollection = ModDef.Types;
+			}
+			else // type is nested
+			{
+				TypeDefinition nestintyp = Resolve(nestedin.ToBaseInt()) as TypeDefinition;
+				if (nestintyp == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "Nestparent not found ", nestedin); return null; }
+
+				searchCollection = nestintyp.NestedTypes;
 			}
 			#endregion
 
-			oi.Status = ResolveStatus.ReferenceNotFound;
+			// 2] search further generics (and deref)
+			#region search_generics
+			AnyArray<string> values = new AnyArray<string>();
+			bool attok = true;
+			int attcnt = 0;
+			while (attok) // gibt alle tobasseaplh zahlen des nodes in die strlist aus;
+			{
+				string tmpstr = xDataNode.GetAttribute(attcnt.ToBaseAlph());
+				if (tmpstr != string.Empty)
+				{
+					values[attcnt] = tmpstr;
+					attcnt++;
+				}
+				else
+					attok = false;
+			}
+			#endregion
+
+			// 3] compare
+			#region compare
+			foreach (TypeDefinition typdef in searchCollection)
+			{
+				//GenericInstanceType git = new GenericInstanceType()
+
+				GenericInstanceType git = null;
+				if (values.Length > 0)
+				{
+					// todo somehow get generic instance types
+					//git = typdef as GenericInstanceType;
+					if (git == null) continue;
+				}
+				if (typdef.Name == name)
+				{
+					bool TheTypeFulfillsMyDemands = true;
+					for (int i = 0; i < values.Length; i++)
+					{
+						if (values[i].StartsWith("!"))
+						{
+							//if(values[i] == typdef.ge)
+						}
+						else
+						{
+
+						}
+					}
+					if (!TheTypeFulfillsMyDemands) continue;
+
+					Type t = typdef.GetType();
+					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
+					oi.operand = typdef;
+					oi.Status = ResolveStatus.Resolved;
+					return typdef;
+				}
+			}
+			#endregion
+
+			Log.Write(Log.Level.Error, "TypeDefinition ", name, " coundn't be found in the Module");
 			return null;
 		}
 

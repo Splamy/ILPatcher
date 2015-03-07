@@ -41,7 +41,7 @@ namespace ILPatcher
 				return res.Value;
 			else
 			{
-				Log.Write(Log.Level.Warning, "Warning: Attribute (", name.ToString(), ") not found in ", xelem.Name);
+				Log.Write(Log.Level.Warning, "Attribute (", name.ToString(), ") not found in ", xelem.Name);
 				return string.Empty;
 			}
 		}
