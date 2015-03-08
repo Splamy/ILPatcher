@@ -66,7 +66,7 @@ namespace ILPatcher
 			foreach (InstructionInfo II in instructPatchList)
 			{
 				XmlElement xInstruction = xListPatched.InsertCompressedElement(SST.Instruction);
-				II.NewInstructionNum = instructionPos++;
+				II.NewInstructionNum = instructionPos;
 
 				if (II.OldInstructionNum != -1)
 				{
@@ -75,6 +75,7 @@ namespace ILPatcher
 					xInstruction.CreateAttribute(SST.InstructionNum, II.OldInstructionNum.ToString());
 					xInstruction.CreateAttribute(SST.OpCode, II.OldInstruction.OpCode.Name);
 					xInstruction.CreateAttribute(SST.Delete, nc[II.Delete ? SST.True : SST.False]);
+					if (!II.Delete) instructionPos++;
 					Operand2Node(xInstruction, II.OldInstruction, true);
 
 					XmlElement patchelem = null;
@@ -105,6 +106,7 @@ namespace ILPatcher
 					xInstruction.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
 					if (PatchStatus != PatchStatus.Broken) // maby safer if == PatchStatus.WoringPerfectly 
 						Operand2Node(xInstruction, II.NewInstruction, false);
+					instructionPos++;
 				}
 			}
 

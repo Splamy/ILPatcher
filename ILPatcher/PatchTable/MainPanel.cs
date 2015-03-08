@@ -266,6 +266,7 @@ namespace ILPatcher
 			if (openIlp.ShowDialog() == DialogResult.OK)
 			{
 				ilpFiletmp = openIlp.FileName;
+				txtilpFile.Text = ilpFiletmp;
 				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
 					LoadIlpFile(openIlp.FileName);
 				else
@@ -277,7 +278,6 @@ namespace ILPatcher
 		{
 			//mLoading.ON = true;
 			XmlDocument xDoc = ReadFromFile(filename);
-			txtilpFile.Text = filename;
 			if (tablemgr == null) // TODO tableMgr clear
 				tablemgr = new TableManager();
 			XmlNode BaseNode = null;

@@ -51,7 +51,7 @@ namespace ILPatcher
 				else
 				{
 					T[] tmp;
-					if (size - max < 10) // make some tests, im sleepy
+					if (size - max < 10) //TODO: make some tests, im sleepy
 						tmp = new T[max + 10];
 					else
 						tmp = new T[size];

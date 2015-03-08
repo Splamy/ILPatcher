@@ -42,7 +42,7 @@ namespace ILPatcher
 		public override void Draw(System.Drawing.Graphics g, System.Drawing.RectangleF rec)
 		{
 #if DEBUG
-			//This severe Problem shouldn't be happening in Release
+			//This severe Problem shouldn't happen in Release
 			if (II.NewInstruction == null)
 			{
 				Log.Write(Log.Level.Error, "NewInstruction is null!");
@@ -52,14 +52,11 @@ namespace ILPatcher
 			int split = (int)g.MeasureString("999>999", Font).Width;
 			RefreshHeight(g, (int)rec.Width);
 
-			int tmpinstrnum = parent.Items.IndexOf(this);
-			if (tmpinstrnum == -1 && II.NewInstructionNum != -1)
-				dragFrom = II.NewInstructionNum;
-			II.NewInstructionNum = tmpinstrnum;
-
-			if (II.NewInstructionNum == -1)
+			if (II.Delete)
+				g.DrawString(II.OldInstructionNum + ">X", Font, Brushes.Black, rec.Left, rec.Top + 1);
+			else if (II.NewInstructionNum == -1)
 				g.DrawString("(" + dragFrom + ")", Font, Brushes.Black, rec.Left, rec.Top + 1);
-			else if (II.OldInstructionNum != -1 && II.OldInstructionNum != II.NewInstructionNum)
+			else if (II.OldInstructionNum != -1 && II.InstructionNumPatch)
 				g.DrawString(II.OldInstructionNum + ">" + II.NewInstructionNum, Font, Brushes.Black, rec.Left, rec.Top + 1);
 			else if (II.OldInstructionNum == -1)
 				g.DrawString("=" + II.NewInstructionNum.ToString(), Font, Brushes.Black, rec.Left, rec.Top + 1);

@@ -50,7 +50,8 @@ namespace ILPatcher
 		private bool TookElement;
 		private Point offset;
 
-		public event InspectorHolderDrop OnItemDrop;
+		public event ItemDropEvent OnItemDropSuccess;
+		public event ItemDropEvent OnItemDropFailed;
 
 		public InspectorHolder()
 		{
@@ -65,8 +66,8 @@ namespace ILPatcher
 			if (!AllowDrop) return false;
 
 			di = lbe[0];
-			if (OnItemDrop != null)
-				OnItemDrop();
+			if (OnItemDropSuccess != null)
+				OnItemDropSuccess(lbe);
 			Invalidate();
 			return true;
 		}
@@ -130,9 +131,10 @@ namespace ILPatcher
 
 		public void OnItemDropFailedReceiver(DragItem[] di)
 		{
-			DragItem = di[0];
+			if (OnItemDropFailed != null) // when special method should be called in case of fail
+				OnItemDropFailed(di);
+			else // otherwise just return the item where it was :)
+				DragItem = di[0];
 		}
 	}
-
-	public delegate void InspectorHolderDrop();
 }

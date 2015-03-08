@@ -40,8 +40,9 @@ namespace ILPatcher
 
 			mInstructBox.MouseClick += mInstructBox_MouseClick;
 			chbDelete.OnChange += chbDelete_OnChange;
-			instructionEditor.OnItemDrop += instructionEditor_OnItemDrop;
+			instructionEditor.OnItemDropSuccess += instructionEditor_OnItemDropSuccess;
 			mInstructBox.OnItemDropFailed += mInstructBox_OnItemDropFailed;
+			mInstructBox.OnItemDropSuccess += mInstructBox_OnItemDropSuccess;
 			OperandCList = new Control[] { txtOperand, cbxOperand, lblwip };
 
 			foreach (string dn in ILManager.OpCodeLookup.Keys)
@@ -62,7 +63,7 @@ namespace ILPatcher
 			else
 			{
 				mInstructBox.SelectedItems.ForEach(x => ((OpCodeTableItem)x).II.Delete = value);
-				mInstructBox.InvalidateChildren();
+				RefershInstructionList();
 			}
 		}
 
@@ -224,10 +225,22 @@ namespace ILPatcher
 				Log.Write(Log.Level.Careful, "Not OCTI Type Element in List");
 				return;
 			}
-			mInstructBox.Items.Insert(octi.dragFrom, octi);
+			if (octi.dragFrom == -1)
+			{
+				Log.Write(Log.Level.Warning, "OCTI Drag start was saved wrongly");
+				mInstructBox.Items.Insert(0, octi);
+			}
+			else
+				mInstructBox.Items.Insert(octi.dragFrom, octi);
+			RefershInstructionList();
 		}
 
-		void instructionEditor_OnItemDrop()
+		void mInstructBox_OnItemDropSuccess(DragItem[] di)
+		{
+			RefershInstructionList();
+		}
+
+		void instructionEditor_OnItemDropSuccess(DragItem[] di)
 		{
 			instructionEditor.AllowDrag = false;
 			loadInstructionInfo();
@@ -244,7 +257,7 @@ namespace ILPatcher
 			else
 			{
 				instructionEditor.DragItem = mInstructBox.SelectedElement;
-				instructionEditor_OnItemDrop();
+				instructionEditor_OnItemDropSuccess(null);
 			}
 		}
 
@@ -258,6 +271,20 @@ namespace ILPatcher
 				nII.NewInstruction = ILManager.GenInstruction(OpCodes.Nop, null);
 				instructionEditor.DragItem = new OpCodeTableItem(mInstructBox, nII);
 			}
+		}
+
+		private void RefershInstructionList()
+		{
+			int pos = 0;
+			foreach (DragItem di in mInstructBox.Items)
+			{
+				InstructionInfo II = (di as OpCodeTableItem).II;
+				if (II.Delete)
+					II.NewInstructionNum = -1;
+				else
+					II.NewInstructionNum = pos++;
+			}
+			mInstructBox.InvalidateChildren();
 		}
 
 		// LOAD METHODS ******************************************************
