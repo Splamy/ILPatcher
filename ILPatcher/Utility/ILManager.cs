@@ -65,7 +65,8 @@ namespace ILPatcher
 
 		// SAVE METHODS ******************************************************
 
-		/// <summary>Saves the current reference list of this ILM into a xml parent node</summary>
+		/// <summary>Saves the current reference list of this ILM into a xml parent node.
+		/// If an entry is not resolved it will copy the raw data read back again.</summary>
 		/// <param name="xNode">The parent node for the new reference nodes</param>
 		public void Save(XmlNode xNode)
 		{
@@ -386,7 +387,7 @@ namespace ILPatcher
 			}
 		}
 
-		/// <summary>Looks for an reference with the given ID. If the reference is unresolved,
+		/// <summary>Looks for a reference with the given ID. If the reference is unresolved,
 		/// it will try to resolve it. When no match exists it will return null.<summary>
 		/// <param name="idNum">The ID to be searched.</param>
 		/// <returns>The referenced object if it exists, otherwise null.</returns>
@@ -401,8 +402,6 @@ namespace ILPatcher
 			XmlElement xDataNode = oi.rawData;
 			MemberList[idNum].Status = ResolveStatus.UnkownError;
 
-			// TODO get generic parameters, written in ToBaseAlph() = (a, b, c...)
-
 			if (oi.oit == OperandInfoT.MethodReference)
 				return ResMElement(oi);
 			else if (oi.oit == OperandInfoT.FieldReference)
@@ -415,6 +414,10 @@ namespace ILPatcher
 			return null;
 		}
 
+		/// <summary>Looks for a MethodReference matching the given OperandInfo.
+		/// OperandInfo.oit must be OperandInfoT.MethodReference</summary>
+		/// <param name="oi">The OperandInfo specifying the searched Method.</param>
+		/// <returns>Returns the MethodReference if found, otherwise null</returns>
 		private object ResMElement(OperandInfo oi)
 		{
 			XmlElement xDataNode = oi.rawData;
@@ -425,6 +428,8 @@ namespace ILPatcher
 
 			bool isGeneric;
 			bool isGenericInstance;
+			string genericvalstr;
+			string[] genericValues;
 
 			// 1] search in
 			#region search_in
@@ -434,11 +439,19 @@ namespace ILPatcher
 
 			// 2] search generics
 			#region search_generics
-			string genericvalstr = xDataNode.GetAttribute(SST.GENERICS);
-			string[] genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			isGeneric = genericValues.Length != 0;
-			if (isGeneric) isGenericInstance = !genericvalstr.Contains('%'); // TDOD: check if this is true
-			else isGenericInstance = false;
+			if (xDataNode.GetAttribute(SST.GENERICS, out genericvalstr))
+			{
+				genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				isGeneric = genericValues.Length != 0;
+				if (isGeneric) isGenericInstance = !genericvalstr.Contains('%'); // TDOD: check if this is true
+				else isGenericInstance = false;
+			}
+			else
+			{
+				isGeneric = false;
+				isGenericInstance = false;
+				genericValues = null;
+			}
 			#endregion
 
 			// 3] compare
@@ -472,7 +485,11 @@ namespace ILPatcher
 			return null;
 		}
 
-		private object ResFElement(OperandInfo oi) // FldRef seems to be done!
+		/// <summary>Looks for a FieldReference matching the given OperandInfo.
+		/// OperandInfo.oit must be OperandInfoT.FieldReference</summary>
+		/// <param name="oi">The OperandInfo specifying the searched Field.</param>
+		/// <returns>Returns the FieldReference if found, otherwise null</returns>
+		private object ResFElement(OperandInfo oi)
 		{
 			XmlElement xDataNode = oi.rawData;
 
@@ -505,6 +522,10 @@ namespace ILPatcher
 			return null;
 		}
 
+		/// <summary>Looks for a TypeReference matching the given OperandInfo.
+		/// OperandInfo.oit must be OperandInfoT.TypeReference</summary>
+		/// <param name="oi">The OperandInfo specifying the searched Type.</param>
+		/// <returns>Returns the TypeReference if found, otherwise null</returns>
 		private object ResTElement(OperandInfo oi)
 		{
 			XmlElement xDataNode = oi.rawData;
@@ -521,6 +542,8 @@ namespace ILPatcher
 			bool isGenericInstance;
 			bool isNested;
 			bool noNamespaceGiven = false;
+			string genericvalstr;
+			string[] genericValues;
 
 			// 1] search in
 			#region search_in
@@ -579,11 +602,19 @@ namespace ILPatcher
 
 			// 2] search generics
 			#region search_generics
-			string genericvalstr = xDataNode.GetAttribute(SST.GENERICS);
-			string[] genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			isGeneric = genericValues.Length != 0;
-			if (isGeneric) isGenericInstance = !genericvalstr.Contains('%'); // TDOD: check if this is true
-			else isGenericInstance = false;
+			if (xDataNode.GetAttribute(SST.GENERICS, out genericvalstr))
+			{
+				genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				isGeneric = genericValues.Length != 0;
+				if (isGeneric) isGenericInstance = !genericvalstr.Contains('%'); // TDOD: check if this is true
+				else isGenericInstance = false;
+			}
+			else
+			{
+				isGeneric = false;
+				isGenericInstance = false;
+				genericValues = null;
+			}
 			#endregion
 
 			// 3] compare
@@ -623,6 +654,10 @@ namespace ILPatcher
 			return null;
 		}
 
+		/// <summary>Looks for a ArrayType matching the given OperandInfo.
+		/// OperandInfo.oit must be OperandInfoT.ArrayType</summary>
+		/// <param name="oi">The ArrayType specifying the searched Array.</param>
+		/// <returns>Returns the ArrayType if found, otherwise null</returns>
 		private object ResAElement(OperandInfo oi)
 		{
 			// TODO: uhm yes
@@ -630,6 +665,7 @@ namespace ILPatcher
 			return null;
 		}
 
+		/// <summary>Looks for doubled elements in the ILM list and removes all but one</summary>
 		public void MergeDoubleElements()
 		{
 			/*
@@ -644,6 +680,11 @@ namespace ILPatcher
 
 		// LOAD MODULES ******************************************************
 
+		/// <summary>Calls the InitTree method in a seperate Thread and waits for it to finish.
+		/// This will prevent the interface from freezing.</summary>
+		/// <param name="AssDef">The AssemblyDefinition which should be loaded into the searchlist</param>
+		/// <param name="SubResolveDepth">When the given AssemblyDefinition uses references to other Assemblys
+		/// the method will add then recursivly to the given depth</param>
 		public void InitTreeHalfAsync(AssemblyDefinition AssDef, int SubResolveDepth = 0)
 		{
 			System.Threading.Thread t = new System.Threading.Thread(() => InitTree(AssDef, SubResolveDepth));
@@ -655,6 +696,11 @@ namespace ILPatcher
 			}
 		}
 
+		/// <summary>Creates an ILNode-Tree representing the structure of the given Assembly
+		/// and stores it in the ModuleList Dictionary with the AssemblyDefinition name as key.</summary>
+		/// <param name="AssDef">The AssemblyDefinition which should be loaded into the searchlist</param>
+		/// <param name="SubResolveDepth">When the given AssemblyDefinition uses references to other Assemblys
+		/// the method will add then recursivly to the given depth</param>
 		public void InitTree(AssemblyDefinition AssDef, int SubResolveDepth = 0)
 		{
 			if (AssDef == null) return;
@@ -686,6 +732,9 @@ namespace ILPatcher
 			}
 		}
 
+		/// <summary>Traverses the Assembly recursivly and adds the new ILnodes to the given ILNode</summary>
+		/// <param name="parentNode">The parent ILNode for the new subelements</param>
+		/// <param name="TypDef">The TypeDefinition to read</param>
 		private void LoadSubItemsRecursive(ILNode parentNode, TypeDefinition TypDef)
 		{
 			#region Functions
@@ -738,6 +787,8 @@ namespace ILPatcher
 			#endregion
 		}
 
+		/// <summary>Returns a collection of all loaded ILNode Assemblys</summary>
+		/// <returns>Returns a ILNode Assembly collection</returns>
 		public ICollection<ILNode> getAllNodes()
 		{
 			return ModuleList.Values;
@@ -745,6 +796,11 @@ namespace ILPatcher
 
 		// SUPPORT FUNCTIONS *************************************************
 
+		/// <summary>Creates a new Intruction depending on the given val object.
+		/// GenInstruction will automatically use the correct Instruction.Create for each object type</summary>
+		/// <param name="opc">The OpCode for the new Instruction</param>
+		/// <param name="val">The operand for the new Instruction</param>
+		/// <returns>Returns the new Instruction if successful, otherwise null.</returns>
 		public static Instruction GenInstruction(OpCode opc, object val)
 		{
 			if (opc.OperandType == OperandType.InlineNone)
@@ -790,11 +846,13 @@ namespace ILPatcher
 			}
 		}
 
+		/// <summary>Clears the current reference table</summary>
 		public void Clear()
 		{
 			MemberList.Length = 0;
 		}
 
+		/// <summary>Clears the current reference table and the loaded ILNode Assemblys</summary>
 		public void ClearAll() // check if necessary
 		{
 			MemberList.Length = 0;

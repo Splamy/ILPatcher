@@ -213,7 +213,7 @@ namespace ILPatcher
 							patchopc = ILManager.OpCodeLookup[patchopcode];
 
 						string operandvalue;
-						if ((operandvalue = xpatchelem.GetAttribute(SST.PrimitiveValue)) != string.Empty)
+						if (xpatchelem.GetAttribute(SST.PrimitiveValue, out operandvalue))
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, operandvalue);
 						else if ((operandvalue = xpatchelem.GetAttribute(SST.Resolve)) != string.Empty)
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, ILManager.Instance.Resolve(operandvalue.ToBaseInt()));
@@ -226,7 +226,7 @@ namespace ILPatcher
 							pid.targetNum = int.Parse(operandvalue);
 							postinitbrs.Add(pid);
 						}
-						else if ((operandvalue = xpatchelem.GetAttribute(SST.BrTargetArray)) != string.Empty)
+						else if (xpatchelem.GetAttribute(SST.BrTargetArray, out operandvalue))
 						{
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, new[] { iDummy });
 							PostInitData pid = new PostInitData();
@@ -254,7 +254,7 @@ namespace ILPatcher
 					nII.NewInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
 
 					string operandvalue;
-					if ((operandvalue = xelem.GetAttribute(SST.PrimitiveValue)) != string.Empty)
+					if (xelem.GetAttribute(SST.PrimitiveValue, out operandvalue))
 						nII.NewInstruction = ILManager.GenInstruction(opcode, operandvalue);
 					else if ((operandvalue = xelem.GetAttribute(SST.Resolve)) != string.Empty)
 					{
@@ -270,7 +270,7 @@ namespace ILPatcher
 						pid.targetNum = int.Parse(operandvalue);
 						postinitbrs.Add(pid);
 					}
-					else if ((operandvalue = xelem.GetAttribute(SST.BrTargetArray)) != string.Empty)
+					else if (xelem.GetAttribute(SST.BrTargetArray, out operandvalue))
 					{
 						nII.NewInstruction = nII.NewInstruction = ILManager.GenInstruction(opcode, new[] { iDummy });
 						PostInitData pid = new PostInitData();
