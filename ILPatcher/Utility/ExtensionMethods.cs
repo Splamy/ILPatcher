@@ -40,10 +40,8 @@ namespace ILPatcher
 			if (res != null)
 				return res.Value;
 			else
-			{
-				Log.Write(Log.Level.Warning, "Attribute (", name.ToString(), ") not found in ", xelem.Name);
 				return string.Empty;
-			}
+			//Log.Write(Log.Level.Warning, "Attribute (", name.ToString(), ") not found in ", xelem.Name);
 		}
 
 		public static Point Add(this Point p, Point add)

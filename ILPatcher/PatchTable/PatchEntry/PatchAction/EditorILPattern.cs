@@ -310,6 +310,7 @@ namespace ILPatcher
 
 			txtMethodFullName.Text = MetDef.FullName;
 			this.MetDef = MetDef;
+			// copy all old instructions to the new, so we don't modify the original method
 			for (int i = 0; i < MetDef.Body.Instructions.Count; i++)
 			{
 				InstructionInfo nII = new InstructionInfo();
@@ -318,6 +319,26 @@ namespace ILPatcher
 				nII.OldInstructionNum = i;
 				nII.NewInstructionNum = i;
 				mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, nII));
+			}
+			// now update all jumps, since they still point to the old list
+			for (int i = 0; i < mInstructBox.Items.Count; i++)
+			{
+				OpCodeTableItem octi = (OpCodeTableItem)mInstructBox.Items[i];
+				InstructionInfo nII = octi.II;
+
+				if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineBrTarget ||
+					nII.OldInstruction.OpCode.OperandType == OperandType.ShortInlineBrTarget)
+				{
+					nII.NewInstruction.Operand = ((OpCodeTableItem)mInstructBox.Items[MetDef.Body.Instructions.IndexOf((Instruction)nII.OldInstruction.Operand)]).II.NewInstruction;
+				}
+				else if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineSwitch)
+				{
+					Instruction[] tmpold = (Instruction[])nII.OldInstruction.Operand;
+					Instruction[] tmpnew = new Instruction[tmpold.Length];
+					for (int j = 0; j < tmpold.Length; j++)
+						tmpnew[j] = ((OpCodeTableItem)mInstructBox.Items[MetDef.Body.Instructions.IndexOf(tmpold[i])]).II.NewInstruction;
+					nII.NewInstruction.Operand = tmpnew;
+				}
 			}
 		}
 

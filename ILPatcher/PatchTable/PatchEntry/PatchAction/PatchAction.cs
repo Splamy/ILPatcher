@@ -17,7 +17,7 @@ namespace ILPatcher
 		public abstract PatchActionType PatchActionType { get; protected set; }
 		public abstract PatchStatus PatchStatus { get; protected set; }
 
-		public abstract void Execute();
+		public abstract bool Execute();
 		public abstract bool Save(XmlNode output);
 		public abstract bool Load(XmlNode input);
 	}

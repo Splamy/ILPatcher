@@ -26,25 +26,19 @@ namespace ILPatcher
 		{
 		}
 
-		public override void Execute()
+		public override bool Execute()
 		{
-			if (_PatchStatus == PatchStatus.WoringPerfectly)
+			AnyArray<Instruction> cpyBuffer = new AnyArray<Instruction>();
+			foreach (InstructionInfo II in instructPatchList)
 			{
-				AnyArray<Instruction> cpyBuffer = new AnyArray<Instruction>();
-				foreach (InstructionInfo II in instructPatchList)
-				{
-					if (II.Delete) continue;
-					cpyBuffer[II.NewInstructionNum] = II.NewInstruction;
-				}
-				Mono.Collections.Generic.Collection<Instruction> nList = MethodDef.Body.Instructions;
-				nList.Clear();
-				for (int i = 0; i < cpyBuffer.Length; i++)
-					if (cpyBuffer[i] != null) nList.Add(cpyBuffer[i]);
+				if (II.Delete) continue;
+				cpyBuffer[II.NewInstructionNum] = II.NewInstruction;
 			}
-			else
-			{
-				Log.Write(Log.Level.Info, "Patch <", ActionName, "> is broken and won't be executed");
-			}
+			Mono.Collections.Generic.Collection<Instruction> nList = MethodDef.Body.Instructions;
+			nList.Clear();
+			for (int i = 0; i < cpyBuffer.Length; i++)
+				if (cpyBuffer[i] != null) nList.Add(cpyBuffer[i]);
+			return true; // no safety checks atm
 		}
 
 		//TODO: FIX Brachnes: something is broken, offsets dont work...
@@ -75,30 +69,34 @@ namespace ILPatcher
 					xInstruction.CreateAttribute(SST.InstructionNum, II.OldInstructionNum.ToString());
 					xInstruction.CreateAttribute(SST.OpCode, II.OldInstruction.OpCode.Name);
 					xInstruction.CreateAttribute(SST.Delete, nc[II.Delete ? SST.True : SST.False]);
-					if (!II.Delete) instructionPos++;
 					Operand2Node(xInstruction, II.OldInstruction, true);
 
-					XmlElement patchelem = null;
-					if (II.InstructionNumPatch)
+					if (!II.Delete)
 					{
-						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
-						patchelem.CreateAttribute(SST.InstructionNum, II.NewInstructionNum.ToString());
-					}
+						instructionPos++;
 
-					if (II.InstructionOpCodePatch)
-					{
-						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
-						patchelem.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
-					}
+						XmlElement patchelem = null;
+						if (II.InstructionNumPatch)
+						{
+							if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
+							patchelem.CreateAttribute(SST.InstructionNum, II.NewInstructionNum.ToString());
+						}
 
-					if (II.InstructionOperandPatch)
-					{
-						if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
-						Operand2Node(patchelem, II.NewInstruction, false);
-					}
+						if (II.InstructionOpCodePatch)
+						{
+							if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
+							patchelem.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
+						}
 
-					if (patchelem != null)
-						xInstruction.AppendChild(patchelem);
+						if (II.InstructionOperandPatch)
+						{
+							if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
+							Operand2Node(patchelem, II.NewInstruction, false);
+						}
+
+						if (patchelem != null)
+							xInstruction.AppendChild(patchelem);
+					}
 				}
 				else
 				{
@@ -223,7 +221,7 @@ namespace ILPatcher
 						{
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, iDummy);
 							PostInitData pid = new PostInitData();
-							pid.InstructionNum = nII.NewInstructionNum;
+							pid.InstructionNum = nII.OldInstructionNum;
 							pid.isArray = false;
 							pid.targetNum = int.Parse(operandvalue);
 							postinitbrs.Add(pid);
@@ -232,7 +230,7 @@ namespace ILPatcher
 						{
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, new[] { iDummy });
 							PostInitData pid = new PostInitData();
-							pid.InstructionNum = nII.NewInstructionNum;
+							pid.InstructionNum = nII.OldInstructionNum;
 							pid.isArray = true;
 							pid.targetArray = Array.ConvertAll<string, int>(operandvalue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
 							postinitbrs.Add(pid);
@@ -292,9 +290,9 @@ namespace ILPatcher
 			foreach (PostInitData pid in postinitbrs)
 			{
 				if (pid.isArray)
-					iibuffer[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll<int, Instruction>(pid.targetArray, a => iibuffer[a].NewInstruction);
+					iibuffer[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll<int, Instruction>(pid.targetArray, a => iibuffer.First(x => x.NewInstructionNum == a).NewInstruction); // TODO: Check correct (but seems to be ok)
 				else
-					iibuffer[pid.InstructionNum].NewInstruction.Operand = iibuffer[pid.targetNum];
+					iibuffer[pid.InstructionNum].NewInstruction.Operand = iibuffer.First(x => x.NewInstructionNum == pid.targetNum).NewInstruction;
 			}
 
 			instructPatchList = new List<InstructionInfo>(iibuffer);

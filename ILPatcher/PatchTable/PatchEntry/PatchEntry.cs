@@ -20,7 +20,13 @@ namespace ILPatcher
 
 		public void Execute()
 		{
-			ActionList.ForEach(pa => pa.Execute());
+			ActionList.ForEach(pa =>
+			{
+				if (pa.PatchStatus == PatchStatus.WoringPerfectly && pa.Execute())
+					Log.Write(Log.Level.Info, "Patch <", pa.ActionName, "> executed successfully!");
+				else
+					Log.Write(Log.Level.Info, "Patch <", pa.ActionName, "> is broken and won't be executed");
+			});
 		}
 
 		public bool Save(XmlNode output)

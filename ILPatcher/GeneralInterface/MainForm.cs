@@ -28,9 +28,6 @@ namespace ILPatcher
 			swooshPanel1.AddPanel(EditorEntry.Instance, "Patch Entry");
 			swooshPanel1.AddPanel(EditorILPattern.Instance, "Patch Part");
 			//swooshPanel1.AddPanel(new TextBox() { Multiline = true }, "Notes");
-
-			//for (int i = 0; i < 10000; i++)
-			//	Log.Write(i.ToString(), " ", ILManager.Instance.N2I(ILManager.Instance.I2N(i)).ToString());
 		}
 
 		private static MainForm _Instance;
