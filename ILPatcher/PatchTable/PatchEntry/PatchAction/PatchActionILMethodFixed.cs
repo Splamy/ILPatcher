@@ -424,11 +424,32 @@ namespace ILPatcher
 		public bool Delete = false;
 		public bool InstructionOperandPatch
 		{
-			get { return OldInstruction.OpCode.OperandType != OperandType.InlineNone && !OldInstruction.Operand.Equals(NewInstruction.Operand); }
+			get
+			{
+				if (IsNew) return false;
+				OperandType oot = OldInstruction.OpCode.OperandType;
+				OperandType not = NewInstruction.OpCode.OperandType;
+				if (oot == OperandType.InlineNone && not != OperandType.InlineNone) return true;
+				if (oot == OperandType.InlineBrTarget && not == OperandType.InlineBrTarget ||
+					oot == OperandType.ShortInlineBrTarget && not == OperandType.ShortInlineBrTarget)
+				{
+					Instruction oop = OldInstruction.Operand as Instruction;
+					Instruction nop = NewInstruction.Operand as Instruction;
+					if (oop == null || nop == null)
+					{
+						Log.Write(Log.Level.Warning, "Operand info wrong: ", NewInstruction.ToString());
+						return true;
+					}
+					// TODO check if br targets differ || same for brarray (witch)
+				}
+				if (OldInstruction.Operand == null && NewInstruction.Operand == null) return false;
+				if (OldInstruction.Operand == null && NewInstruction.Operand != null) return true;
+				return !OldInstruction.Operand.Equals(NewInstruction.Operand);
+			}
 			protected set { }
 		}
-		public bool InstructionOpCodePatch { get { return OldInstruction.OpCode != NewInstruction.OpCode; } protected set { } }
-		public bool InstructionNumPatch { get { return OldInstructionNum != NewInstructionNum; } protected set { } }
+		public bool InstructionOpCodePatch { get { return OldInstructionNum != -1 && OldInstruction.OpCode != NewInstruction.OpCode; } protected set { } }
+		public bool InstructionNumPatch { get { return OldInstructionNum != -1 && OldInstructionNum != NewInstructionNum; } protected set { } }
 		public bool IsNew { get { return OldInstructionNum == -1; } protected set { } }
 		public bool IsOld { get { return OldInstructionNum != -1; } protected set { } }
 

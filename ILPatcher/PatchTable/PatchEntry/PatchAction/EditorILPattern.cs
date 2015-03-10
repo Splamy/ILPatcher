@@ -16,7 +16,7 @@ namespace ILPatcher
 {
 	public partial class EditorILPattern : UserControl
 	{
-		MethodDefinition MetDef;
+		private MethodDefinition MetDef;
 
 		private Control[] OperandCList;
 		private PickOperandType currentPOT = PickOperandType.None;
@@ -299,6 +299,7 @@ namespace ILPatcher
 			BoxSetHelper(octi.II.Delete);
 			cbxOpcode.Text = octi.II.NewInstruction.OpCode.Name;
 			OpCodeToInputType(octi.II.NewInstruction.OpCode);
+			ReadOperand();
 		}
 
 		private void WriteToDragItem()
@@ -430,11 +431,54 @@ namespace ILPatcher
 			WriteToDragItem();
 		}
 
+		private void ReadOperand()
+		{
+			OpCodeTableItem octi = (OpCodeTableItem)instructionEditor.DragItem;
+			if (octi == null) return;
+			Instruction instr = octi.II.NewInstruction;
+
+			switch (currentPOT)
+			{
+			case PickOperandType.None:
+				break;
+			case PickOperandType.Byte:
+			case PickOperandType.SByte:
+			case PickOperandType.Int32:
+			case PickOperandType.Int64:
+			case PickOperandType.Single:
+			case PickOperandType.Double:
+			case PickOperandType.String:
+				txtOperand.Text = instr.Operand.ToString();
+				break;
+			case PickOperandType.InstructionReference:
+				break;
+			case PickOperandType.InstructionArrReference:
+				break;
+			case PickOperandType.VariableReference:
+				break;
+			case PickOperandType.ParameterReference:
+				break;
+			case PickOperandType.FieldReference:
+				break;
+			case PickOperandType.MethodReference:
+				break;
+			case PickOperandType.TypeReference:
+				TypeReference tr = instr.Operand as TypeReference;
+				if (tr != null)
+					lblTypePicker.Text = tr.FullName;
+				break;
+			case PickOperandType.TMFReferenceDynamic:
+				break;
+			default:
+				break;
+			}
+		}
+
 		private void txtOperand_TextChanged(object sender, EventArgs e)
 		{
-			RefreshTextbox2Operand();
+			ApplyOperand(txtOperand.Text);
 		}
-		private void RefreshTextbox2Operand()
+		private void ApplyOperand(string str)
 		{
 			OpCodeTableItem ocp = (OpCodeTableItem)instructionEditor.DragItem;
 
@@ -442,36 +486,36 @@ namespace ILPatcher
 			{
 			case PickOperandType.Byte:
 				Byte resultByte;
-				if (Byte.TryParse(txtOperand.Text, out resultByte))
+				if (Byte.TryParse(str, out resultByte))
 					ocp.II.NewInstruction.Operand = resultByte;
 				break;
 			case PickOperandType.SByte:
 				SByte resultSByte;
-				if (SByte.TryParse(txtOperand.Text, out resultSByte))
+				if (SByte.TryParse(str, out resultSByte))
 					ocp.II.NewInstruction.Operand = resultSByte;
 				break;
 			case PickOperandType.Int32:
 				Int32 resultInt32;
-				if (Int32.TryParse(txtOperand.Text, out resultInt32))
+				if (Int32.TryParse(str, out resultInt32))
 					ocp.II.NewInstruction.Operand = resultInt32;
 				break;
 			case PickOperandType.Int64:
 				Int64 resultInt64;
-				if (Int64.TryParse(txtOperand.Text, out resultInt64))
+				if (Int64.TryParse(str, out resultInt64))
 					ocp.II.NewInstruction.Operand = resultInt64;
 				break;
 			case PickOperandType.Single:
 				Single resultSingle;
-				if (Single.TryParse(txtOperand.Text, out resultSingle))
+				if (Single.TryParse(str, out resultSingle))
 					ocp.II.NewInstruction.Operand = resultSingle;
 				break;
 			case PickOperandType.Double:
 				Double resultDouble;
-				if (Double.TryParse(txtOperand.Text, out resultDouble))
+				if (Double.TryParse(str, out resultDouble))
 					ocp.II.NewInstruction.Operand = resultDouble;
 				break;
 			case PickOperandType.String:
-				ocp.II.NewInstruction.Operand = txtOperand.Text;
+				ocp.II.NewInstruction.Operand = str;
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a textbox");

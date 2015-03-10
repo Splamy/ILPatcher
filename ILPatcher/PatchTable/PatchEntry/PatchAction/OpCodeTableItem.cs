@@ -68,18 +68,14 @@ namespace ILPatcher
 				g.DrawLine(Pens.Red, rec.Left, rec.Bottom, split, rec.Top);
 			}
 			g.DrawLine(Pens.Black, split, rec.Top, split, rec.Bottom);
-			bool unchangedOpcode = (II.OldInstruction == null) || (II.OldInstruction.OpCode == II.NewInstruction.OpCode);
-			g.DrawString(II.NewInstruction.OpCode.Name, Font, unchangedOpcode ? Brushes.Black : Brushes.Red, split + 2, rec.Top + 1);
+			g.DrawString(II.NewInstruction.OpCode.Name, Font, II.InstructionOpCodePatch ? Brushes.Red : Brushes.Black, split + 2, rec.Top + 1);
 			g.DrawLine(Pens.Black, 100, rec.Top, 100, rec.Bottom);
 			if (II.OperandMismatch)
-			{
-				//_hbrMismatch = new HatchBrush(HatchStyle.Percent25, Color.Orange, Color.Transparent);
 				g.FillRectangle(hbrMismatch, 102, rec.Top, rec.Right - 102, Height);
-			}
 			if (II.NewInstruction.Operand == null)
-				g.DrawString("-", Font, Brushes.Black, 102, rec.Top + 1);
-			else
-				g.DrawString(II.NewInstruction.Operand.GetType().Name + " " + II.NewInstruction.Operand.ToString(), Font, Brushes.Black, 102, rec.Top + 1);
+				g.DrawString("-", Font, II.InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
+			else // TODO: operand type at the beginning only temp
+				g.DrawString(II.NewInstruction.Operand.GetType().Name + " " + II.NewInstruction.Operand.ToString(), Font, II.InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
 		}
 
 		public override void RefreshHeight(System.Drawing.Graphics g, int nWidth)
