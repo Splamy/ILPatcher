@@ -50,7 +50,7 @@ namespace ILPatcher
 			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
 			output.Attributes[nc[SST.NAME]].Value = ActionName;
 
-			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.OldInstructionNum != -1);
+			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.IsOld);
 
 			XmlElement xListPatched = output.InsertCompressedElement(SST.PatchList);
 			xListPatched.CreateAttribute(SST.MethodPath, ILManager.Instance.Reference(MethodDef).ToBaseAlph());
@@ -62,7 +62,7 @@ namespace ILPatcher
 				XmlElement xInstruction = xListPatched.InsertCompressedElement(SST.Instruction);
 				II.NewInstructionNum = instructionPos;
 
-				if (II.OldInstructionNum != -1)
+				if (II.IsOld)
 				{
 					//OldInstructionNum/OriginalInstructionNum: -1 if new command
 
@@ -308,54 +308,56 @@ namespace ILPatcher
 			OpCode oc = i.OpCode;
 			object operand = i.Operand;
 			NameCompressor nc = NameCompressor.Instance;
+			StringBuilder strb;
 
-			if (oc.OperandType == OperandType.InlineNone)
+			switch (oc.OperandType)
+			{
+			case OperandType.InlineNone:
 				return;
-			else if (oc.OperandType == OperandType.InlineI ||
-					 oc.OperandType == OperandType.InlineI8 ||
-					 oc.OperandType == OperandType.InlineString ||
-					 oc.OperandType == OperandType.InlineR ||
-					 oc.OperandType == OperandType.ShortInlineI ||
-					 oc.OperandType == OperandType.ShortInlineR)
-			{
+
+			case OperandType.InlineI:
+			case OperandType.InlineI8:
+			case OperandType.InlineR:
+			case OperandType.InlineString:
+			case OperandType.ShortInlineI:
+			case OperandType.ShortInlineR:
 				xParent.CreateAttribute(SST.PrimitiveValue, operand.ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineMethod ||
-					 oc.OperandType == OperandType.InlineType ||
-					 oc.OperandType == OperandType.InlineTok ||
-					 oc.OperandType == OperandType.InlineSig ||
-					 oc.OperandType == OperandType.InlineField)
-			{
+				break;
+
+			case OperandType.InlineField:
+			case OperandType.InlineMethod:
+			case OperandType.InlineTok:
+			case OperandType.InlineType:
 				xParent.CreateAttribute(SST.Resolve, ILManager.Instance.Reference(operand).ToBaseAlph());
-			}
-			else if (oc.OperandType == OperandType.InlineArg ||
-					 oc.OperandType == OperandType.ShortInlineArg)
-			{
-				ParameterReference parref = ((ParameterReference)operand);
-				StringBuilder strb = new StringBuilder();
+				break;
+
+			case OperandType.InlineArg:
+			case OperandType.ShortInlineArg:
+				ParameterReference parref = ((ParameterReference)operand); // TODO: check this
+				strb = new StringBuilder();
 				strb.Append(parref.Index.ToString());
 				strb.Append(' ');
 				strb.Append(ILManager.Instance.Reference(parref.ParameterType).ToBaseAlph());
 				xParent.CreateAttribute(SST.Resolve, strb.ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineVar ||
-					 oc.OperandType == OperandType.ShortInlineVar)
-			{
-				VariableReference varref = ((VariableReference)operand);
-				StringBuilder strb = new StringBuilder();
+				break;
+
+			case OperandType.InlineVar:
+			case OperandType.ShortInlineVar:
+				VariableReference varref = ((VariableReference)operand); // TODO: check this
+				strb = new StringBuilder();
 				strb.Append(varref.Index.ToString());
 				strb.Append(' ');
 				strb.Append(ILManager.Instance.Reference(varref.VariableType).ToBaseAlph());
 				xParent.CreateAttribute(SST.Resolve, strb.ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineBrTarget ||
-				oc.OperandType == OperandType.ShortInlineBrTarget)
-			{
+				break;
+
+			case OperandType.InlineBrTarget:
+			case OperandType.ShortInlineBrTarget:
 				xParent.CreateAttribute(SST.BrTargetIndex, FindInstruction((Instruction)i.Operand, OldI).ToString());
-			}
-			else if (oc.OperandType == OperandType.InlineSwitch)
-			{
-				StringBuilder strb = new StringBuilder();
+				break;
+
+			case OperandType.InlineSwitch:
+				strb = new StringBuilder();
 				Instruction[] arr = (Instruction[])operand;
 				foreach (Instruction instr in arr)
 				{
@@ -363,10 +365,13 @@ namespace ILPatcher
 					strb.Append(' ');
 				}
 				xParent.CreateAttribute(SST.BrTargetArray, strb.ToString());
-			}
-			else
-			{
+				break;
+
+			case OperandType.InlineSig:
+			case OperandType.InlinePhi:
+			default:
 				Log.Write(Log.Level.Error, "Opcode not processed: ", oc.OperandType.ToString());
+				break;
 			}
 		}
 
@@ -424,6 +429,8 @@ namespace ILPatcher
 		}
 		public bool InstructionOpCodePatch { get { return OldInstruction.OpCode != NewInstruction.OpCode; } protected set { } }
 		public bool InstructionNumPatch { get { return OldInstructionNum != NewInstructionNum; } protected set { } }
+		public bool IsNew { get { return OldInstructionNum == -1; } protected set { } }
+		public bool IsOld { get { return OldInstructionNum != -1; } protected set { } }
 
 		//LoadInfo
 		public bool OpCodeMismatch = false;

@@ -40,7 +40,6 @@
 			this.btnCancel = new System.Windows.Forms.Button();
 			this.cbxOperand = new System.Windows.Forms.ComboBox();
 			this.lblOperand = new System.Windows.Forms.Label();
-			this.cbxOperandType = new System.Windows.Forms.ComboBox();
 			this.lblOperandType = new System.Windows.Forms.Label();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.editIntructionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -48,32 +47,35 @@
 			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.lblDnD = new System.Windows.Forms.Label();
 			this.cbxOpcode = new System.Windows.Forms.ComboBox();
-			this.btnDebug = new System.Windows.Forms.Button();
 			this.txtOperand = new System.Windows.Forms.TextBox();
 			this.chbDelete = new MetroObjects.MCheckBox();
 			this.lblDelete = new System.Windows.Forms.Label();
 			this.btnNewOpCode = new System.Windows.Forms.Button();
 			this.lblwip = new System.Windows.Forms.Label();
+			this.panTypePicker = new System.Windows.Forms.Panel();
+			this.btnTypePicker = new System.Windows.Forms.Button();
+			this.lblTypePicker = new System.Windows.Forms.Label();
 			this.instructionEditor = new ILPatcher.InspectorHolder();
 			this.contextMenuStrip1.SuspendLayout();
+			this.panTypePicker.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// mInstructBox
 			// 
-			this.mInstructBox.Location = new System.Drawing.Point(95, 60);
-			this.mInstructBox.Margin = new System.Windows.Forms.Padding(5);
+			this.mInstructBox.Location = new System.Drawing.Point(95, 55);
+			this.mInstructBox.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.mInstructBox.MinimumSize = new System.Drawing.Size(50, 50);
 			this.mInstructBox.MultiSelect = true;
 			this.mInstructBox.Name = "mInstructBox";
-			this.mInstructBox.Size = new System.Drawing.Size(503, 190);
+			this.mInstructBox.Size = new System.Drawing.Size(500, 190);
 			this.mInstructBox.TabIndex = 8;
 			this.mInstructBox.Text = "mListBox1";
 			// 
 			// label1
 			// 
 			this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label1.Location = new System.Drawing.Point(5, 10);
-			this.label1.Margin = new System.Windows.Forms.Padding(5);
+			this.label1.Location = new System.Drawing.Point(5, 5);
+			this.label1.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(85, 20);
 			this.label1.TabIndex = 10;
@@ -82,18 +84,18 @@
 			// 
 			// txtPatchActionName
 			// 
-			this.txtPatchActionName.Location = new System.Drawing.Point(95, 10);
-			this.txtPatchActionName.Margin = new System.Windows.Forms.Padding(5);
+			this.txtPatchActionName.Location = new System.Drawing.Point(95, 5);
+			this.txtPatchActionName.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.txtPatchActionName.Name = "txtPatchActionName";
-			this.txtPatchActionName.Size = new System.Drawing.Size(503, 20);
+			this.txtPatchActionName.Size = new System.Drawing.Size(500, 20);
 			this.txtPatchActionName.TabIndex = 11;
 			this.txtPatchActionName.Text = "DefaultName";
 			// 
 			// label2
 			// 
 			this.label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label2.Location = new System.Drawing.Point(5, 60);
-			this.label2.Margin = new System.Windows.Forms.Padding(5);
+			this.label2.Location = new System.Drawing.Point(5, 55);
+			this.label2.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(85, 20);
 			this.label2.TabIndex = 12;
@@ -102,8 +104,8 @@
 			// 
 			// txtMethodFullName
 			// 
-			this.txtMethodFullName.Location = new System.Drawing.Point(95, 35);
-			this.txtMethodFullName.Margin = new System.Windows.Forms.Padding(5);
+			this.txtMethodFullName.Location = new System.Drawing.Point(95, 30);
+			this.txtMethodFullName.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.txtMethodFullName.Name = "txtMethodFullName";
 			this.txtMethodFullName.ReadOnly = true;
 			this.txtMethodFullName.Size = new System.Drawing.Size(425, 20);
@@ -112,8 +114,8 @@
 			// label4
 			// 
 			this.label4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label4.Location = new System.Drawing.Point(5, 35);
-			this.label4.Margin = new System.Windows.Forms.Padding(5);
+			this.label4.Location = new System.Drawing.Point(5, 30);
+			this.label4.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(85, 20);
 			this.label4.TabIndex = 14;
@@ -126,8 +128,8 @@
 			this.btnPickMethod.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnPickMethod.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnPickMethod.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnPickMethod.Location = new System.Drawing.Point(528, 35);
-			this.btnPickMethod.Margin = new System.Windows.Forms.Padding(5);
+			this.btnPickMethod.Location = new System.Drawing.Point(525, 30);
+			this.btnPickMethod.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnPickMethod.Name = "btnPickMethod";
 			this.btnPickMethod.Size = new System.Drawing.Size(70, 20);
 			this.btnPickMethod.TabIndex = 16;
@@ -141,8 +143,8 @@
 			this.btnDone.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnDone.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnDone.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnDone.Location = new System.Drawing.Point(508, 284);
-			this.btnDone.Margin = new System.Windows.Forms.Padding(5);
+			this.btnDone.Location = new System.Drawing.Point(505, 280);
+			this.btnDone.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnDone.Name = "btnDone";
 			this.btnDone.Size = new System.Drawing.Size(90, 25);
 			this.btnDone.TabIndex = 19;
@@ -156,8 +158,8 @@
 			this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnCancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnCancel.Location = new System.Drawing.Point(508, 256);
-			this.btnCancel.Margin = new System.Windows.Forms.Padding(5);
+			this.btnCancel.Location = new System.Drawing.Point(505, 250);
+			this.btnCancel.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnCancel.Name = "btnCancel";
 			this.btnCancel.Size = new System.Drawing.Size(90, 25);
 			this.btnCancel.TabIndex = 20;
@@ -169,23 +171,8 @@
 			// 
 			this.cbxOperand.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbxOperand.FormattingEnabled = true;
-			this.cbxOperand.Items.AddRange(new object[] {
-            "[None]",
-            "Byte",
-            "SByte",
-            "Int32",
-            "Int64",
-            "Single",
-            "Double",
-            "String",
-            "-> Instruction reference",
-            "-> Variable reference",
-            "-> Parameter reference",
-            "-> Field reference",
-            "-> Method reference",
-            "-> Type reference"});
-			this.cbxOperand.Location = new System.Drawing.Point(137, 309);
-			this.cbxOperand.Margin = new System.Windows.Forms.Padding(5);
+			this.cbxOperand.Location = new System.Drawing.Point(134, 275);
+			this.cbxOperand.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.cbxOperand.Name = "cbxOperand";
 			this.cbxOperand.Size = new System.Drawing.Size(33, 21);
 			this.cbxOperand.TabIndex = 18;
@@ -194,50 +181,24 @@
 			// lblOperand
 			// 
 			this.lblOperand.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblOperand.Location = new System.Drawing.Point(5, 310);
-			this.lblOperand.Margin = new System.Windows.Forms.Padding(5);
+			this.lblOperand.Location = new System.Drawing.Point(5, 276);
+			this.lblOperand.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblOperand.Name = "lblOperand";
 			this.lblOperand.Size = new System.Drawing.Size(85, 21);
 			this.lblOperand.TabIndex = 17;
 			this.lblOperand.Text = "Operand:";
 			this.lblOperand.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
-			// cbxOperandType
-			// 
-			this.cbxOperandType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.cbxOperandType.FormattingEnabled = true;
-			this.cbxOperandType.Items.AddRange(new object[] {
-            "[None]",
-            "Byte",
-            "SByte",
-            "Int32",
-            "Int64",
-            "Single",
-            "Double",
-            "String",
-            "-> Instruction reference",
-            "-> Variable reference",
-            "-> Parameter reference",
-            "-> Field reference",
-            "-> Method reference",
-            "-> Type reference"});
-			this.cbxOperandType.Location = new System.Drawing.Point(93, 283);
-			this.cbxOperandType.Margin = new System.Windows.Forms.Padding(5);
-			this.cbxOperandType.Name = "cbxOperandType";
-			this.cbxOperandType.Size = new System.Drawing.Size(388, 21);
-			this.cbxOperandType.TabIndex = 16;
-			this.cbxOperandType.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
-			// 
 			// lblOperandType
 			// 
 			this.lblOperandType.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblOperandType.Location = new System.Drawing.Point(5, 284);
-			this.lblOperandType.Margin = new System.Windows.Forms.Padding(5);
+			this.lblOperandType.Location = new System.Drawing.Point(288, 250);
+			this.lblOperandType.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblOperandType.Name = "lblOperandType";
-			this.lblOperandType.Size = new System.Drawing.Size(85, 21);
+			this.lblOperandType.Size = new System.Drawing.Size(212, 21);
 			this.lblOperandType.TabIndex = 15;
-			this.lblOperandType.Text = "Operand Type:";
-			this.lblOperandType.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.lblOperandType.Text = "< Operand Type >";
+			this.lblOperandType.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// contextMenuStrip1
 			// 
@@ -269,8 +230,8 @@
 			// lblDnD
 			// 
 			this.lblDnD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblDnD.Location = new System.Drawing.Point(5, 337);
-			this.lblDnD.Margin = new System.Windows.Forms.Padding(5);
+			this.lblDnD.Location = new System.Drawing.Point(5, 302);
+			this.lblDnD.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblDnD.Name = "lblDnD";
 			this.lblDnD.Size = new System.Drawing.Size(85, 25);
 			this.lblDnD.TabIndex = 21;
@@ -282,42 +243,28 @@
 			this.cbxOpcode.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Append;
 			this.cbxOpcode.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
 			this.cbxOpcode.FormattingEnabled = true;
-			this.cbxOpcode.Location = new System.Drawing.Point(93, 256);
-			this.cbxOpcode.Margin = new System.Windows.Forms.Padding(5);
+			this.cbxOpcode.Location = new System.Drawing.Point(95, 250);
+			this.cbxOpcode.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.cbxOpcode.Name = "cbxOpcode";
-			this.cbxOpcode.Size = new System.Drawing.Size(388, 21);
+			this.cbxOpcode.Size = new System.Drawing.Size(188, 21);
 			this.cbxOpcode.TabIndex = 22;
-			this.cbxOpcode.SelectedIndexChanged += new System.EventHandler(this.comboBox3_ValueChanged);
-			this.cbxOpcode.TextChanged += new System.EventHandler(this.comboBox3_ValueChanged);
-			// 
-			// btnDebug
-			// 
-			this.btnDebug.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnDebug.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
-			this.btnDebug.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnDebug.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnDebug.Location = new System.Drawing.Point(508, 313);
-			this.btnDebug.Margin = new System.Windows.Forms.Padding(5);
-			this.btnDebug.Name = "btnDebug";
-			this.btnDebug.Size = new System.Drawing.Size(90, 25);
-			this.btnDebug.TabIndex = 23;
-			this.btnDebug.Text = "Debug_Load";
-			this.btnDebug.UseVisualStyleBackColor = false;
-			this.btnDebug.Click += new System.EventHandler(this.btnDebug_Click);
+			this.cbxOpcode.SelectedIndexChanged += new System.EventHandler(this.cbxOpcode_ValueChanged);
+			this.cbxOpcode.TextChanged += new System.EventHandler(this.cbxOpcode_ValueChanged);
 			// 
 			// txtOperand
 			// 
-			this.txtOperand.Location = new System.Drawing.Point(93, 310);
-			this.txtOperand.Margin = new System.Windows.Forms.Padding(5);
+			this.txtOperand.Location = new System.Drawing.Point(95, 276);
+			this.txtOperand.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.txtOperand.Name = "txtOperand";
 			this.txtOperand.Size = new System.Drawing.Size(34, 20);
 			this.txtOperand.TabIndex = 24;
 			this.txtOperand.Visible = false;
+			this.txtOperand.TextChanged += new System.EventHandler(this.txtOperand_TextChanged);
 			// 
 			// chbDelete
 			// 
-			this.chbDelete.Location = new System.Drawing.Point(457, 337);
-			this.chbDelete.Margin = new System.Windows.Forms.Padding(5);
+			this.chbDelete.Location = new System.Drawing.Point(457, 302);
+			this.chbDelete.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.chbDelete.MinimumSize = new System.Drawing.Size(10, 10);
 			this.chbDelete.Name = "chbDelete";
 			this.chbDelete.Size = new System.Drawing.Size(25, 25);
@@ -327,8 +274,8 @@
 			// lblDelete
 			// 
 			this.lblDelete.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblDelete.Location = new System.Drawing.Point(405, 337);
-			this.lblDelete.Margin = new System.Windows.Forms.Padding(5);
+			this.lblDelete.Location = new System.Drawing.Point(405, 302);
+			this.lblDelete.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblDelete.Name = "lblDelete";
 			this.lblDelete.Size = new System.Drawing.Size(45, 25);
 			this.lblDelete.TabIndex = 26;
@@ -341,8 +288,8 @@
 			this.btnNewOpCode.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnNewOpCode.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnNewOpCode.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnNewOpCode.Location = new System.Drawing.Point(5, 256);
-			this.btnNewOpCode.Margin = new System.Windows.Forms.Padding(5);
+			this.btnNewOpCode.Location = new System.Drawing.Point(5, 250);
+			this.btnNewOpCode.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnNewOpCode.Name = "btnNewOpCode";
 			this.btnNewOpCode.Size = new System.Drawing.Size(85, 21);
 			this.btnNewOpCode.TabIndex = 27;
@@ -353,21 +300,60 @@
 			// lblwip
 			// 
 			this.lblwip.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblwip.Location = new System.Drawing.Point(178, 309);
+			this.lblwip.Location = new System.Drawing.Point(172, 275);
+			this.lblwip.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblwip.Name = "lblwip";
 			this.lblwip.Size = new System.Drawing.Size(50, 21);
 			this.lblwip.TabIndex = 28;
 			this.lblwip.Text = "<<Work in Progress>>";
 			this.lblwip.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
+			// panTypePicker
+			// 
+			this.panTypePicker.Controls.Add(this.lblTypePicker);
+			this.panTypePicker.Controls.Add(this.btnTypePicker);
+			this.panTypePicker.Location = new System.Drawing.Point(225, 276);
+			this.panTypePicker.Name = "panTypePicker";
+			this.panTypePicker.Size = new System.Drawing.Size(92, 21);
+			this.panTypePicker.TabIndex = 29;
+			this.panTypePicker.Visible = false;
+			// 
+			// btnTypePicker
+			// 
+			this.btnTypePicker.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnTypePicker.Dock = System.Windows.Forms.DockStyle.Right;
+			this.btnTypePicker.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
+			this.btnTypePicker.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnTypePicker.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+			this.btnTypePicker.Location = new System.Drawing.Point(17, 0);
+			this.btnTypePicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
+			this.btnTypePicker.Name = "btnTypePicker";
+			this.btnTypePicker.Size = new System.Drawing.Size(75, 21);
+			this.btnTypePicker.TabIndex = 30;
+			this.btnTypePicker.Text = "Pick";
+			this.btnTypePicker.UseVisualStyleBackColor = false;
+			this.btnTypePicker.Click += new System.EventHandler(this.btnTypePicker_Click);
+			// 
+			// lblTypePicker
+			// 
+			this.lblTypePicker.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.lblTypePicker.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.lblTypePicker.Location = new System.Drawing.Point(0, 0);
+			this.lblTypePicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
+			this.lblTypePicker.Name = "lblTypePicker";
+			this.lblTypePicker.Size = new System.Drawing.Size(17, 21);
+			this.lblTypePicker.TabIndex = 30;
+			this.lblTypePicker.Text = "T";
+			this.lblTypePicker.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			// 
 			// instructionEditor
 			// 
 			this.instructionEditor.AllowDrag = false;
 			this.instructionEditor.DragItem = null;
-			this.instructionEditor.Location = new System.Drawing.Point(93, 337);
-			this.instructionEditor.Margin = new System.Windows.Forms.Padding(5);
+			this.instructionEditor.Location = new System.Drawing.Point(95, 302);
+			this.instructionEditor.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.instructionEditor.Name = "instructionEditor";
-			this.instructionEditor.Size = new System.Drawing.Size(306, 25);
+			this.instructionEditor.Size = new System.Drawing.Size(305, 25);
 			this.instructionEditor.TabIndex = 0;
 			this.instructionEditor.Text = "inspectorHolder1";
 			// 
@@ -375,17 +361,16 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.panTypePicker);
 			this.Controls.Add(this.lblwip);
 			this.Controls.Add(this.btnNewOpCode);
 			this.Controls.Add(this.lblDelete);
 			this.Controls.Add(this.chbDelete);
 			this.Controls.Add(this.txtOperand);
-			this.Controls.Add(this.btnDebug);
 			this.Controls.Add(this.cbxOpcode);
 			this.Controls.Add(this.lblDnD);
 			this.Controls.Add(this.cbxOperand);
 			this.Controls.Add(this.lblOperand);
-			this.Controls.Add(this.cbxOperandType);
 			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.lblOperandType);
 			this.Controls.Add(this.btnDone);
@@ -398,9 +383,10 @@
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.mInstructBox);
 			this.Name = "EditorILPattern";
-			this.Size = new System.Drawing.Size(605, 368);
+			this.Size = new System.Drawing.Size(600, 334);
 			this.Resize += new System.EventHandler(this.EditorILPattern_Resize);
 			this.contextMenuStrip1.ResumeLayout(false);
+			this.panTypePicker.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -420,19 +406,20 @@
 		private InspectorHolder instructionEditor;
 		private System.Windows.Forms.ComboBox cbxOperand;
 		private System.Windows.Forms.Label lblOperand;
-		private System.Windows.Forms.ComboBox cbxOperandType;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem editIntructionToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
 		private System.Windows.Forms.Label lblDnD;
 		private System.Windows.Forms.ComboBox cbxOpcode;
 		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
-		private System.Windows.Forms.Button btnDebug;
 		private System.Windows.Forms.TextBox txtOperand;
 		private MetroObjects.MCheckBox chbDelete;
 		private System.Windows.Forms.Label lblDelete;
 		private System.Windows.Forms.Button btnNewOpCode;
 		private System.Windows.Forms.Label lblwip;
 		public System.Windows.Forms.TextBox txtMethodFullName;
+		private System.Windows.Forms.Panel panTypePicker;
+		private System.Windows.Forms.Label lblTypePicker;
+		private System.Windows.Forms.Button btnTypePicker;
 	}
 }

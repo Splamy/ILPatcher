@@ -72,7 +72,7 @@
 			this.structureViever1.PathSeparator = ".";
 			this.structureViever1.SelectedImageIndex = 0;
 			this.structureViever1.Size = new System.Drawing.Size(372, 416);
-			this.structureViever1.ViewElements = ILPatcher.StructureView.all;
+			this.structureViever1.FilterElements = ILPatcher.StructureView.all;
 			this.structureViever1.TabIndex = 22;
 			// 
 			// MultiPicker

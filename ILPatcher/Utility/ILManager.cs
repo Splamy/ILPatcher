@@ -678,7 +678,7 @@ namespace ILPatcher
 			//TODO
 		}
 
-		// LOAD MODULES ******************************************************
+		// STRUCTUREVIEW MODULES *********************************************
 
 		/// <summary>Calls the InitTree method in a seperate Thread and waits for it to finish.
 		/// This will prevent the interface from freezing.</summary>
@@ -724,9 +724,21 @@ namespace ILPatcher
 						InitTree(AssSubRef, SubResolveDepth - 1);
 					}
 
+				Dictionary<string, ILNode> nsDict = new Dictionary<string, ILNode>();
 				foreach (TypeDefinition TypDef in ModDef.Types)
 				{
-					ILNode tnTypDef = tnModDef.Add(TypDef.Name, TypDef.FullName, TypDef, StructureView.classes);
+					string nsstr = TypDef.Namespace;
+					ILNode tnAssemblyContainer;
+					if (!nsDict.ContainsKey(nsstr))
+					{
+						string displaystr = nsstr == string.Empty ? "<Default Namespace>" : nsstr;
+						tnAssemblyContainer = ilParent.Add(displaystr, displaystr, new NamespaceHolder(displaystr), StructureView.none);
+						nsDict.Add(nsstr, tnAssemblyContainer);
+					}
+					else
+						tnAssemblyContainer = nsDict[nsstr];
+
+					ILNode tnTypDef = tnAssemblyContainer.Add(TypDef.Name, TypDef.FullName, TypDef, StructureView.classes);
 					LoadSubItemsRecursive(tnTypDef, TypDef);
 				}
 			}

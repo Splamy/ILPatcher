@@ -220,6 +220,24 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Namespace.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Assembly.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Constant.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Module.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Operator.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Property.gif" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

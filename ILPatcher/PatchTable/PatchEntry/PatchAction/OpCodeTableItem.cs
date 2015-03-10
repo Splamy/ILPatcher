@@ -56,9 +56,9 @@ namespace ILPatcher
 				g.DrawString(II.OldInstructionNum + ">X", Font, Brushes.Black, rec.Left, rec.Top + 1);
 			else if (II.NewInstructionNum == -1)
 				g.DrawString("(" + dragFrom + ")", Font, Brushes.Black, rec.Left, rec.Top + 1);
-			else if (II.OldInstructionNum != -1 && II.InstructionNumPatch)
+			else if (II.IsOld && II.InstructionNumPatch)
 				g.DrawString(II.OldInstructionNum + ">" + II.NewInstructionNum, Font, Brushes.Black, rec.Left, rec.Top + 1);
-			else if (II.OldInstructionNum == -1)
+			else if (II.IsNew)
 				g.DrawString("=" + II.NewInstructionNum.ToString(), Font, Brushes.Black, rec.Left, rec.Top + 1);
 			else
 				g.DrawString(II.NewInstructionNum.ToString(), Font, Brushes.Black, rec.Left, rec.Top + 1);

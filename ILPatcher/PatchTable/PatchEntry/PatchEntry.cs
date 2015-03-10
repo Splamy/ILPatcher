@@ -48,8 +48,6 @@ namespace ILPatcher
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
-			//ILM Resolve
-
 			foreach (XmlElement xnode in input.ChildNodes)
 			{
 				if (xnode.Name == nc[SST.PatchAction])

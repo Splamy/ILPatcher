@@ -4,6 +4,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Linq;
 
 using Mono;
 using Mono.Cecil;
@@ -13,25 +14,44 @@ namespace ILPatcher
 {
 	public partial class MultiPicker : Form
 	{
-		private EditorILPattern parent;
-		public MultiPicker(EditorILPattern _parent)
+		private Func<object, bool> filterPredicate;
+		private StructureView filterFlag;
+		private Action<object> callback;
+
+		private static MultiPicker _Instance;
+		private static MultiPicker Instance
+		{
+			get { if (_Instance == null || _Instance.IsDisposed) _Instance = new MultiPicker(); return _Instance; }
+			set { _Instance = value; }
+		}
+
+		private MultiPicker()
 		{
 			InitializeComponent();
-			parent = _parent;
 			Owner = MainForm.Instance;
 
-			ILManager.Instance.InitTree(MainPanel.AssemblyDef, 1); // TODO CHECK REFRESH
-			structureViever1.Rebuild(true);
+			ILManager.Instance.InitTree(MainPanel.AssemblyDef);
 			structureViever1.AfterSelect += structureViever1_AfterSelect;
 		}
 
-		void structureViever1_AfterSelect(object sender, TreeViewEventArgs e)
+		public static void ShowStructure(StructureView fF, Func<object, bool> fP, Action<object> cb, bool mainmodonly = false)
 		{
-			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
-			if (MetDef == null)
-				btn_Select.Enabled = false;
-			else
-				btn_Select.Enabled = true;
+			Instance.ShowStructureIntern(fF, fP, cb, mainmodonly);
+		}
+
+		private void ShowStructureIntern(StructureView fF, Func<object, bool> fP, Action<object> cb, bool mainmodonly)
+		{
+			filterFlag = fF;
+			filterPredicate = fP;
+			callback = cb;
+			structureViever1.FilterElements = fF;
+			this.Show();
+			structureViever1.RebuildHalfAsync(mainmodonly);
+		}
+
+		private void structureViever1_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			btn_Select.Enabled = filterPredicate(structureViever1.SelectedNode.Tag);
 		}
 
 		private void MultiPicker_Resize(object sender, EventArgs e)
@@ -44,10 +64,8 @@ namespace ILPatcher
 		private void btn_Select_Click(object sender, EventArgs e)
 		{
 			if (structureViever1.SelectedNode == null) return;
-			MethodDefinition metDef = structureViever1.SelectedNode.Tag as MethodDefinition;
-			if (metDef == null) return;
-			parent.LoadMetDef(metDef);
 			Hide();
+			callback(structureViever1.SelectedNode.Tag);
 		}
 
 		private void btn_Cancel_Click(object sender, EventArgs e)
@@ -61,4 +79,6 @@ namespace ILPatcher
 			Hide();
 		}
 	}
+
+	public delegate void OnItemSelected(object tag);
 }
