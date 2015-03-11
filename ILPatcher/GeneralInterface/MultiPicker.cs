@@ -19,7 +19,7 @@ namespace ILPatcher
 		private Action<object> callback;
 
 		private static MultiPicker _Instance;
-		private static MultiPicker Instance
+		public static MultiPicker Instance
 		{
 			get { if (_Instance == null || _Instance.IsDisposed) _Instance = new MultiPicker(); return _Instance; }
 			set { _Instance = value; }
@@ -34,12 +34,7 @@ namespace ILPatcher
 			structureViever1.AfterSelect += structureViever1_AfterSelect;
 		}
 
-		public static void ShowStructure(StructureView fF, Func<object, bool> fP, Action<object> cb, bool mainmodonly = false)
-		{
-			Instance.ShowStructureIntern(fF, fP, cb, mainmodonly);
-		}
-
-		private void ShowStructureIntern(StructureView fF, Func<object, bool> fP, Action<object> cb, bool mainmodonly)
+		public void ShowStructure(StructureView fF, Func<object, bool> fP, Action<object> cb, bool mainmodonly = false)
 		{
 			filterFlag = fF;
 			filterPredicate = fP;
@@ -47,6 +42,11 @@ namespace ILPatcher
 			structureViever1.FilterElements = fF;
 			this.Show();
 			structureViever1.RebuildHalfAsync(mainmodonly);
+		}
+
+		public void AddToolBoxNode(ILNode extNode)
+		{
+			structureViever1.AddToolBoxNode(extNode);
 		}
 
 		private void structureViever1_AfterSelect(object sender, TreeViewEventArgs e)

@@ -52,12 +52,12 @@
 			this.lblDelete = new System.Windows.Forms.Label();
 			this.btnNewOpCode = new System.Windows.Forms.Button();
 			this.lblwip = new System.Windows.Forms.Label();
-			this.panTypePicker = new System.Windows.Forms.Panel();
-			this.btnTypePicker = new System.Windows.Forms.Button();
-			this.lblTypePicker = new System.Windows.Forms.Label();
+			this.panTMFPicker = new System.Windows.Forms.Panel();
+			this.lblTMFPicker = new System.Windows.Forms.Label();
+			this.btnTMFPicker = new System.Windows.Forms.Button();
 			this.instructionEditor = new ILPatcher.InspectorHolder();
 			this.contextMenuStrip1.SuspendLayout();
-			this.panTypePicker.SuspendLayout();
+			this.panTMFPicker.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// mInstructBox
@@ -177,6 +177,7 @@
 			this.cbxOperand.Size = new System.Drawing.Size(33, 21);
 			this.cbxOperand.TabIndex = 18;
 			this.cbxOperand.Visible = false;
+			this.cbxOperand.SelectedIndexChanged += new System.EventHandler(this.cbxOperand_SelectedIndexChanged);
 			// 
 			// lblOperand
 			// 
@@ -308,43 +309,43 @@
 			this.lblwip.Text = "<<Work in Progress>>";
 			this.lblwip.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
-			// panTypePicker
+			// panTMFPicker
 			// 
-			this.panTypePicker.Controls.Add(this.lblTypePicker);
-			this.panTypePicker.Controls.Add(this.btnTypePicker);
-			this.panTypePicker.Location = new System.Drawing.Point(225, 276);
-			this.panTypePicker.Name = "panTypePicker";
-			this.panTypePicker.Size = new System.Drawing.Size(92, 21);
-			this.panTypePicker.TabIndex = 29;
-			this.panTypePicker.Visible = false;
+			this.panTMFPicker.Controls.Add(this.lblTMFPicker);
+			this.panTMFPicker.Controls.Add(this.btnTMFPicker);
+			this.panTMFPicker.Location = new System.Drawing.Point(225, 276);
+			this.panTMFPicker.Name = "panTMFPicker";
+			this.panTMFPicker.Size = new System.Drawing.Size(107, 21);
+			this.panTMFPicker.TabIndex = 29;
+			this.panTMFPicker.Visible = false;
 			// 
-			// btnTypePicker
+			// lblTMFPicker
 			// 
-			this.btnTypePicker.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnTypePicker.Dock = System.Windows.Forms.DockStyle.Right;
-			this.btnTypePicker.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
-			this.btnTypePicker.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnTypePicker.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnTypePicker.Location = new System.Drawing.Point(17, 0);
-			this.btnTypePicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.btnTypePicker.Name = "btnTypePicker";
-			this.btnTypePicker.Size = new System.Drawing.Size(75, 21);
-			this.btnTypePicker.TabIndex = 30;
-			this.btnTypePicker.Text = "Pick";
-			this.btnTypePicker.UseVisualStyleBackColor = false;
-			this.btnTypePicker.Click += new System.EventHandler(this.btnTypePicker_Click);
+			this.lblTMFPicker.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.lblTMFPicker.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.lblTMFPicker.Location = new System.Drawing.Point(0, 0);
+			this.lblTMFPicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
+			this.lblTMFPicker.Name = "lblTMFPicker";
+			this.lblTMFPicker.Size = new System.Drawing.Size(32, 21);
+			this.lblTMFPicker.TabIndex = 30;
+			this.lblTMFPicker.Text = "TMF";
+			this.lblTMFPicker.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
-			// lblTypePicker
+			// btnTMFPicker
 			// 
-			this.lblTypePicker.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblTypePicker.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.lblTypePicker.Location = new System.Drawing.Point(0, 0);
-			this.lblTypePicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.lblTypePicker.Name = "lblTypePicker";
-			this.lblTypePicker.Size = new System.Drawing.Size(17, 21);
-			this.lblTypePicker.TabIndex = 30;
-			this.lblTypePicker.Text = "T";
-			this.lblTypePicker.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.btnTMFPicker.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnTMFPicker.Dock = System.Windows.Forms.DockStyle.Right;
+			this.btnTMFPicker.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
+			this.btnTMFPicker.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnTMFPicker.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+			this.btnTMFPicker.Location = new System.Drawing.Point(32, 0);
+			this.btnTMFPicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
+			this.btnTMFPicker.Name = "btnTMFPicker";
+			this.btnTMFPicker.Size = new System.Drawing.Size(75, 21);
+			this.btnTMFPicker.TabIndex = 30;
+			this.btnTMFPicker.Text = "Pick";
+			this.btnTMFPicker.UseVisualStyleBackColor = false;
+			this.btnTMFPicker.Click += new System.EventHandler(this.btnTMFPicker_Click);
 			// 
 			// instructionEditor
 			// 
@@ -361,7 +362,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.panTypePicker);
+			this.Controls.Add(this.panTMFPicker);
 			this.Controls.Add(this.lblwip);
 			this.Controls.Add(this.btnNewOpCode);
 			this.Controls.Add(this.lblDelete);
@@ -386,7 +387,7 @@
 			this.Size = new System.Drawing.Size(600, 334);
 			this.Resize += new System.EventHandler(this.EditorILPattern_Resize);
 			this.contextMenuStrip1.ResumeLayout(false);
-			this.panTypePicker.ResumeLayout(false);
+			this.panTMFPicker.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -418,8 +419,8 @@
 		private System.Windows.Forms.Button btnNewOpCode;
 		private System.Windows.Forms.Label lblwip;
 		public System.Windows.Forms.TextBox txtMethodFullName;
-		private System.Windows.Forms.Panel panTypePicker;
-		private System.Windows.Forms.Label lblTypePicker;
-		private System.Windows.Forms.Button btnTypePicker;
+		private System.Windows.Forms.Panel panTMFPicker;
+		private System.Windows.Forms.Label lblTMFPicker;
+		private System.Windows.Forms.Button btnTMFPicker;
 	}
 }

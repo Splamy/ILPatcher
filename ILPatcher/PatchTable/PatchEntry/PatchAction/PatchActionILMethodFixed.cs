@@ -440,8 +440,11 @@ namespace ILPatcher
 						Log.Write(Log.Level.Warning, "Operand info wrong: ", NewInstruction.ToString());
 						return true;
 					}
-					// TODO check if br targets differ || same for brarray (witch)
+					return true; // TODO check if br targets differ || same for brarray (witch)
 				}
+				if (oot == OperandType.InlineSwitch && not == OperandType.InlineSwitch)
+					return true;
+
 				if (OldInstruction.Operand == null && NewInstruction.Operand == null) return false;
 				if (OldInstruction.Operand == null && NewInstruction.Operand != null) return true;
 				return !OldInstruction.Operand.Equals(NewInstruction.Operand);

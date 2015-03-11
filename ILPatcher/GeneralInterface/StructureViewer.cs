@@ -19,6 +19,8 @@ namespace ILPatcher
 		[DefaultValue(false)]
 		public bool UseFullName { get; set; }
 
+		private TreeNode ExtensionNode = new TreeNode("Extension Node");
+
 		public StructureViewer()
 		{
 			FilterElements = StructureView.all;
@@ -43,6 +45,7 @@ namespace ILPatcher
 		{
 			System.Threading.Thread t = new System.Threading.Thread(() => RebuildInternal(mainmodonly, true));
 			Nodes.Clear();
+			ExtensionNode.Nodes.Clear();
 			t.Start();
 			while (t.IsAlive)
 			{
@@ -59,7 +62,10 @@ namespace ILPatcher
 		private void RebuildInternal(bool mainmodonly, bool invoke)
 		{
 			if (!invoke)
+			{
 				Nodes.Clear();
+				ExtensionNode.Nodes.Clear();
+			}
 			foreach (ILNode iln in ILManager.Instance.getAllNodes())
 			{
 				if (FilterElements.HasFlag(iln.Flags))
@@ -125,6 +131,14 @@ namespace ILPatcher
 				return (int)ImageMap.Namespace;
 
 			return (int)ImageMap.Assembly;
+		}
+
+		// TODO: fix icon for special nodes (also genericparameter from EditoILPattern)
+		public void AddToolBoxNode(ILNode extNode)
+		{
+			if (!Nodes.Contains(ExtensionNode))
+				Nodes.Insert(0, ExtensionNode);
+			RecursiveRebuild(ExtensionNode, extNode);
 		}
 	}
 

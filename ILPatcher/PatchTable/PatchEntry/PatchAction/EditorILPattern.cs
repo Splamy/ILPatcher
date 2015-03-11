@@ -43,7 +43,7 @@ namespace ILPatcher
 			instructionEditor.OnItemDropSuccess += instructionEditor_OnItemDropSuccess;
 			mInstructBox.OnItemDropFailed += mInstructBox_OnItemDropFailed;
 			mInstructBox.OnItemDropSuccess += mInstructBox_OnItemDropSuccess;
-			OperandCList = new Control[] { txtOperand, cbxOperand, lblwip, panTypePicker };
+			OperandCList = new Control[] { txtOperand, cbxOperand, lblwip, panTMFPicker };
 
 			foreach (string dn in ILManager.OpCodeLookup.Keys)
 				cbxOpcode.Items.Add(dn);
@@ -86,7 +86,7 @@ namespace ILPatcher
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
-			MultiPicker.ShowStructure(StructureView.classes | StructureView.functions, x => x is MethodDefinition, x => LoadMetDef((MethodDefinition)x), true);
+			MultiPicker.Instance.ShowStructure(StructureView.classes | StructureView.functions, x => x is MethodDefinition, x => LoadMetDef((MethodDefinition)x), true);
 		}
 
 		private void btnCancel_Click(object sender, EventArgs e)
@@ -298,8 +298,7 @@ namespace ILPatcher
 			if (octi == null) return;
 			BoxSetHelper(octi.II.Delete);
 			cbxOpcode.Text = octi.II.NewInstruction.OpCode.Name;
-			OpCodeToInputType(octi.II.NewInstruction.OpCode);
-			ReadOperand();
+			OpCodeToInputType(octi.II.NewInstruction, true);
 		}
 
 		private void WriteToDragItem()
@@ -314,10 +313,10 @@ namespace ILPatcher
 			RedrawBoth();
 		}
 
-		private void OpCodeToInputType(OpCode opc)
+		private void OpCodeToInputType(Instruction instr, bool readOperand)
 		{
 			#region Read PickOperandType
-			switch (opc.OperandType)
+			switch (instr.OpCode.OperandType)
 			{
 			case OperandType.InlineArg:
 			case OperandType.ShortInlineArg:
@@ -362,7 +361,7 @@ namespace ILPatcher
 				currentPOT = PickOperandType.VariableReference;
 				break;
 			case OperandType.ShortInlineI:
-				if (opc == OpCodes.Ldc_I4_S)
+				if (instr.OpCode == OpCodes.Ldc_I4_S)
 					currentPOT = PickOperandType.Byte;
 				else
 					currentPOT = PickOperandType.SByte;
@@ -373,7 +372,7 @@ namespace ILPatcher
 			case OperandType.InlineSig:
 			case OperandType.InlinePhi:
 			default:
-				Log.Write(Log.Level.Warning, "Not switced OperandType: ", opc.Name);
+				Log.Write(Log.Level.Warning, "Not switced OperandType: ", instr.OpCode.Name);
 				break;
 			}
 			#endregion
@@ -392,29 +391,47 @@ namespace ILPatcher
 			case PickOperandType.Single:
 			case PickOperandType.Double:
 			case PickOperandType.String:
+				if (readOperand)
+					txtOperand.Text = instr.Operand.ToString();
 				txtOperand.Visible = true; // done
 				break;
 			case PickOperandType.InstructionReference:
 				lblwip.Visible = true;
 				break;
 			case PickOperandType.VariableReference:
-				lblwip.Visible = true;
+				InitCbxOperand();
+				if (readOperand)
+				{
+					ParameterReference pr = instr.Operand as ParameterReference;
+					if (pr != null)
+						cbxOperand.SelectedIndex = pr.Index;
+				}
+				cbxOperand.Visible = true; // done
 				break;
 			case PickOperandType.ParameterReference:
-				lblwip.Visible = true;
+				InitCbxOperand();
+				if (readOperand)
+				{
+					VariableReference vr = instr.Operand as VariableReference;
+					if (vr != null)
+						cbxOperand.SelectedIndex = vr.Index;
+				}
+				cbxOperand.Visible = true; // done
 				break;
 			case PickOperandType.FieldReference:
-				lblwip.Visible = true;
-				break;
 			case PickOperandType.MethodReference:
-				lblwip.Visible = true;
-				break;
 			case PickOperandType.TypeReference:
-				panTypePicker.Visible = true; // done
+			case PickOperandType.TMFReferenceDynamic:
+				if (readOperand)
+				{
+					MemberReference xr = instr.Operand as MemberReference;
+					if (xr != null)
+						lblTMFPicker.Text = xr.FullName;
+				}
+				panTMFPicker.Visible = true; // done
 				break;
 			default:
-				lblwip.Visible = true;
-				Log.Write(Log.Level.Warning, "Not switced PickOperadType in combobox: ", currentPOT.ToString());
+				Log.Write(Log.Level.Warning, "Not switced PickOperadType: ", currentPOT.ToString());
 				break;
 			}
 			#endregion
@@ -427,51 +444,8 @@ namespace ILPatcher
 		private void cbxOpcode_ValueChanged(object sender, EventArgs e)
 		{
 			MakeItemAvailable();
-			OpCodeToInputType(((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.OpCode);
+			OpCodeToInputType(((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction, false);
 			WriteToDragItem();
-		}
-
-		private void ReadOperand()
-		{
-			OpCodeTableItem octi = (OpCodeTableItem)instructionEditor.DragItem;
-			if (octi == null) return;
-			Instruction instr = octi.II.NewInstruction;
-
-			switch (currentPOT)
-			{
-			case PickOperandType.None:
-				break;
-			case PickOperandType.Byte:
-			case PickOperandType.SByte:
-			case PickOperandType.Int32:
-			case PickOperandType.Int64:
-			case PickOperandType.Single:
-			case PickOperandType.Double:
-			case PickOperandType.String:
-				txtOperand.Text = instr.Operand.ToString();
-				break;
-			case PickOperandType.InstructionReference:
-				break;
-			case PickOperandType.InstructionArrReference:
-				break;
-			case PickOperandType.VariableReference:
-				break;
-			case PickOperandType.ParameterReference:
-				break;
-			case PickOperandType.FieldReference:
-				break;
-			case PickOperandType.MethodReference:
-				break;
-			case PickOperandType.TypeReference:
-				TypeReference tr = instr.Operand as TypeReference;
-				if (tr != null)
-					lblTypePicker.Text = tr.FullName;
-				break;
-			case PickOperandType.TMFReferenceDynamic:
-				break;
-			default:
-				break;
-			}
 		}
 
 		private void txtOperand_TextChanged(object sender, EventArgs e)
@@ -482,7 +456,7 @@ namespace ILPatcher
 		{
 			OpCodeTableItem ocp = (OpCodeTableItem)instructionEditor.DragItem;
 
-			switch ((PickOperandType)currentPOT)
+			switch (currentPOT)
 			{
 			case PickOperandType.Byte:
 				Byte resultByte;
@@ -518,26 +492,118 @@ namespace ILPatcher
 				ocp.II.NewInstruction.Operand = str;
 				break;
 			default:
-				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a textbox");
+				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a textbox: ", currentPOT.ToString());
 				break;
 			}
 
 			RedrawBoth();
 		}
 
-		private void btnTypePicker_Click(object sender, EventArgs e)
+		private void btnTMFPicker_Click(object sender, EventArgs e)
 		{
-			MultiPicker.ShowStructure(StructureView.classes, x => x is TypeReference, x => ApplyOperand((TypeReference)x));
+			switch (currentPOT)
+			{
+			case PickOperandType.FieldReference:
+				MultiPicker.Instance.ShowStructure(StructureView.classes | StructureView.fields, x => x is FieldReference, x => ApplyOperand((MemberReference)x));
+				break;
+			case PickOperandType.MethodReference:
+				MultiPicker.Instance.ShowStructure(StructureView.classes | StructureView.functions, x => x is MethodReference, x => ApplyOperand((MemberReference)x));
+				break;
+			case PickOperandType.TypeReference:
+				MultiPicker.Instance.ShowStructure(StructureView.classes, x => x is TypeReference, x => ApplyOperand((MemberReference)x));
+				AddGenericsToToolBox();
+				break;
+			case PickOperandType.TMFReferenceDynamic:
+				MultiPicker.Instance.ShowStructure(StructureView.all, x => x is MemberReference, x => ApplyOperand((MemberReference)x));
+				AddGenericsToToolBox();
+				break;
+			default:
+				Log.Write(Log.Level.Warning, "OperandType cannot be processed with the TMFPicker: ", currentPOT.ToString());
+				break;
+			}
 		}
-		private void ApplyOperand(TypeReference tr)
+		private void ApplyOperand(MemberReference tr)
 		{
 			// TypeDefinition > TypeReference, so this should work
-			lblTypePicker.Text = tr.FullName;
+			lblTMFPicker.Text = tr.FullName;
 			((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.Operand = tr;
 			RedrawBoth();
 		}
 
+		private void InitCbxOperand()
+		{
+			cbxOperand.Items.Clear();
+			StringBuilder strb = new StringBuilder();
 
+			switch (currentPOT)
+			{
+			case PickOperandType.VariableReference:
+				foreach (VariableDefinition vardef in MetDef.Body.Variables)
+				{
+					strb.Clear();
+					strb.Append("Num: ");
+					strb.Append(vardef.Index);
+					if (vardef.Name != string.Empty)
+					{
+						strb.Append(" (");
+						strb.Append(vardef.Name);
+						strb.Append(')');
+					}
+					strb.Append(" : ");
+					strb.Append(vardef.VariableType.FullName);
+					cbxOperand.Items.Add(strb.ToString());
+				}
+				break;
+			case PickOperandType.ParameterReference:
+				foreach (ParameterDefinition pardef in MetDef.Parameters)
+				{
+					cbxOperand.Items.Add(string.Concat(pardef.Name, " : ", pardef.ParameterType.FullName));
+				}
+				break;
+			default:
+				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());
+				break;
+			}
+		}
+		private void cbxOperand_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			OpCodeTableItem ocp = (OpCodeTableItem)instructionEditor.DragItem;
+
+			switch (currentPOT)
+			{
+			case PickOperandType.VariableReference:
+				ocp.II.NewInstruction.Operand = MetDef.Body.Variables[cbxOperand.SelectedIndex];
+				break;
+			case PickOperandType.ParameterReference:
+				ocp.II.NewInstruction.Operand = MetDef.Parameters[cbxOperand.SelectedIndex];
+				break;
+			default:
+				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());
+				break;
+			}
+			RedrawBoth();
+		}
+
+		private void AddGenericsToToolBox()
+		{
+			ILNode AddToolBoxNode = new ILNode(null, null, null, StructureView.none);
+			ILNode GenericExtension = AddToolBoxNode.Add("<Local GenericParameter>", "<Local GenericParameter>", null, StructureView.none);
+			if (MetDef.HasGenericParameters)
+				foreach (GenericParameter gpar in MetDef.GenericParameters)
+					GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.classes);
+			TypeDefinition recdef = MetDef.DeclaringType;
+			while (recdef != null)
+			{
+				if (recdef.HasGenericParameters)
+					foreach (GenericParameter gpar in recdef.GenericParameters)
+						GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.classes);
+				if (recdef.IsNested)
+					recdef = recdef.DeclaringType;
+				else
+					recdef = null;
+			}
+			MultiPicker.Instance.AddToolBoxNode(AddToolBoxNode);
+		}
 	}
 
 	public enum PickOperandType
