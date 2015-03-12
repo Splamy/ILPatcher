@@ -84,12 +84,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GeneralInterface\InstructArrPicker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GeneralInterface\InstructArrPicker.Designer.cs">
+      <DependentUpon>InstructArrPicker.cs</DependentUpon>
+    </Compile>
     <Compile Include="GeneralInterface\PatchQuestionWindow.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GeneralInterface\PatchQuestionWindow.Designer.cs">
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utility\CecilFormatter.cs" />
     <Compile Include="Utility\AnyArray.cs" />
     <Compile Include="Utility\ErrorLogger.cs" />
     <Compile Include="Utility\ExtensionMethods.cs" />
@@ -143,6 +150,9 @@
     </Compile>
     <Compile Include="PatchTable\TableManager.cs" />
     <Compile Include="Utility\ErrorLoggerItem.cs" />
+    <EmbeddedResource Include="GeneralInterface\InstructArrPicker.resx">
+      <DependentUpon>InstructArrPicker.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PatchTable\PatchEntry\EditorEntry.resx">
       <DependentUpon>EditorEntry.cs</DependentUpon>
     </EmbeddedResource>

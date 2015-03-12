@@ -665,7 +665,7 @@ namespace ILPatcher
 			return null;
 		}
 
-		/// <summary>Looks for doubled elements in the ILM list and removes all but one</summary>
+		/// <summary>Looks for doubled elements in the ILM list and removes all but one (Unfinished)</summary>
 		public void MergeDoubleElements()
 		{
 			/*
@@ -706,12 +706,12 @@ namespace ILPatcher
 			if (AssDef == null) return;
 			if (ModuleList.ContainsKey(AssDef.Name.Name)) return;
 
-			ILNode ilParent = new ILNode(AssDef.Name.Name, AssDef.FullName, AssDef, StructureView.none); // StructureView.Module
+			ILNode ilParent = new ILNode(AssDef.Name.Name, AssDef.FullName, AssDef, StructureView.structure); // StructureView.Module
 			ModuleList.Add(AssDef.Name.Name, ilParent);
 
 			foreach (ModuleDefinition ModDef in AssDef.Modules)
 			{
-				ILNode tnModDef = ilParent.Add(ModDef.Name, ModDef.Name, ModDef, StructureView.none);
+				ILNode tnModDef = ilParent.Add(ModDef.Name, ModDef.Name, ModDef, StructureView.structure);
 				DefaultAssemblyResolver dar = ModDef.AssemblyResolver as DefaultAssemblyResolver;
 				Array.ForEach(dar.GetSearchDirectories(), x => dar.RemoveSearchDirectory(x));
 				dar.AddSearchDirectory(System.IO.Path.GetDirectoryName(MainPanel.AssemblyPath));
@@ -732,7 +732,7 @@ namespace ILPatcher
 					if (!nsDict.ContainsKey(nsstr))
 					{
 						string displaystr = nsstr == string.Empty ? "<Default Namespace>" : nsstr;
-						tnAssemblyContainer = ilParent.Add(displaystr, displaystr, new NamespaceHolder(displaystr), StructureView.none);
+						tnAssemblyContainer = ilParent.Add(displaystr, displaystr, new NamespaceHolder(displaystr), StructureView.namesp);
 						nsDict.Add(nsstr, tnAssemblyContainer);
 					}
 					else
@@ -742,6 +742,7 @@ namespace ILPatcher
 					LoadSubItemsRecursive(tnTypDef, TypDef);
 				}
 			}
+			ilParent.Sort();
 		}
 
 		/// <summary>Traverses the Assembly recursivly and adds the new ILnodes to the given ILNode</summary>
@@ -770,7 +771,7 @@ namespace ILPatcher
 				strb.Append(") : "); strbfn.Append(") : ");
 				strbfn.Append(MetDef.ReturnType.FullName);
 				strb.Append(MetDef.ReturnType.Name);
-				parentNode.Add(strb.ToString(), strbfn.ToString(), MetDef, StructureView.functions);
+				parentNode.Add(strb.ToString(), strbfn.ToString(), MetDef, StructureView.methods);
 			}
 			#endregion
 
@@ -961,6 +962,16 @@ namespace ILPatcher
 		public override string ToString()
 		{
 			return FullName;
+		}
+
+		public void Sort()
+		{
+			_children.Sort((x, y) =>
+			{
+				sbyte strucdiff = x.Flags - y.Flags;
+				return strucdiff != 0 ? strucdiff : x.Name.CompareTo(y.Name);
+			});
+			_children.ForEach(x => x.Sort());
 		}
 	}
 }

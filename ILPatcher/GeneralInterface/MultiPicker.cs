@@ -56,8 +56,8 @@ namespace ILPatcher
 
 		private void MultiPicker_Resize(object sender, EventArgs e)
 		{
-			btn_Select.Top = Height - (btn_Select.Height + 40);
-			btn_Cancel.Top = Height - (btn_Cancel.Height + 40);
+			btn_Select.Top = Height - (btn_Select.Height + 50);
+			btn_Cancel.Top = Height - (btn_Cancel.Height + 50);
 			structureViever1.Height = Height - (btn_Select.Height + 50);
 		}
 

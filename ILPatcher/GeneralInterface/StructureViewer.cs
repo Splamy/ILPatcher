@@ -68,7 +68,7 @@ namespace ILPatcher
 			}
 			foreach (ILNode iln in ILManager.Instance.getAllNodes())
 			{
-				if (FilterElements.HasFlag(iln.Flags))
+				if ((iln.Flags & (StructureView.basestructure | FilterElements)) != StructureView.none)
 				{
 					TreeNode nMain = new TreeNode(UseFullName ? iln.FullName : iln.Name);
 					nMain.Tag = iln.Value;
@@ -93,7 +93,7 @@ namespace ILPatcher
 		private void RecursiveRebuild(TreeNode tnParent, ILNode ilParent)
 		{
 			foreach (ILNode iln in ilParent.Children)
-				if (FilterElements.HasFlag(iln.Flags))
+				if ((iln.Flags & (StructureView.basestructure | FilterElements)) != StructureView.none)
 				{
 					TreeNode tnSub = new TreeNode(UseFullName ? iln.FullName : iln.Name);
 					tnSub.Tag = iln.Value;
@@ -153,13 +153,16 @@ namespace ILPatcher
 	}
 
 	[Flags]
-	public enum StructureView
+	public enum StructureView : sbyte
 	{
 		none = 0,
-		classes = 1 << 0,
-		functions = 1 << 1,
-		fields = 1 << 2,
-		all = classes | functions | fields
+		structure = 1 << 0,
+		namesp = 1 << 1,
+		methods = 1 << 2,
+		fields = 1 << 3,
+		classes = 1 << 4,
+		basestructure = structure | namesp | classes,
+		all = structure | methods | namesp | classes | fields,
 	}
 
 	public enum ImageMap : int

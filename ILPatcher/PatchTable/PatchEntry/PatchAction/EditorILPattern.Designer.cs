@@ -42,20 +42,19 @@
 			this.lblOperand = new System.Windows.Forms.Label();
 			this.lblOperandType = new System.Windows.Forms.Label();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.editIntructionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.tsmDelete = new System.Windows.Forms.ToolStripMenuItem();
 			this.lblDnD = new System.Windows.Forms.Label();
 			this.cbxOpcode = new System.Windows.Forms.ComboBox();
 			this.txtOperand = new System.Windows.Forms.TextBox();
 			this.chbDelete = new MetroObjects.MCheckBox();
 			this.lblDelete = new System.Windows.Forms.Label();
 			this.btnNewOpCode = new System.Windows.Forms.Button();
-			this.lblwip = new System.Windows.Forms.Label();
 			this.panTMFPicker = new System.Windows.Forms.Panel();
 			this.lblTMFPicker = new System.Windows.Forms.Label();
 			this.btnTMFPicker = new System.Windows.Forms.Button();
 			this.instructionEditor = new ILPatcher.InspectorHolder();
+			this.tsmRemove = new System.Windows.Forms.ToolStripMenuItem();
+			this.tsmUnDelete = new System.Windows.Forms.ToolStripMenuItem();
 			this.contextMenuStrip1.SuspendLayout();
 			this.panTMFPicker.SuspendLayout();
 			this.SuspendLayout();
@@ -171,10 +170,10 @@
 			// 
 			this.cbxOperand.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbxOperand.FormattingEnabled = true;
-			this.cbxOperand.Location = new System.Drawing.Point(134, 275);
+			this.cbxOperand.Location = new System.Drawing.Point(216, 275);
 			this.cbxOperand.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.cbxOperand.Name = "cbxOperand";
-			this.cbxOperand.Size = new System.Drawing.Size(33, 21);
+			this.cbxOperand.Size = new System.Drawing.Size(117, 21);
 			this.cbxOperand.TabIndex = 18;
 			this.cbxOperand.Visible = false;
 			this.cbxOperand.SelectedIndexChanged += new System.EventHandler(this.cbxOperand_SelectedIndexChanged);
@@ -204,29 +203,18 @@
 			// contextMenuStrip1
 			// 
 			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editIntructionToolStripMenuItem,
-            this.newToolStripMenuItem,
-            this.deleteToolStripMenuItem});
+            this.tsmDelete,
+            this.tsmUnDelete,
+            this.tsmRemove});
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(142, 70);
+			this.contextMenuStrip1.Size = new System.Drawing.Size(168, 92);
 			// 
-			// editIntructionToolStripMenuItem
+			// tsmDelete
 			// 
-			this.editIntructionToolStripMenuItem.Name = "editIntructionToolStripMenuItem";
-			this.editIntructionToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
-			this.editIntructionToolStripMenuItem.Text = "Edit Selected";
-			// 
-			// newToolStripMenuItem
-			// 
-			this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-			this.newToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
-			this.newToolStripMenuItem.Text = "New";
-			// 
-			// deleteToolStripMenuItem
-			// 
-			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
-			this.deleteToolStripMenuItem.Text = "Delete";
+			this.tsmDelete.Name = "tsmDelete";
+			this.tsmDelete.Size = new System.Drawing.Size(167, 22);
+			this.tsmDelete.Text = "Set Delete-Flag";
+			this.tsmDelete.Click += new System.EventHandler(this.tsmDelete_Click);
 			// 
 			// lblDnD
 			// 
@@ -257,14 +245,14 @@
 			this.txtOperand.Location = new System.Drawing.Point(95, 276);
 			this.txtOperand.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.txtOperand.Name = "txtOperand";
-			this.txtOperand.Size = new System.Drawing.Size(34, 20);
+			this.txtOperand.Size = new System.Drawing.Size(116, 20);
 			this.txtOperand.TabIndex = 24;
 			this.txtOperand.Visible = false;
 			this.txtOperand.TextChanged += new System.EventHandler(this.txtOperand_TextChanged);
 			// 
 			// chbDelete
 			// 
-			this.chbDelete.Location = new System.Drawing.Point(457, 302);
+			this.chbDelete.Location = new System.Drawing.Point(475, 302);
 			this.chbDelete.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.chbDelete.MinimumSize = new System.Drawing.Size(10, 10);
 			this.chbDelete.Name = "chbDelete";
@@ -275,7 +263,7 @@
 			// lblDelete
 			// 
 			this.lblDelete.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblDelete.Location = new System.Drawing.Point(405, 302);
+			this.lblDelete.Location = new System.Drawing.Point(423, 302);
 			this.lblDelete.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblDelete.Name = "lblDelete";
 			this.lblDelete.Size = new System.Drawing.Size(45, 25);
@@ -298,24 +286,13 @@
 			this.btnNewOpCode.UseVisualStyleBackColor = false;
 			this.btnNewOpCode.Click += new System.EventHandler(this.btnNewOpCode_Click);
 			// 
-			// lblwip
-			// 
-			this.lblwip.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.lblwip.Location = new System.Drawing.Point(172, 275);
-			this.lblwip.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.lblwip.Name = "lblwip";
-			this.lblwip.Size = new System.Drawing.Size(50, 21);
-			this.lblwip.TabIndex = 28;
-			this.lblwip.Text = "<<Work in Progress>>";
-			this.lblwip.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			// 
 			// panTMFPicker
 			// 
 			this.panTMFPicker.Controls.Add(this.lblTMFPicker);
 			this.panTMFPicker.Controls.Add(this.btnTMFPicker);
-			this.panTMFPicker.Location = new System.Drawing.Point(225, 276);
+			this.panTMFPicker.Location = new System.Drawing.Point(336, 276);
 			this.panTMFPicker.Name = "panTMFPicker";
-			this.panTMFPicker.Size = new System.Drawing.Size(107, 21);
+			this.panTMFPicker.Size = new System.Drawing.Size(164, 21);
 			this.panTMFPicker.TabIndex = 29;
 			this.panTMFPicker.Visible = false;
 			// 
@@ -326,7 +303,7 @@
 			this.lblTMFPicker.Location = new System.Drawing.Point(0, 0);
 			this.lblTMFPicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblTMFPicker.Name = "lblTMFPicker";
-			this.lblTMFPicker.Size = new System.Drawing.Size(32, 21);
+			this.lblTMFPicker.Size = new System.Drawing.Size(89, 21);
 			this.lblTMFPicker.TabIndex = 30;
 			this.lblTMFPicker.Text = "TMF";
 			this.lblTMFPicker.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -338,7 +315,7 @@
 			this.btnTMFPicker.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnTMFPicker.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnTMFPicker.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnTMFPicker.Location = new System.Drawing.Point(32, 0);
+			this.btnTMFPicker.Location = new System.Drawing.Point(89, 0);
 			this.btnTMFPicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnTMFPicker.Name = "btnTMFPicker";
 			this.btnTMFPicker.Size = new System.Drawing.Size(75, 21);
@@ -354,16 +331,29 @@
 			this.instructionEditor.Location = new System.Drawing.Point(95, 302);
 			this.instructionEditor.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.instructionEditor.Name = "instructionEditor";
-			this.instructionEditor.Size = new System.Drawing.Size(305, 25);
+			this.instructionEditor.Size = new System.Drawing.Size(323, 25);
 			this.instructionEditor.TabIndex = 0;
 			this.instructionEditor.Text = "inspectorHolder1";
+			// 
+			// tsmRemove
+			// 
+			this.tsmRemove.Name = "tsmRemove";
+			this.tsmRemove.Size = new System.Drawing.Size(167, 22);
+			this.tsmRemove.Text = "Remove Selected";
+			this.tsmRemove.Click += new System.EventHandler(this.tsmRemove_Click);
+			// 
+			// tsmUnDelete
+			// 
+			this.tsmUnDelete.Name = "tsmUnDelete";
+			this.tsmUnDelete.Size = new System.Drawing.Size(167, 22);
+			this.tsmUnDelete.Text = "Unset Delete-Flag";
+			this.tsmUnDelete.Click += new System.EventHandler(this.tsmUnDelete_Click);
 			// 
 			// EditorILPattern
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.panTMFPicker);
-			this.Controls.Add(this.lblwip);
 			this.Controls.Add(this.btnNewOpCode);
 			this.Controls.Add(this.lblDelete);
 			this.Controls.Add(this.chbDelete);
@@ -408,19 +398,18 @@
 		private System.Windows.Forms.ComboBox cbxOperand;
 		private System.Windows.Forms.Label lblOperand;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-		private System.Windows.Forms.ToolStripMenuItem editIntructionToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
 		private System.Windows.Forms.Label lblDnD;
 		private System.Windows.Forms.ComboBox cbxOpcode;
-		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem tsmDelete;
 		private System.Windows.Forms.TextBox txtOperand;
 		private MetroObjects.MCheckBox chbDelete;
 		private System.Windows.Forms.Label lblDelete;
 		private System.Windows.Forms.Button btnNewOpCode;
-		private System.Windows.Forms.Label lblwip;
 		public System.Windows.Forms.TextBox txtMethodFullName;
 		private System.Windows.Forms.Panel panTMFPicker;
 		private System.Windows.Forms.Label lblTMFPicker;
 		private System.Windows.Forms.Button btnTMFPicker;
+		private System.Windows.Forms.ToolStripMenuItem tsmRemove;
+		private System.Windows.Forms.ToolStripMenuItem tsmUnDelete;
 	}
 }

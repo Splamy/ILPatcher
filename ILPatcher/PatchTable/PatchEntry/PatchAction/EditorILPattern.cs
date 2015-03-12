@@ -43,7 +43,7 @@ namespace ILPatcher
 			instructionEditor.OnItemDropSuccess += instructionEditor_OnItemDropSuccess;
 			mInstructBox.OnItemDropFailed += mInstructBox_OnItemDropFailed;
 			mInstructBox.OnItemDropSuccess += mInstructBox_OnItemDropSuccess;
-			OperandCList = new Control[] { txtOperand, cbxOperand, lblwip, panTMFPicker };
+			OperandCList = new Control[] { txtOperand, cbxOperand, panTMFPicker };
 
 			foreach (string dn in ILManager.OpCodeLookup.Keys)
 				cbxOpcode.Items.Add(dn);
@@ -86,7 +86,7 @@ namespace ILPatcher
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
-			MultiPicker.Instance.ShowStructure(StructureView.classes | StructureView.functions, x => x is MethodDefinition, x => LoadMetDef((MethodDefinition)x), true);
+			MultiPicker.Instance.ShowStructure(StructureView.methods, x => x is MethodDefinition, x => LoadMetDef((MethodDefinition)x), true);
 		}
 
 		private void btnCancel_Click(object sender, EventArgs e)
@@ -100,6 +100,26 @@ namespace ILPatcher
 			instructionEditor.AllowDrag = true;
 			cbxOpcode.Text = string.Empty;
 			MakeItemAvailable();
+		}
+
+		private void tsmRemove_Click(object sender, EventArgs e)
+		{
+			if (MessageBox.Show(this, "Do you really want to remove all selected Instructions?\nPlease keep in mind, that only newly created Instructions will be removed,\nold Instructions must be removed with the delete-flag for a patch file.", "Delete confirmation", MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+			List<OpCodeTableItem> remlist = mInstructBox.SelectedItems.ConvertAll<OpCodeTableItem>(x => (OpCodeTableItem)x);
+			foreach (OpCodeTableItem octi in remlist)
+				if (octi.II.IsNew)
+					mInstructBox.RemoveItem(octi);
+
+		}
+
+		private void tsmDelete_Click(object sender, EventArgs e)
+		{
+			mInstructBox.SelectedItems.ForEach(x => ((OpCodeTableItem)x).II.Delete = true);
+		}
+
+		private void tsmUnDelete_Click(object sender, EventArgs e)
+		{
+			mInstructBox.SelectedItems.ForEach(x => ((OpCodeTableItem)x).II.Delete = false);
 		}
 
 		// INTERFACE TOOLS ***************************************************
@@ -284,7 +304,7 @@ namespace ILPatcher
 					Instruction[] tmpold = (Instruction[])nII.OldInstruction.Operand;
 					Instruction[] tmpnew = new Instruction[tmpold.Length];
 					for (int j = 0; j < tmpold.Length; j++)
-						tmpnew[j] = ((OpCodeTableItem)mInstructBox.Items[MetDef.Body.Instructions.IndexOf(tmpold[i])]).II.NewInstruction;
+						tmpnew[j] = ((OpCodeTableItem)mInstructBox.Items[MetDef.Body.Instructions.IndexOf(tmpold[j])]).II.NewInstruction;
 					nII.NewInstruction.Operand = tmpnew;
 				}
 			}
@@ -393,10 +413,21 @@ namespace ILPatcher
 			case PickOperandType.String:
 				if (readOperand)
 					txtOperand.Text = instr.Operand.ToString();
-				txtOperand.Visible = true; // done
+				txtOperand.Visible = true;
 				break;
 			case PickOperandType.InstructionReference:
-				lblwip.Visible = true;
+				InitCbxOperand();
+				if (readOperand)
+				{
+					Instruction pr = instr.Operand as Instruction;
+					if (pr != null)
+						cbxOperand.SelectedIndex = mInstructBox.Items.FindIndex(x => ((OpCodeTableItem)x).II.NewInstruction == pr);
+				}
+				cbxOperand.Visible = true;
+				break;
+			case PickOperandType.InstructionArrReference:
+				lblTMFPicker.Text = "<Instruction Array>";
+				panTMFPicker.Visible = true;
 				break;
 			case PickOperandType.VariableReference:
 				InitCbxOperand();
@@ -406,7 +437,7 @@ namespace ILPatcher
 					if (pr != null)
 						cbxOperand.SelectedIndex = pr.Index;
 				}
-				cbxOperand.Visible = true; // done
+				cbxOperand.Visible = true;
 				break;
 			case PickOperandType.ParameterReference:
 				InitCbxOperand();
@@ -416,7 +447,7 @@ namespace ILPatcher
 					if (vr != null)
 						cbxOperand.SelectedIndex = vr.Index;
 				}
-				cbxOperand.Visible = true; // done
+				cbxOperand.Visible = true;
 				break;
 			case PickOperandType.FieldReference:
 			case PickOperandType.MethodReference:
@@ -428,7 +459,7 @@ namespace ILPatcher
 					if (xr != null)
 						lblTMFPicker.Text = xr.FullName;
 				}
-				panTMFPicker.Visible = true; // done
+				panTMFPicker.Visible = true;
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "Not switced PickOperadType: ", currentPOT.ToString());
@@ -504,10 +535,10 @@ namespace ILPatcher
 			switch (currentPOT)
 			{
 			case PickOperandType.FieldReference:
-				MultiPicker.Instance.ShowStructure(StructureView.classes | StructureView.fields, x => x is FieldReference, x => ApplyOperand((MemberReference)x));
+				MultiPicker.Instance.ShowStructure(StructureView.fields, x => x is FieldReference, x => ApplyOperand((MemberReference)x));
 				break;
 			case PickOperandType.MethodReference:
-				MultiPicker.Instance.ShowStructure(StructureView.classes | StructureView.functions, x => x is MethodReference, x => ApplyOperand((MemberReference)x));
+				MultiPicker.Instance.ShowStructure(StructureView.methods, x => x is MethodReference, x => ApplyOperand((MemberReference)x));
 				break;
 			case PickOperandType.TypeReference:
 				MultiPicker.Instance.ShowStructure(StructureView.classes, x => x is TypeReference, x => ApplyOperand((MemberReference)x));
@@ -516,6 +547,9 @@ namespace ILPatcher
 			case PickOperandType.TMFReferenceDynamic:
 				MultiPicker.Instance.ShowStructure(StructureView.all, x => x is MemberReference, x => ApplyOperand((MemberReference)x));
 				AddGenericsToToolBox();
+				break;
+			case PickOperandType.InstructionArrReference:
+				InstructArrPicker.Instance.ShowStructure(mInstructBox.Items, (Instruction[])((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.Operand, x => ApplyOperand(x));
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with the TMFPicker: ", currentPOT.ToString());
@@ -529,6 +563,10 @@ namespace ILPatcher
 			((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.Operand = tr;
 			RedrawBoth();
 		}
+		private void ApplyOperand(Instruction[] iarr)
+		{
+			((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.Operand = iarr;
+		}
 
 		private void InitCbxOperand()
 		{
@@ -538,32 +576,25 @@ namespace ILPatcher
 			switch (currentPOT)
 			{
 			case PickOperandType.VariableReference:
+				CecilFormatter.SetMaxNumer(MetDef.Body.Variables.Count);
 				foreach (VariableDefinition vardef in MetDef.Body.Variables)
-				{
-					strb.Clear();
-					strb.Append("Num: ");
-					strb.Append(vardef.Index);
-					if (vardef.Name != string.Empty)
-					{
-						strb.Append(" (");
-						strb.Append(vardef.Name);
-						strb.Append(')');
-					}
-					strb.Append(" : ");
-					strb.Append(vardef.VariableType.FullName);
-					cbxOperand.Items.Add(strb.ToString());
-				}
+					cbxOperand.Items.Add(CecilFormatter.Format(vardef));
 				break;
 			case PickOperandType.ParameterReference:
+				CecilFormatter.SetMaxNumer(MetDef.Parameters.Count);
 				foreach (ParameterDefinition pardef in MetDef.Parameters)
-				{
-					cbxOperand.Items.Add(string.Concat(pardef.Name, " : ", pardef.ParameterType.FullName));
-				}
+					cbxOperand.Items.Add(CecilFormatter.Format(pardef));
+				break;
+			case PickOperandType.InstructionReference:
+				CecilFormatter.SetMaxNumer(mInstructBox.Items.Count);
+				foreach (OpCodeTableItem octi in mInstructBox.Items)
+					cbxOperand.Items.Add(CecilFormatter.Format(octi.II.NewInstruction, octi.II.NewInstructionNum));
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());
 				break;
 			}
+			CecilFormatter.ClearMaxNumer();
 		}
 		private void cbxOperand_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -577,6 +608,9 @@ namespace ILPatcher
 			case PickOperandType.ParameterReference:
 				ocp.II.NewInstruction.Operand = MetDef.Parameters[cbxOperand.SelectedIndex];
 				break;
+			case PickOperandType.InstructionReference:
+				ocp.II.NewInstruction.Operand = ((OpCodeTableItem)mInstructBox.Items[cbxOperand.SelectedIndex]).II.NewInstruction;
+				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());
 				break;
@@ -587,7 +621,7 @@ namespace ILPatcher
 		private void AddGenericsToToolBox()
 		{
 			ILNode AddToolBoxNode = new ILNode(null, null, null, StructureView.none);
-			ILNode GenericExtension = AddToolBoxNode.Add("<Local GenericParameter>", "<Local GenericParameter>", null, StructureView.none);
+			ILNode GenericExtension = AddToolBoxNode.Add("<Local GenericParameter>", "<Local GenericParameter>", null, StructureView.structure);
 			if (MetDef.HasGenericParameters)
 				foreach (GenericParameter gpar in MetDef.GenericParameters)
 					GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.classes);

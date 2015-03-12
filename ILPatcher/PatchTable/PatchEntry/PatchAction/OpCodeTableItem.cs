@@ -30,8 +30,6 @@ namespace ILPatcher
 			set { }
 		}
 
-
-
 		public OpCodeTableItem(MListBox nParent, InstructionInfo nII)
 		{
 			II = nII;
@@ -41,14 +39,6 @@ namespace ILPatcher
 
 		public override void Draw(System.Drawing.Graphics g, System.Drawing.RectangleF rec)
 		{
-#if DEBUG
-			//This severe Problem shouldn't happen in Release
-			if (II.NewInstruction == null)
-			{
-				Log.Write(Log.Level.Error, "NewInstruction is null!");
-				return;
-			}
-#endif
 			int split = (int)g.MeasureString("999>999", Font).Width;
 			RefreshHeight(g, (int)rec.Width);
 
@@ -75,7 +65,8 @@ namespace ILPatcher
 			if (II.NewInstruction.Operand == null)
 				g.DrawString("-", Font, II.InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
 			else // TODO: operand type at the beginning only temp
-				g.DrawString(II.NewInstruction.Operand.GetType().Name + " " + II.NewInstruction.Operand.ToString(), Font, II.InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
+				g.DrawString(II.NewInstruction.Operand.GetType().Name + " " + CecilFormatter.TryFormat(II.NewInstruction.Operand), Font, II.InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
+
 		}
 
 		public override void RefreshHeight(System.Drawing.Graphics g, int nWidth)
