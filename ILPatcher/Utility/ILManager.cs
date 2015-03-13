@@ -716,13 +716,14 @@ namespace ILPatcher
 				Array.ForEach(dar.GetSearchDirectories(), x => dar.RemoveSearchDirectory(x));
 				dar.AddSearchDirectory(System.IO.Path.GetDirectoryName(MainPanel.AssemblyPath));
 
-
-				if (SubResolveDepth > 0) // Subresolving references
-					foreach (AssemblyNameReference anr in ModDef.AssemblyReferences)
-					{
-						AssemblyDefinition AssSubRef = ModDef.AssemblyResolver.Resolve(anr);
+				// Subresolving references
+				foreach (AssemblyNameReference anr in ModDef.AssemblyReferences)
+				{
+					AssemblyDefinition AssSubRef = ModDef.AssemblyResolver.Resolve(anr);
+					tnModDef.Add(anr.Name, AssSubRef.FullName, AssSubRef, StructureView.structure);
+					if (SubResolveDepth > 0)
 						InitTree(AssSubRef, SubResolveDepth - 1);
-					}
+				}
 
 				Dictionary<string, ILNode> nsDict = new Dictionary<string, ILNode>();
 				foreach (TypeDefinition TypDef in ModDef.Types)
