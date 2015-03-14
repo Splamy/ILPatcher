@@ -62,7 +62,7 @@ namespace ILPatcher
 				BoxSetHelper(false);
 			else
 			{
-				mInstructBox.SelectedItems.ForEach(x => ((OpCodeTableItem)x).II.Delete = value);
+				mInstructBox.SelectedItems.ForEach(x => ((InstructionInfo)x).Delete = value);
 				RefershInstructionList();
 			}
 		}
@@ -74,24 +74,19 @@ namespace ILPatcher
 				PatchAction = new PatchActionILMethodFixed();
 				PatchAction.SetInitWorking();
 
-				PatchAction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => ((OpCodeTableItem)x).II);
+				PatchAction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
 				PatchAction.MethodDef = MetDef;
 			}
 
 			PatchAction.ActionName = txtPatchActionName.Text;
 
-			EditorEntry.Instance.Add(PatchAction); // TODO refresh patchaction-list
+			EditorEntry.Instance.Add(PatchAction);
 			((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
 			MultiPicker.Instance.ShowStructure(StructureView.methods, x => x is MethodDefinition, x => LoadMetDef((MethodDefinition)x), true);
-		}
-
-		private void btnCancel_Click(object sender, EventArgs e)
-		{
-			// TODO ^^
 		}
 
 		private void btnNewOpCode_Click(object sender, EventArgs e)
@@ -105,21 +100,20 @@ namespace ILPatcher
 		private void tsmRemove_Click(object sender, EventArgs e)
 		{
 			if (MessageBox.Show(this, "Do you really want to remove all selected Instructions?\nPlease keep in mind, that only newly created Instructions will be removed,\nold Instructions must be removed with the delete-flag for a patch file.", "Delete confirmation", MessageBoxButtons.OKCancel) != DialogResult.OK) return;
-			List<OpCodeTableItem> remlist = mInstructBox.SelectedItems.ConvertAll<OpCodeTableItem>(x => (OpCodeTableItem)x);
-			foreach (OpCodeTableItem octi in remlist)
-				if (octi.II.IsNew)
-					mInstructBox.RemoveItem(octi);
-
+			List<InstructionInfo> remlist = mInstructBox.SelectedItems.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+			foreach (InstructionInfo II in remlist)
+				if (II.IsNew)
+					mInstructBox.RemoveItem(II);
 		}
 
 		private void tsmDelete_Click(object sender, EventArgs e)
 		{
-			mInstructBox.SelectedItems.ForEach(x => ((OpCodeTableItem)x).II.Delete = true);
+			mInstructBox.SelectedItems.ForEach(x => ((InstructionInfo)x).Delete = true);
 		}
 
 		private void tsmUnDelete_Click(object sender, EventArgs e)
 		{
-			mInstructBox.SelectedItems.ForEach(x => ((OpCodeTableItem)x).II.Delete = false);
+			mInstructBox.SelectedItems.ForEach(x => ((InstructionInfo)x).Delete = false);
 		}
 
 		// INTERFACE TOOLS ***************************************************
@@ -144,7 +138,7 @@ namespace ILPatcher
 			mInstructBox.Height = Height - (mInstructBox.Top + cbxOpcode.Height + txtOperand.Height + instructionEditor.Height + 5 * space);
 			btnNewOpCode.Top = mInstructBox.Bottom + space;
 			cbxOpcode.Top = btnNewOpCode.Top;
-			cbxOpcode.Width = (Width - (3 * space + labelspace + btnCancel.Width)) / 2;
+			cbxOpcode.Width = (Width - (3 * space + labelspace + btnDone.Width)) / 2;
 
 			lblOperandType.Top = btnNewOpCode.Top;
 			lblOperandType.Width = cbxOpcode.Width;
@@ -156,22 +150,20 @@ namespace ILPatcher
 				{
 					c.Top = lblOperand.Top;
 					c.Left = labelspace;
-					c.Width = Width - (2 * space + labelspace + btnCancel.Width);
+					c.Width = Width - (2 * space + labelspace + btnDone.Width);
 					c.Height = 21;
 					break;
 				}
 
 			lblDnD.Top = lblOperand.Bottom + space;
 			instructionEditor.Top = lblDnD.Top;
-			instructionEditor.Width = Width - (4 * space + labelspace + btnCancel.Width + lblDelete.Width + chbDelete.Width);
+			instructionEditor.Width = Width - (4 * space + labelspace + btnDone.Width + lblDelete.Width + chbDelete.Width);
 			lblDelete.Top = lblDnD.Top;
 			lblDelete.Left = instructionEditor.Right + space;
 			chbDelete.Top = lblDnD.Top;
 			chbDelete.Left = lblDelete.Right + space;
 
-			btnCancel.Top = btnNewOpCode.Top;
-			btnCancel.Left = Width - (btnCancel.Width + space);
-			btnDone.Top = btnCancel.Bottom + space;
+			btnDone.Top = btnNewOpCode.Top;
 			btnDone.Left = Width - (btnDone.Width + space);
 
 			instructionEditor.Invalidate();
@@ -187,19 +179,19 @@ namespace ILPatcher
 
 		void mInstructBox_OnItemDropFailed(DragItem[] di)
 		{
-			OpCodeTableItem octi = di[0] as OpCodeTableItem;
-			if (octi == null)
+			InstructionInfo II = di[0] as InstructionInfo;
+			if (II == null)
 			{
 				Log.Write(Log.Level.Careful, "Not OCTI Type Element in List");
 				return;
 			}
-			if (octi.dragFrom == -1)
+			if (II.dragFrom == -1)
 			{
 				Log.Write(Log.Level.Warning, "OCTI Drag start was saved wrongly");
-				mInstructBox.Items.Insert(0, octi);
+				mInstructBox.Items.Insert(0, II);
 			}
 			else
-				mInstructBox.Items.Insert(octi.dragFrom, octi);
+				mInstructBox.Items.Insert(II.dragFrom, II);
 			RefershInstructionList();
 		}
 
@@ -218,8 +210,8 @@ namespace ILPatcher
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				OpCodeTableItem octi = mInstructBox.SelectedElement as OpCodeTableItem;
-				if (octi == null) return;
+				InstructionInfo II = mInstructBox.SelectedElement as InstructionInfo;
+				if (II == null) return;
 				contextMenuStrip1.Show(Cursor.Position);
 			}
 			else
@@ -237,7 +229,7 @@ namespace ILPatcher
 				nII.OldInstructionNum = -1;
 				nII.NewInstructionNum = -1;
 				nII.NewInstruction = ILManager.GenInstruction(OpCodes.Nop, null);
-				instructionEditor.DragItem = new OpCodeTableItem(mInstructBox, nII);
+				instructionEditor.DragItem = nII;
 			}
 		}
 
@@ -246,7 +238,7 @@ namespace ILPatcher
 			int pos = 0;
 			foreach (DragItem di in mInstructBox.Items)
 			{
-				InstructionInfo II = (di as OpCodeTableItem).II;
+				InstructionInfo II = di as InstructionInfo;
 				if (II.Delete)
 					II.NewInstructionNum = -1;
 				else
@@ -267,7 +259,7 @@ namespace ILPatcher
 
 			if (loadpa.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", loadpa.ActionName, " is not initialized correctly"); return; }
 
-			PatchAction.instructPatchList.ForEach((instr) => { mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, instr)); });
+			mInstructBox.Items = PatchAction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
 		}
 
 		public void LoadMetDef(MethodDefinition MetDef)
@@ -286,25 +278,24 @@ namespace ILPatcher
 				nII.NewInstruction = nII.OldInstruction.Clone();
 				nII.OldInstructionNum = i;
 				nII.NewInstructionNum = i;
-				mInstructBox.AddItem(new OpCodeTableItem(mInstructBox, nII));
+				mInstructBox.AddItem(nII);
 			}
 			// now update all jumps, since they still point to the old list
 			for (int i = 0; i < mInstructBox.Items.Count; i++)
 			{
-				OpCodeTableItem octi = (OpCodeTableItem)mInstructBox.Items[i];
-				InstructionInfo nII = octi.II;
+				InstructionInfo nII = (InstructionInfo)mInstructBox.Items[i];
 
 				if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineBrTarget ||
 					nII.OldInstruction.OpCode.OperandType == OperandType.ShortInlineBrTarget)
 				{
-					nII.NewInstruction.Operand = ((OpCodeTableItem)mInstructBox.Items[MetDef.Body.Instructions.IndexOf((Instruction)nII.OldInstruction.Operand)]).II.NewInstruction;
+					nII.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[MetDef.Body.Instructions.IndexOf((Instruction)nII.OldInstruction.Operand)]).NewInstruction;
 				}
 				else if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineSwitch)
 				{
 					Instruction[] tmpold = (Instruction[])nII.OldInstruction.Operand;
 					Instruction[] tmpnew = new Instruction[tmpold.Length];
 					for (int j = 0; j < tmpold.Length; j++)
-						tmpnew[j] = ((OpCodeTableItem)mInstructBox.Items[MetDef.Body.Instructions.IndexOf(tmpold[j])]).II.NewInstruction;
+						tmpnew[j] = ((InstructionInfo)mInstructBox.Items[MetDef.Body.Instructions.IndexOf(tmpold[j])]).NewInstruction;
 					nII.NewInstruction.Operand = tmpnew;
 				}
 			}
@@ -314,21 +305,22 @@ namespace ILPatcher
 
 		private void ReadFromDragItem()
 		{
-			OpCodeTableItem octi = instructionEditor.DragItem as OpCodeTableItem;
-			if (octi == null) return;
-			BoxSetHelper(octi.II.Delete);
-			cbxOpcode.Text = octi.II.NewInstruction.OpCode.Name;
-			OpCodeToInputType(octi.II.NewInstruction, true);
+			InstructionInfo II = instructionEditor.DragItem as InstructionInfo;
+			if (II == null) return;
+			BoxSetHelper(II.Delete);
+			cbxOpcode.Text = II.NewInstruction.OpCode.Name;
+			OpCodeToInputType(II.NewInstruction, true);
 		}
 
 		private void WriteToDragItem()
 		{
-			OpCodeTableItem ocp = (OpCodeTableItem)instructionEditor.DragItem;
+			InstructionInfo II = (InstructionInfo)instructionEditor.DragItem;
+			if (II == null) return;
 			string lowtxt = cbxOpcode.Text.ToLower();
 			if (ILManager.OpCodeLookup.ContainsKey(lowtxt))
-				ocp.II.NewInstruction.OpCode = ILManager.OpCodeLookup[lowtxt];
+				II.NewInstruction.OpCode = ILManager.OpCodeLookup[lowtxt];
 			else
-				ocp.II.NewInstruction.OpCode = OpCodes.Nop;
+				II.NewInstruction.OpCode = OpCodes.Nop;
 
 			RedrawBoth();
 		}
@@ -421,7 +413,7 @@ namespace ILPatcher
 				{
 					Instruction pr = instr.Operand as Instruction;
 					if (pr != null)
-						cbxOperand.SelectedIndex = mInstructBox.Items.FindIndex(x => ((OpCodeTableItem)x).II.NewInstruction == pr);
+						cbxOperand.SelectedIndex = mInstructBox.Items.FindIndex(x => ((InstructionInfo)x).NewInstruction == pr);
 				}
 				cbxOperand.Visible = true;
 				break;
@@ -475,7 +467,7 @@ namespace ILPatcher
 		private void cbxOpcode_ValueChanged(object sender, EventArgs e)
 		{
 			MakeItemAvailable();
-			OpCodeToInputType(((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction, false);
+			OpCodeToInputType(((InstructionInfo)instructionEditor.DragItem).NewInstruction, false);
 			WriteToDragItem();
 		}
 
@@ -485,42 +477,42 @@ namespace ILPatcher
 		}
 		private void ApplyOperand(string str)
 		{
-			OpCodeTableItem ocp = (OpCodeTableItem)instructionEditor.DragItem;
+			InstructionInfo II = (InstructionInfo)instructionEditor.DragItem;
 
 			switch (currentPOT)
 			{
 			case PickOperandType.Byte:
 				Byte resultByte;
 				if (Byte.TryParse(str, out resultByte))
-					ocp.II.NewInstruction.Operand = resultByte;
+					II.NewInstruction.Operand = resultByte;
 				break;
 			case PickOperandType.SByte:
 				SByte resultSByte;
 				if (SByte.TryParse(str, out resultSByte))
-					ocp.II.NewInstruction.Operand = resultSByte;
+					II.NewInstruction.Operand = resultSByte;
 				break;
 			case PickOperandType.Int32:
 				Int32 resultInt32;
 				if (Int32.TryParse(str, out resultInt32))
-					ocp.II.NewInstruction.Operand = resultInt32;
+					II.NewInstruction.Operand = resultInt32;
 				break;
 			case PickOperandType.Int64:
 				Int64 resultInt64;
 				if (Int64.TryParse(str, out resultInt64))
-					ocp.II.NewInstruction.Operand = resultInt64;
+					II.NewInstruction.Operand = resultInt64;
 				break;
 			case PickOperandType.Single:
 				Single resultSingle;
 				if (Single.TryParse(str, out resultSingle))
-					ocp.II.NewInstruction.Operand = resultSingle;
+					II.NewInstruction.Operand = resultSingle;
 				break;
 			case PickOperandType.Double:
 				Double resultDouble;
 				if (Double.TryParse(str, out resultDouble))
-					ocp.II.NewInstruction.Operand = resultDouble;
+					II.NewInstruction.Operand = resultDouble;
 				break;
 			case PickOperandType.String:
-				ocp.II.NewInstruction.Operand = str;
+				II.NewInstruction.Operand = str;
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a textbox: ", currentPOT.ToString());
@@ -549,7 +541,8 @@ namespace ILPatcher
 				AddGenericsToToolBox();
 				break;
 			case PickOperandType.InstructionArrReference:
-				InstructArrPicker.Instance.ShowStructure(mInstructBox.Items, (Instruction[])((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.Operand, x => ApplyOperand(x));
+				Instruction[] oldop = ((InstructionInfo)instructionEditor.DragItem).NewInstruction.Operand as Instruction[];
+				InstructArrPicker.Instance.ShowStructure(mInstructBox.Items, oldop, x => ApplyOperand(x));
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with the TMFPicker: ", currentPOT.ToString());
@@ -560,12 +553,12 @@ namespace ILPatcher
 		{
 			// TypeDefinition > TypeReference, so this should work
 			lblTMFPicker.Text = tr.FullName;
-			((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.Operand = tr;
+			((InstructionInfo)instructionEditor.DragItem).NewInstruction.Operand = tr;
 			RedrawBoth();
 		}
 		private void ApplyOperand(Instruction[] iarr)
 		{
-			((OpCodeTableItem)instructionEditor.DragItem).II.NewInstruction.Operand = iarr;
+			((InstructionInfo)instructionEditor.DragItem).NewInstruction.Operand = iarr;
 		}
 
 		private void InitCbxOperand()
@@ -587,8 +580,8 @@ namespace ILPatcher
 				break;
 			case PickOperandType.InstructionReference:
 				CecilFormatter.SetMaxNumer(mInstructBox.Items.Count);
-				foreach (OpCodeTableItem octi in mInstructBox.Items)
-					cbxOperand.Items.Add(CecilFormatter.Format(octi.II.NewInstruction, octi.II.NewInstructionNum));
+				foreach (InstructionInfo II in mInstructBox.Items)
+					cbxOperand.Items.Add(CecilFormatter.Format(II.NewInstruction, II.NewInstructionNum));
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());
@@ -598,18 +591,18 @@ namespace ILPatcher
 		}
 		private void cbxOperand_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			OpCodeTableItem ocp = (OpCodeTableItem)instructionEditor.DragItem;
+			InstructionInfo II = (InstructionInfo)instructionEditor.DragItem;
 
 			switch (currentPOT)
 			{
 			case PickOperandType.VariableReference:
-				ocp.II.NewInstruction.Operand = MetDef.Body.Variables[cbxOperand.SelectedIndex];
+				II.NewInstruction.Operand = MetDef.Body.Variables[cbxOperand.SelectedIndex];
 				break;
 			case PickOperandType.ParameterReference:
-				ocp.II.NewInstruction.Operand = MetDef.Parameters[cbxOperand.SelectedIndex];
+				II.NewInstruction.Operand = MetDef.Parameters[cbxOperand.SelectedIndex];
 				break;
 			case PickOperandType.InstructionReference:
-				ocp.II.NewInstruction.Operand = ((OpCodeTableItem)mInstructBox.Items[cbxOperand.SelectedIndex]).II.NewInstruction;
+				II.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[cbxOperand.SelectedIndex]).NewInstruction;
 				break;
 			default:
 				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());

@@ -37,7 +37,7 @@ namespace ILPatcher
 
 		void lbxAllInstruct_MouseDoubleClick(object sender, MouseEventArgs e)
 		{
-			InstructionInfo II = ((OpCodeTableItem)lbxAllInstruct.SelectedElement).II;
+			InstructionInfo II = ((InstructionInfo)lbxAllInstruct.SelectedElement);
 			lbxSwitchInstruct.AddItem(new InstructElement(II.NewInstruction, II.NewInstructionNum));
 		}
 
@@ -48,19 +48,17 @@ namespace ILPatcher
 
 		public void ShowStructure(List<DragItem> inlist, Instruction[] oldlist, Action<Instruction[]> cb)
 		{
+			callback = cb;
+
 			lbxAllInstruct.ClearItems();
 			lbxSwitchInstruct.ClearItems();
 
-			List<OpCodeTableItem> inlistconv = inlist.ConvertAll<OpCodeTableItem>(x => (OpCodeTableItem)x);
-			foreach (OpCodeTableItem di in inlistconv)
-				lbxAllInstruct.AddItem(new OpCodeTableItem(lbxAllInstruct, di.II));
-			foreach (Instruction instr in oldlist)
+			lbxAllInstruct.Items = inlist;
+			if (oldlist != null)
 			{
-				int pos = inlistconv.Find(x => x.II.NewInstruction == instr).II.NewInstructionNum;
-				lbxSwitchInstruct.AddItem(new InstructElement(instr, pos));
+				List<InstructionInfo> inlistconv = inlist.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+				Array.ForEach(oldlist, instr => lbxSwitchInstruct.AddItem(new InstructElement(instr, inlistconv.Find(x => x.NewInstruction == instr).NewInstructionNum)));
 			}
-			callback = cb;
-
 			this.Show();
 		}
 

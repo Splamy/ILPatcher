@@ -38,6 +38,7 @@
 			// 
 			// lbxAllInstruct
 			// 
+			this.lbxAllInstruct.AllowDrag = false;
 			this.lbxAllInstruct.Location = new System.Drawing.Point(5, 30);
 			this.lbxAllInstruct.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lbxAllInstruct.MinimumSize = new System.Drawing.Size(50, 50);

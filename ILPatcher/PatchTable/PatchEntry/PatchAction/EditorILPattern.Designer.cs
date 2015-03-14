@@ -37,12 +37,13 @@
 			this.label4 = new System.Windows.Forms.Label();
 			this.btnPickMethod = new System.Windows.Forms.Button();
 			this.btnDone = new System.Windows.Forms.Button();
-			this.btnCancel = new System.Windows.Forms.Button();
 			this.cbxOperand = new System.Windows.Forms.ComboBox();
 			this.lblOperand = new System.Windows.Forms.Label();
 			this.lblOperandType = new System.Windows.Forms.Label();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.tsmDelete = new System.Windows.Forms.ToolStripMenuItem();
+			this.tsmUnDelete = new System.Windows.Forms.ToolStripMenuItem();
+			this.tsmRemove = new System.Windows.Forms.ToolStripMenuItem();
 			this.lblDnD = new System.Windows.Forms.Label();
 			this.cbxOpcode = new System.Windows.Forms.ComboBox();
 			this.txtOperand = new System.Windows.Forms.TextBox();
@@ -53,8 +54,6 @@
 			this.lblTMFPicker = new System.Windows.Forms.Label();
 			this.btnTMFPicker = new System.Windows.Forms.Button();
 			this.instructionEditor = new ILPatcher.InspectorHolder();
-			this.tsmRemove = new System.Windows.Forms.ToolStripMenuItem();
-			this.tsmUnDelete = new System.Windows.Forms.ToolStripMenuItem();
 			this.contextMenuStrip1.SuspendLayout();
 			this.panTMFPicker.SuspendLayout();
 			this.SuspendLayout();
@@ -142,7 +141,7 @@
 			this.btnDone.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnDone.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnDone.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnDone.Location = new System.Drawing.Point(505, 280);
+			this.btnDone.Location = new System.Drawing.Point(505, 250);
 			this.btnDone.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnDone.Name = "btnDone";
 			this.btnDone.Size = new System.Drawing.Size(90, 25);
@@ -150,21 +149,6 @@
 			this.btnDone.Text = "Done!";
 			this.btnDone.UseVisualStyleBackColor = false;
 			this.btnDone.Click += new System.EventHandler(this.btnDone_Click);
-			// 
-			// btnCancel
-			// 
-			this.btnCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
-			this.btnCancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnCancel.Location = new System.Drawing.Point(505, 250);
-			this.btnCancel.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.btnCancel.Name = "btnCancel";
-			this.btnCancel.Size = new System.Drawing.Size(90, 25);
-			this.btnCancel.TabIndex = 20;
-			this.btnCancel.Text = "Cancel";
-			this.btnCancel.UseVisualStyleBackColor = false;
-			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
 			// 
 			// cbxOperand
 			// 
@@ -207,7 +191,7 @@
             this.tsmUnDelete,
             this.tsmRemove});
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(168, 92);
+			this.contextMenuStrip1.Size = new System.Drawing.Size(168, 70);
 			// 
 			// tsmDelete
 			// 
@@ -215,6 +199,20 @@
 			this.tsmDelete.Size = new System.Drawing.Size(167, 22);
 			this.tsmDelete.Text = "Set Delete-Flag";
 			this.tsmDelete.Click += new System.EventHandler(this.tsmDelete_Click);
+			// 
+			// tsmUnDelete
+			// 
+			this.tsmUnDelete.Name = "tsmUnDelete";
+			this.tsmUnDelete.Size = new System.Drawing.Size(167, 22);
+			this.tsmUnDelete.Text = "Unset Delete-Flag";
+			this.tsmUnDelete.Click += new System.EventHandler(this.tsmUnDelete_Click);
+			// 
+			// tsmRemove
+			// 
+			this.tsmRemove.Name = "tsmRemove";
+			this.tsmRemove.Size = new System.Drawing.Size(167, 22);
+			this.tsmRemove.Text = "Remove Selected";
+			this.tsmRemove.Click += new System.EventHandler(this.tsmRemove_Click);
 			// 
 			// lblDnD
 			// 
@@ -335,20 +333,6 @@
 			this.instructionEditor.TabIndex = 0;
 			this.instructionEditor.Text = "inspectorHolder1";
 			// 
-			// tsmRemove
-			// 
-			this.tsmRemove.Name = "tsmRemove";
-			this.tsmRemove.Size = new System.Drawing.Size(167, 22);
-			this.tsmRemove.Text = "Remove Selected";
-			this.tsmRemove.Click += new System.EventHandler(this.tsmRemove_Click);
-			// 
-			// tsmUnDelete
-			// 
-			this.tsmUnDelete.Name = "tsmUnDelete";
-			this.tsmUnDelete.Size = new System.Drawing.Size(167, 22);
-			this.tsmUnDelete.Text = "Unset Delete-Flag";
-			this.tsmUnDelete.Click += new System.EventHandler(this.tsmUnDelete_Click);
-			// 
 			// EditorILPattern
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -362,7 +346,6 @@
 			this.Controls.Add(this.lblDnD);
 			this.Controls.Add(this.cbxOperand);
 			this.Controls.Add(this.lblOperand);
-			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.lblOperandType);
 			this.Controls.Add(this.btnDone);
 			this.Controls.Add(this.instructionEditor);
@@ -392,7 +375,6 @@
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Button btnPickMethod;
 		private System.Windows.Forms.Button btnDone;
-		private System.Windows.Forms.Button btnCancel;
 		private System.Windows.Forms.Label lblOperandType;
 		private InspectorHolder instructionEditor;
 		private System.Windows.Forms.ComboBox cbxOperand;

@@ -136,7 +136,7 @@
     <Compile Include="GeneralInterface\MultiPicker.Designer.cs">
       <DependentUpon>MultiPicker.cs</DependentUpon>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\PatchAction\OpCodeTableItem.cs" />
+    <Compile Include="PatchTable\PatchEntry\PatchAction\InstructionInfo.cs" />
     <Compile Include="PatchTable\PatchEntry\PatchAction\PatchAction.cs" />
     <Compile Include="PatchTable\PatchEntry\PatchAction\PatchActionILMethodFixed.cs" />
     <Compile Include="PatchTable\PatchEntry\PatchEntry.cs" />
