@@ -41,8 +41,6 @@ namespace ILPatcher
 			return true; // no safety checks atm
 		}
 
-		//TODO: FIX Brachnes: something is broken, offsets dont work...
-
 		public override bool Save(XmlNode output)
 		{
 			NameCompressor nc = NameCompressor.Instance;
@@ -258,8 +256,16 @@ namespace ILPatcher
 						nII.NewInstruction = ILManager.GenInstruction(opcode, operandvalue);
 					else if ((operandvalue = xelem.GetAttribute(SST.Resolve)) != string.Empty)
 					{
-						nII.NewInstruction = ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(operandvalue.ToBaseInt()));
-						PatchStatus = PatchStatus.Broken; // TODO temporary, when resolving works -> do properly
+						if (!operandvalue.Contains(' '))
+						{
+							nII.NewInstruction = ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(operandvalue.ToBaseInt()));
+						}
+						else
+						{
+							Log.Write(Log.Level.Warning, "Extended Resolving is still in development. The PatchAcion will be marked as broken.\nOpCode using ResolveEx: ",
+							 opcode.Name, "\nOperandID in the current PatchList: ", operandvalue);
+							PatchStatus = PatchStatus.Broken;
+						}
 					}
 					else if ((operandvalue = xelem.GetAttribute(SST.BrTargetIndex)) != string.Empty)
 					{
