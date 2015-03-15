@@ -154,10 +154,10 @@
 			// 
 			this.cbxOperand.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbxOperand.FormattingEnabled = true;
-			this.cbxOperand.Location = new System.Drawing.Point(216, 275);
+			this.cbxOperand.Location = new System.Drawing.Point(159, 277);
 			this.cbxOperand.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.cbxOperand.Name = "cbxOperand";
-			this.cbxOperand.Size = new System.Drawing.Size(117, 21);
+			this.cbxOperand.Size = new System.Drawing.Size(80, 21);
 			this.cbxOperand.TabIndex = 18;
 			this.cbxOperand.Visible = false;
 			this.cbxOperand.SelectedIndexChanged += new System.EventHandler(this.cbxOperand_SelectedIndexChanged);
@@ -243,7 +243,7 @@
 			this.txtOperand.Location = new System.Drawing.Point(95, 276);
 			this.txtOperand.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.txtOperand.Name = "txtOperand";
-			this.txtOperand.Size = new System.Drawing.Size(116, 20);
+			this.txtOperand.Size = new System.Drawing.Size(59, 20);
 			this.txtOperand.TabIndex = 24;
 			this.txtOperand.Visible = false;
 			this.txtOperand.TextChanged += new System.EventHandler(this.txtOperand_TextChanged);
@@ -288,9 +288,9 @@
 			// 
 			this.panTMFPicker.Controls.Add(this.lblTMFPicker);
 			this.panTMFPicker.Controls.Add(this.btnTMFPicker);
-			this.panTMFPicker.Location = new System.Drawing.Point(336, 276);
+			this.panTMFPicker.Location = new System.Drawing.Point(242, 277);
 			this.panTMFPicker.Name = "panTMFPicker";
-			this.panTMFPicker.Size = new System.Drawing.Size(164, 21);
+			this.panTMFPicker.Size = new System.Drawing.Size(125, 21);
 			this.panTMFPicker.TabIndex = 29;
 			this.panTMFPicker.Visible = false;
 			// 
@@ -301,7 +301,7 @@
 			this.lblTMFPicker.Location = new System.Drawing.Point(0, 0);
 			this.lblTMFPicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.lblTMFPicker.Name = "lblTMFPicker";
-			this.lblTMFPicker.Size = new System.Drawing.Size(89, 21);
+			this.lblTMFPicker.Size = new System.Drawing.Size(50, 21);
 			this.lblTMFPicker.TabIndex = 30;
 			this.lblTMFPicker.Text = "TMF";
 			this.lblTMFPicker.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -313,7 +313,7 @@
 			this.btnTMFPicker.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnTMFPicker.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnTMFPicker.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnTMFPicker.Location = new System.Drawing.Point(89, 0);
+			this.btnTMFPicker.Location = new System.Drawing.Point(50, 0);
 			this.btnTMFPicker.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnTMFPicker.Name = "btnTMFPicker";
 			this.btnTMFPicker.Size = new System.Drawing.Size(75, 21);

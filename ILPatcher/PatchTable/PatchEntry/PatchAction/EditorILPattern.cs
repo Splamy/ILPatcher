@@ -394,8 +394,6 @@ namespace ILPatcher
 				c.Visible = false;
 			switch (currentPOT)
 			{
-			case PickOperandType.None:
-				break;
 			case PickOperandType.Byte:
 			case PickOperandType.SByte:
 			case PickOperandType.Int32:
@@ -441,16 +439,15 @@ namespace ILPatcher
 				}
 				cbxOperand.Visible = true;
 				break;
+			case PickOperandType.None:
 			case PickOperandType.FieldReference:
 			case PickOperandType.MethodReference:
 			case PickOperandType.TypeReference:
 			case PickOperandType.TMFReferenceDynamic:
 				if (readOperand)
-				{
-					MemberReference xr = instr.Operand as MemberReference;
-					if (xr != null)
-						lblTMFPicker.Text = xr.FullName;
-				}
+					lblTMFPicker.Text = CecilFormatter.TryFormat(instr.Operand);
+
+				btnTMFPicker.Text = currentPOT == PickOperandType.None ? "Clear" : "Pick";
 				panTMFPicker.Visible = true;
 				break;
 			default:
@@ -526,6 +523,11 @@ namespace ILPatcher
 		{
 			switch (currentPOT)
 			{
+			case PickOperandType.None:
+				((InstructionInfo)instructionEditor.DragItem).NewInstruction.Operand = null;
+				lblTMFPicker.Text = string.Empty;
+				RedrawBoth();
+				break;
 			case PickOperandType.FieldReference:
 				MultiPicker.Instance.ShowStructure(StructureView.fields, x => x is FieldReference, x => ApplyOperand((MemberReference)x));
 				break;
@@ -552,13 +554,14 @@ namespace ILPatcher
 		private void ApplyOperand(MemberReference tr)
 		{
 			// TypeDefinition > TypeReference, so this should work
-			lblTMFPicker.Text = tr.FullName;
+			lblTMFPicker.Text = CecilFormatter.TryFormat(tr);
 			((InstructionInfo)instructionEditor.DragItem).NewInstruction.Operand = tr;
 			RedrawBoth();
 		}
 		private void ApplyOperand(Instruction[] iarr)
 		{
 			((InstructionInfo)instructionEditor.DragItem).NewInstruction.Operand = iarr;
+			RedrawBoth();
 		}
 
 		private void InitCbxOperand()

@@ -41,7 +41,7 @@ namespace ILPatcher
 			tablemgr = new TableManager();
 		}
 
-		private void button1_Click(object sender, EventArgs e)
+		private void btnOpenILFile_Click(object sender, EventArgs e)
 		{
 			openAssembly();
 		}
@@ -69,11 +69,7 @@ namespace ILPatcher
 				LoadAsmOrigin();
 				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
 				{
-#if DEBUG
-					ILManager.Instance.InitTreeHalfAsync(AssemblyDef, 0);
-#else
-					ILManager.Instance.InitTreeHalfAsync(AssemblyDef, 1);
-#endif
+					ILManager.Instance.InitTreeHalfAsync(AssemblyDef);
 					structureViever1.RebuildHalfAsync();
 				}
 				if (AwaitingAssemblySelect)
@@ -118,7 +114,7 @@ namespace ILPatcher
 			}
 		}
 
-		private void button2_Click(object sender, EventArgs e)
+		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
 			if (structureViever1.SelectedNode == null) return;
 			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
@@ -160,13 +156,18 @@ namespace ILPatcher
 			}
 		}
 
-		private void button3_Click(object sender, EventArgs e)
+		private void btnSave_Click(object sender, EventArgs e)
 		{
-			// TODO: make stf dialog
+			SaveFileDialog sfd = new SaveFileDialog();
+			sfd.AddExtension = true;
+			sfd.OverwritePrompt = true;
+			sfd.CheckPathExists = true;
+			sfd.Filter = "ILPatcher File|*.ilp";
+			if (sfd.ShowDialog() != DialogResult.OK) return;
 			NameCompressor.Compress = false;
 			XmlDocument xDoc = new XmlDocument();
 			tablemgr.Save(xDoc);
-			SaveToFile(xDoc, "test.ilp");
+			SaveToFile(xDoc, sfd.FileName);
 		}
 
 		static public void SaveToFile(XmlDocument doc, string FileName)

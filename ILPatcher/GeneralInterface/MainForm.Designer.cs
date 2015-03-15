@@ -41,14 +41,14 @@
 			this.swooshPanel1.TabIndex = 14;
 			this.swooshPanel1.Text = "swooshPanel1";
 			// 
-			// Form1
+			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(644, 483);
 			this.Controls.Add(this.swooshPanel1);
-			this.Name = "Form1";
-			this.Text = "C# Patcher";
+			this.Name = "MainForm";
+			this.Text = "ILPatcher";
 			this.ResumeLayout(false);
 
 		}

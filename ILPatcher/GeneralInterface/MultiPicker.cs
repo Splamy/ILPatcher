@@ -15,7 +15,6 @@ namespace ILPatcher
 	public partial class MultiPicker : Form
 	{
 		private Func<object, bool> filterPredicate;
-		private StructureView filterFlag;
 		private Action<object> callback;
 
 		private static MultiPicker _Instance;
@@ -36,12 +35,16 @@ namespace ILPatcher
 
 		public void ShowStructure(StructureView fF, Func<object, bool> fP, Action<object> cb, bool mainmodonly = false)
 		{
-			filterFlag = fF;
-			filterPredicate = fP;
-			callback = cb;
-			structureViever1.FilterElements = fF;
+			structureViever1.ContextAssemblyLoad = !mainmodonly;
 			this.Show();
-			structureViever1.RebuildHalfAsync(mainmodonly);
+
+			if (filterPredicate != fP || callback != cb || structureViever1.FilterElements != fF)
+			{
+				filterPredicate = fP;
+				callback = cb;
+				structureViever1.FilterElements = fF;
+				structureViever1.RebuildHalfAsync(mainmodonly);
+			}
 		}
 
 		public void AddToolBoxNode(ILNode extNode)
@@ -56,8 +59,8 @@ namespace ILPatcher
 
 		private void MultiPicker_Resize(object sender, EventArgs e)
 		{
-			btn_Select.Top = Height - (btn_Select.Height + 50);
-			btn_Cancel.Top = Height - (btn_Cancel.Height + 50);
+			btn_Select.Top = Height - (btn_Select.Height + 45);
+			btn_Cancel.Top = Height - (btn_Cancel.Height + 45);
 			structureViever1.Height = Height - (btn_Select.Height + 50);
 		}
 

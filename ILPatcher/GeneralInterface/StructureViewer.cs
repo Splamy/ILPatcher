@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 using System.Text;
 using System.Reflection;
@@ -19,7 +20,11 @@ namespace ILPatcher
 		[DefaultValue(false)]
 		public bool UseFullName { get; set; }
 
+		[DefaultValue(false)]
+		public bool ContextAssemblyLoad { get; set; }
+
 		private TreeNode ExtensionNode = new TreeNode("Extension Node");
+		private ContextMenuStrip cxMenu = new ContextMenuStrip();
 
 		public StructureViewer()
 		{
@@ -39,6 +44,34 @@ namespace ILPatcher
 			imgl.Images.Add(LocRes.Operator);
 			imgl.Images.Add(LocRes.Property);
 			this.ImageList = imgl;
+
+			MouseUp += StructureViewer_MouseUp;
+
+			cxMenu.Items.Add("Load Assembly", null, tsb_Click);
+			//Controls.Add(cxMenu);
+		}
+
+		void tsb_Click(object sender, EventArgs e)
+		{
+			ILManager.Instance.InitTree((AssemblyDefinition)SelectedNode.Tag);
+			RebuildHalfAsync();
+		}
+
+		private void StructureViewer_MouseUp(object sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Right && ContextAssemblyLoad)
+			{
+				Point p = new Point(e.X, e.Y);
+				TreeNode node = GetNodeAt(p);
+				if (node != null)
+				{
+					SelectedNode = node;
+					if (node.Tag is AssemblyDefinition && node.Level > 0)
+					{
+						cxMenu.Show(this, p);
+					}
+				}
+			}
 		}
 
 		public void RebuildHalfAsync(bool mainmodonly = false)

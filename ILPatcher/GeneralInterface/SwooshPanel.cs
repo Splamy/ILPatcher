@@ -34,7 +34,6 @@ namespace ILPatcher
 			int minspeed = Width / 50;
 			float pos = currentPos * 2f / Width - 1;
 			int speed = (int)Math.Round(Math.Pow(Width, (-.5 * pos * pos)) * Math.Log(Width, 1.5)) + minspeed;
-			Parent.Text = speed.ToString();
 			if (swooshRight) speed *= -1;
 			TabList[oldindex].ctrl.Left += speed;
 			TabList[selectedIndex].ctrl.Left += speed;

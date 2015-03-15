@@ -24,6 +24,8 @@ namespace ILPatcher
 				return CecilFormatter.Format((ParameterReference)objref);
 			else if (objref is Instruction)
 				return CecilFormatter.Format((Instruction)objref);
+			else if (objref is MemberReference)
+				return CecilFormatter.Format((MemberReference)objref);
 			else
 				return objref.ToString();
 		}
@@ -75,6 +77,11 @@ namespace ILPatcher
 					strb.Append(TryFormat(instr.Operand));
 			}
 			return strb.ToString();
+		}
+
+		public static string Format(MemberReference memref)
+		{
+			return memref.FullName;
 		}
 
 		public static void SetMaxNumer(int max)
