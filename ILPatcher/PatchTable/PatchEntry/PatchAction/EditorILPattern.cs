@@ -21,22 +21,19 @@ namespace ILPatcher
 		private Control[] OperandCList;
 		private PickOperandType currentPOT = PickOperandType.None;
 
-		private static EditorILPattern _Instance;
-		public static EditorILPattern Instance
-		{
-			get { if (_Instance == null) _Instance = new EditorILPattern(); return _Instance; }
-			protected set { _Instance = value; }
-		}
+		public PatchActionILMethodFixed Patchaction { get; set; }
 
-		public PatchActionILMethodFixed PatchAction { get; set; }
+		private Action<PatchAction> callbackAdd;
 
 		//openrand combo box add: wildcard, custom value(+default)
 		//predeclared variables
 		//(predeclared params)
 
-		private EditorILPattern()
+		public EditorILPattern(Action<PatchAction> _cbAdd)
 		{
 			InitializeComponent();
+
+			callbackAdd = _cbAdd;
 
 			mInstructBox.MouseClick += mInstructBox_MouseClick;
 			chbDelete.OnChange += chbDelete_OnChange;
@@ -69,19 +66,19 @@ namespace ILPatcher
 
 		private void btnDone_Click(object sender, EventArgs e)
 		{
-			if (PatchAction == null)
+			if (Patchaction == null)
 			{
-				PatchAction = new PatchActionILMethodFixed();
-				PatchAction.SetInitWorking();
+				Patchaction = new PatchActionILMethodFixed();
+				Patchaction.SetInitWorking();
 
-				PatchAction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
-				PatchAction.MethodDef = MetDef;
+				Patchaction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+				Patchaction.MethodDef = MetDef;
 			}
 
-			PatchAction.ActionName = txtPatchActionName.Text;
+			Patchaction.ActionName = txtPatchActionName.Text;
 
-			EditorEntry.Instance.Add(PatchAction);
-			((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
+			callbackAdd(Patchaction);
+			((SwooshPanel)Parent).SwooshBack();
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
@@ -253,20 +250,21 @@ namespace ILPatcher
 		{
 			mInstructBox.ClearItems();
 
-			PatchAction = loadpa;
+			Patchaction = loadpa;
 			MetDef = loadpa.MethodDef;
 			txtPatchActionName.Text = loadpa.ActionName;
+			txtMethodFullName.Text = MetDef.FullName;
 
 			if (loadpa.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", loadpa.ActionName, " is not initialized correctly"); return; }
 
-			mInstructBox.Items = PatchAction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
+			mInstructBox.Items = Patchaction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
 		}
 
 		public void LoadMetDef(MethodDefinition MetDef)
 		{
 			mInstructBox.ClearItems();
 
-			PatchAction = null;
+			Patchaction = null;
 
 			txtMethodFullName.Text = MetDef.FullName;
 			this.MetDef = MetDef;
@@ -634,37 +632,37 @@ namespace ILPatcher
 			}
 			MultiPicker.Instance.AddToolBoxNode(AddToolBoxNode);
 		}
-	}
 
-	public enum PickOperandType
-	{
-		None,
-		Byte,
-		SByte,
-		Int32,
-		Int64,
-		Single,
-		Double,
-		String,
-		InstructionReference,
-		InstructionArrReference,
-		VariableReference,
-		ParameterReference,
-		FieldReference,
-		MethodReference,
-		TypeReference,
-		TMFReferenceDynamic,
-	}
+		public enum PickOperandType
+		{
+			None,
+			Byte,
+			SByte,
+			Int32,
+			Int64,
+			Single,
+			Double,
+			String,
+			InstructionReference,
+			InstructionArrReference,
+			VariableReference,
+			ParameterReference,
+			FieldReference,
+			MethodReference,
+			TypeReference,
+			TMFReferenceDynamic,
+		}
 
-	public enum InputType
-	{
-		None,
-		Box,
-		IntructList,
-		VarList,
-		ParamList,
-		FieldList,
-		MethodList,
-		TypeList,
+		public enum InputType
+		{
+			None,
+			Box,
+			IntructList,
+			VarList,
+			ParamList,
+			FieldList,
+			MethodList,
+			TypeList,
+		}
 	}
 }

@@ -24,10 +24,7 @@ namespace ILPatcher
 
 			NameCompressor.Instance.CheckUnique();
 
-			swooshPanel1.AddPanel(MainPanel.Instance, "Overview");
-			swooshPanel1.AddPanel(EditorEntry.Instance, "Patch Entry");
-			swooshPanel1.AddPanel(EditorILPattern.Instance, "Patch Part");
-			//swooshPanel1.AddPanel(new TextBox() { Multiline = true }, "Notes");
+			swooshPanel1.PushPanel(new MainPanel(), "Overview");
 		}
 
 		private static MainForm _Instance;

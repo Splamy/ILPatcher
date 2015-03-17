@@ -36,6 +36,7 @@ namespace ILPatcher
 		ILMethodDynamic,
 		ILDynamicScan,
 		AoBRawScan,
+		ILMethodCreator,
 	}
 
 	public enum PatchStatus

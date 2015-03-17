@@ -66,7 +66,7 @@
 			this.btnCreatePatch.TabIndex = 18;
 			this.btnCreatePatch.Text = "create ILPatch";
 			this.btnCreatePatch.UseVisualStyleBackColor = false;
-			this.btnCreatePatch.Click += new System.EventHandler(this.button4_Click);
+			this.btnCreatePatch.Click += new System.EventHandler(this.btnNewPatch_Click);
 			// 
 			// clbPatchList
 			// 

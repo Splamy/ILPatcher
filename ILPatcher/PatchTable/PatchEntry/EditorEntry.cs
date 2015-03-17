@@ -12,13 +12,6 @@ namespace ILPatcher
 {
 	public partial class EditorEntry : UserControl
 	{
-		private static EditorEntry _Instance;
-		public static EditorEntry Instance
-		{
-			get { if (_Instance == null) _Instance = new EditorEntry(); return _Instance; }
-			protected set { _Instance = value; }
-		}
-
 		private PatchEntry patchentry;
 		public PatchEntry patchEntry
 		{
@@ -32,39 +25,29 @@ namespace ILPatcher
 			set { patchentry = value; }
 		}
 
-		private EditorEntry()
+		Action<PatchEntry> callbackAdd;
+
+		public EditorEntry(Action<PatchEntry> _cbAdd)
 		{
 			InitializeComponent();
-			/*
-			parent = _parent;
-			//Owner = _parent;
-			if (_pe == null)
-			{
-				pe = new PatchEntry();
-				pe.EntryName = "testentry";
-			}
-			else
-				pe = _pe; // init if != null
-			 */
+
+			callbackAdd = _cbAdd;
 		}
 
 		private void btnAddILPatch_Click(object sender, EventArgs e)
 		{
-			if (mEntryList.SelectedIndex >= 0) // TODO find correct inheritance | ADD Edit Function
-				EditorILPattern.Instance.PatchAction = (PatchActionILMethodFixed)patchEntry.ActionList[mEntryList.SelectedIndex];
-			((SwooshPanel)Parent).SwooshTo(EditorILPattern.Instance);
+			((SwooshPanel)Parent).PushPanel(new EditorILPattern(Add), "PatchAction: ILMethodFixed");
 		}
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			MainPanel.Instance.Add(patchEntry);
-			((SwooshPanel)Parent).SwooshTo(MainPanel.Instance);
+			callbackAdd(patchEntry);
+			((SwooshPanel)Parent).SwooshBack();
 		}
 
 		public void Add(PatchAction pa)
 		{
-			if (!patchEntry.ActionList.Contains(pa))
-				patchEntry.ActionList.Add(pa);
+			patchEntry.Add(pa);
 			LoadEntry(patchEntry);
 		}
 
@@ -104,22 +87,23 @@ namespace ILPatcher
 				PatchAction pa = patchEntry.ActionList[mEntryList.SelectedIndex];
 				switch (pa.PatchActionType)
 				{
-					case PatchActionType.ILMethodFixed:
-						EditorILPattern.Instance.LoadPatchAction(pa as PatchActionILMethodFixed);
-						break;
-					case PatchActionType.ILMethodDynamic:
-						Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
-						return;
-					case PatchActionType.ILDynamicScan:
-						Log.Write(Log.Level.Info, "ILDynamicScan not implemented");
-						return;
-					case PatchActionType.AoBRawScan:
-						Log.Write(Log.Level.Info, "AoBRawScan not implemented");
-						return;
-					default:
-						return;
+				case PatchActionType.ILMethodFixed:
+					EditorILPattern eilp = new EditorILPattern(Add);
+					eilp.LoadPatchAction((PatchActionILMethodFixed)pa);
+					((SwooshPanel)Parent).PushPanel(eilp, "PatchAction: ILMethodFixed");
+					break;
+				case PatchActionType.ILMethodDynamic:
+					Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
+					return;
+				case PatchActionType.ILDynamicScan:
+					Log.Write(Log.Level.Info, "ILDynamicScan not implemented");
+					return;
+				case PatchActionType.AoBRawScan:
+					Log.Write(Log.Level.Info, "AoBRawScan not implemented");
+					return;
+				default:
+					return;
 				}
-				((SwooshPanel)Parent).SwooshTo(EditorILPattern.Instance);
 			}
 		}
 

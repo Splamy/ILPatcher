@@ -128,7 +128,6 @@ namespace ILPatcher
 			if (metpathunres == string.Empty) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); PatchStatus = PatchStatus.Broken; return false; }
 			MethodDef = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
 			if (MethodDef == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
-			EditorILPattern.Instance.txtMethodFullName.Text = MethodDef.FullName;
 
 			int instructioncount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
 			InstructionInfo[] iibuffer = new InstructionInfo[instructioncount];

@@ -7,13 +7,7 @@ namespace ILPatcher
 {
 	public class SwooshPanel : Control
 	{
-		List<LayerLevel> TabList;
-		LayerLevel selectedLayer
-		{
-			get { return TabList[selectedIndex]; }
-			set { TabList[selectedIndex] = value; }
-		}
-		int selectedIndex;
+		private List<LayerLevel> TabList;
 		public const int PATHBOXHEIGHT = 30;
 
 		Timer swooshTimer;
@@ -36,7 +30,7 @@ namespace ILPatcher
 			int speed = (int)Math.Round(Math.Pow(Width, (-.5 * pos * pos)) * Math.Log(Width, 1.5)) + minspeed;
 			if (swooshRight) speed *= -1;
 			TabList[oldindex].ctrl.Left += speed;
-			TabList[selectedIndex].ctrl.Left += speed;
+			TabList[TabList.Count - 1].ctrl.Left += speed;
 			currentPos = Math.Abs(TabList[oldindex].ctrl.Left);
 
 			//opt: if in next step
@@ -44,14 +38,33 @@ namespace ILPatcher
 				ResizeAll();
 		}
 
-		public void AddPanel(Control c, string name)
+		public void PushPanel(Control c, string name)
 		{
 			TabList.Add(new LayerLevel(this, c, name));
+			SwooshTo(TabList.Count - 1);
 			ResizeAll();
 		}
 
-		public void SwooshTo(int nwIndex)
+		public void SwooshBack()
 		{
+			if (TabList.Count > 1)
+			{
+				SwooshTo(TabList.Count - 2);
+			}
+		}
+
+		public void SwooshBackTo(int nwIndex)
+		{
+			int selectedIndex = TabList.Count - 1;
+			if (nwIndex < selectedIndex && TabList.Count > 1)
+			{
+				SwooshTo(nwIndex);
+			}
+		}
+
+		private void SwooshTo(int nwIndex)
+		{
+			int selectedIndex = TabList.Count - 1;
 			if (selectedIndex == nwIndex) return;
 			if (selectedIndex < nwIndex)
 			{
@@ -86,16 +99,6 @@ namespace ILPatcher
 			swooshTimer.Start();
 		}
 
-		public void SwooshTo(Control nwControl)
-		{
-			for (int i = 0; i < TabList.Count; i++)
-				if (TabList[i].ctrl == nwControl)
-				{
-					SwooshTo(i);
-					return;
-				}
-		}
-
 		protected override void OnResize(EventArgs e)
 		{
 			ResizeAll();
@@ -117,7 +120,7 @@ namespace ILPatcher
 					ll.btn.Location = new Point(last.lbl.Right - 1, 1);
 				ll.lbl.Location = new Point(ll.btn.Right - 1, 1);
 
-				if (ll == selectedLayer)
+				if (TabList.IndexOf(ll) == TabList.Count - 1)
 				{
 					ll.ctrl.Dock = DockStyle.Bottom;
 					ll.ctrl.Height = Height - PATHBOXHEIGHT - 1;
@@ -165,7 +168,7 @@ namespace ILPatcher
 
 		void btn_Click(object sender, EventArgs e)
 		{
-			parent.SwooshTo(((CustomButton)sender).Index);
+			parent.SwooshBackTo(((CustomButton)sender).Index);
 		}
 
 		public override string ToString()

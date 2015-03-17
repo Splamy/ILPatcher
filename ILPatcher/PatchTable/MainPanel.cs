@@ -27,17 +27,11 @@ namespace ILPatcher
 		bool AwaitingAssemblySelect = false;
 		string ilpFiletmp;
 
-		private static MainPanel _Instance;
-		public static MainPanel Instance
-		{
-			get { if (_Instance == null) _Instance = new MainPanel(); return _Instance; }
-			protected set { _Instance = value; }
-		}
-
-		private MainPanel()
+		public MainPanel()
 		{
 			InitializeComponent();
 
+			Log.callback = VisualLog;
 			tablemgr = new TableManager();
 		}
 
@@ -200,18 +194,18 @@ namespace ILPatcher
 			}
 		}
 
-		private void button4_Click(object sender, EventArgs e)
+		private void btnNewPatch_Click(object sender, EventArgs e)
 		{
-			EditorEntry.Instance.LoadEntry(null);
-			((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
+			EditorEntry ee = new EditorEntry(Add);
+			ee.LoadEntry(null);
+			((SwooshPanel)Parent).PushPanel(ee, "Patch Entry");
 		}
 
 		public void Add(PatchEntry pe)
 		{
 			if (tablemgr == null)
 				tablemgr = new TableManager();
-			if (!tablemgr.EntryList.Contains(pe))
-				tablemgr.EntryList.Add(pe);
+			tablemgr.Add(pe);
 			RebuildTable();
 		}
 
@@ -293,6 +287,7 @@ namespace ILPatcher
 			if (Match)
 			{
 				tablemgr.Load(BaseNode);
+				RebuildTable();
 			}
 			else
 				Log.Write(Log.Level.Error, "No PatchTable found!");
@@ -303,9 +298,9 @@ namespace ILPatcher
 		{
 			if (clbPatchList.SelectedIndex >= 0)
 			{
-				EditorEntry.Instance.LoadEntry(
-					tablemgr.EntryList[clbPatchList.SelectedIndex]);
-				((SwooshPanel)Parent).SwooshTo(EditorEntry.Instance);
+				EditorEntry ee = new EditorEntry(Add);
+				ee.LoadEntry(tablemgr.EntryList[clbPatchList.SelectedIndex]);
+				((SwooshPanel)Parent).PushPanel(ee, "Patch Entry");
 			}
 		}
 
@@ -323,6 +318,12 @@ namespace ILPatcher
 				AssemblyDef.Write(AssemblyPath);
 			}
 			catch (Exception ex) { MessageBox.Show(ex.Message); }
+		}
+
+		private void VisualLog(ErrorLoggerItem eli)
+		{
+			lbxErrors.AddItem(eli);
+			lbxErrors.InvalidateChildren();
 		}
 	}
 

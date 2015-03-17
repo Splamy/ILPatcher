@@ -48,10 +48,16 @@ namespace ILPatcher
 					PatchEntry tmpPE = new PatchEntry();
 					tmpPE.EntryName = xnode.GetAttribute(SST.NAME);
 					tmpPE.Load(xnode);
-					MainPanel.Instance.Add(tmpPE);
+					Add(tmpPE);
 				}
 			}
 			return true;
+		}
+
+		public void Add(PatchEntry pe)
+		{
+			if (!EntryList.Contains(pe))
+				EntryList.Add(pe);
 		}
 	}
 }

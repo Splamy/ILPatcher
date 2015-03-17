@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ILPatcher</RootNamespace>
     <AssemblyName>ILPatcher</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -26,6 +26,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -96,6 +97,13 @@
     <Compile Include="GeneralInterface\PatchQuestionWindow.Designer.cs">
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="PatchTable\PatchEntry\PatchAction\EditorMethodCreator.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PatchTable\PatchEntry\PatchAction\EditorMethodCreator.Designer.cs">
+      <DependentUpon>EditorMethodCreator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PatchTable\PatchEntry\PatchAction\PatchActionMethodCreator.cs" />
     <Compile Include="Utility\CecilFormatter.cs" />
     <Compile Include="Utility\AnyArray.cs" />
     <Compile Include="Utility\ErrorLogger.cs" />
@@ -170,6 +178,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GeneralInterface\PatchQuestionWindow.resx">
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PatchTable\PatchEntry\PatchAction\EditorMethodCreator.resx">
+      <DependentUpon>EditorMethodCreator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

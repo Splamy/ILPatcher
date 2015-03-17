@@ -20,6 +20,7 @@ namespace ILPatcher
 
 		public static bool Active = true;
 		private static int level = 2;
+		public static Action<ErrorLoggerItem> callback { get; set; }
 
 		private string[] spaceup;
 
@@ -69,8 +70,7 @@ namespace ILPatcher
 			string stackbuffer = strb.ToString();
 			strb.Append(inputbuffer);
 			strb.Append("\r\n");
-			MainPanel.Instance.lbxErrors.AddItem(new ErrorLoggerItem(lvl, inputbuffer));
-			MainPanel.Instance.lbxErrors.InvalidateChildren();
+			if (callback != null) callback(new ErrorLoggerItem(lvl, inputbuffer));
 			File.AppendAllText("Output.log", strb.ToString(), Encoding.UTF8);
 		}
 

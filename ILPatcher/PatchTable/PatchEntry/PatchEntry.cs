@@ -86,5 +86,11 @@ namespace ILPatcher
 			}
 			return true;
 		}
+
+		public void Add(PatchAction pa)
+		{
+			if (!ActionList.Contains(pa))
+				ActionList.Add(pa);
+		}
 	}
 }
