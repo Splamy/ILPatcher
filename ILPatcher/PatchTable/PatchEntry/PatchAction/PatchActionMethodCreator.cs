@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Mono;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+
 namespace ILPatcher
 {
 	public class PatchActionMethodCreator : PatchAction
@@ -11,6 +15,9 @@ namespace ILPatcher
 		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodCreator; } protected set { } }
 		private PatchStatus _PatchStatus = PatchStatus.Unset;
 		public override PatchStatus PatchStatus { get { return _PatchStatus; } protected set { _PatchStatus = value; } }
+
+		private MethodDefinition NMetDef;
+		private TypeDefinition TpyDef;
 
 		public override bool Execute()
 		{

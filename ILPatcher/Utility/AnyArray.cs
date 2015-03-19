@@ -61,5 +61,10 @@ namespace ILPatcher
 			}
 			max = size;
 		}
+
+		public T[] ToArray()
+		{
+			return (T[])array.Clone();
+		}
 	}
 }

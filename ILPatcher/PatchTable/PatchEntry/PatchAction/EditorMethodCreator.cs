@@ -14,14 +14,30 @@ namespace ILPatcher
 	{
 		public PatchActionMethodCreator Patchaction { get; set; }
 
-		public EditorMethodCreator()
+		private Action<PatchAction> callbackAdd;
+
+		public EditorMethodCreator(Action<PatchAction> _cbAdd)
 		{
 			InitializeComponent();
+
+			callbackAdd = _cbAdd;
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
 
+		}
+
+		private void btnOK_Click(object sender, EventArgs e)
+		{
+			//callbackAdd(Patchaction);
+			((SwooshPanel)Parent).SwooshBack();
+		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+			CSCompiler csc = new CSCompiler(null);
+			Mono.Cecil.MethodDefinition md = csc.InjectCode(textBox1.Text);
 		}
 	}
 }

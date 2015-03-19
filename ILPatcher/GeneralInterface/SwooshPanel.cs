@@ -2,22 +2,24 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Linq;
 
 namespace ILPatcher
 {
 	public class SwooshPanel : Control
 	{
-		private List<LayerLevel> TabList;
+		//private List<LayerLevel> TabList;
+		private Stack<LayerLevel> TabList;
+		private LayerLevel WorkLayer;
 		public const int PATHBOXHEIGHT = 30;
 
 		Timer swooshTimer;
 		bool swooshRight; // true if right, false is left
-		int oldindex;
 		int currentPos;
 
 		public SwooshPanel()
 		{
-			TabList = new List<LayerLevel>();
+			TabList = new Stack<LayerLevel>();
 			swooshTimer = new Timer();
 			swooshTimer.Interval = 10;
 			swooshTimer.Tick += swooshTimer_Tick;
@@ -29,20 +31,35 @@ namespace ILPatcher
 			float pos = currentPos * 2f / Width - 1;
 			int speed = (int)Math.Round(Math.Pow(Width, (-.5 * pos * pos)) * Math.Log(Width, 1.5)) + minspeed;
 			if (swooshRight) speed *= -1;
-			TabList[oldindex].ctrl.Left += speed;
-			TabList[TabList.Count - 1].ctrl.Left += speed;
-			currentPos = Math.Abs(TabList[oldindex].ctrl.Left);
+			WorkLayer.ctrl.Left += speed;
+			TabList.Peek().ctrl.Left += speed;
+			currentPos = Math.Abs(WorkLayer.ctrl.Left);
 
 			//opt: if in next step
 			if (currentPos >= Width)
-				ResizeAll();
+			{
+				if (!swooshRight)
+				{
+					WorkLayer.Dispose();
+					WorkLayer = null;
+				}
+				ResizeAll(true);
+			}
 		}
 
 		public void PushPanel(Control c, string name)
 		{
-			TabList.Add(new LayerLevel(this, c, name));
-			SwooshTo(TabList.Count - 1);
-			ResizeAll();
+			if (TabList.Count > 0)
+			{
+				WorkLayer = TabList.Peek();
+				TabList.Push(new LayerLevel(this, c, name));
+				SwooshTo(TabList.Count);
+			}
+			else
+			{
+				TabList.Push(new LayerLevel(this, c, name));
+				ResizeAll(true);
+			}
 		}
 
 		public void SwooshBack()
@@ -66,61 +83,66 @@ namespace ILPatcher
 		{
 			int selectedIndex = TabList.Count - 1;
 			if (selectedIndex == nwIndex) return;
-			if (selectedIndex < nwIndex)
+			if (nwIndex > selectedIndex)
 			{
-				swooshRight = true;
-				TabList[nwIndex].ctrl.Width = Width;
-				TabList[nwIndex].ctrl.Left = Width;
+				swooshRight = true; // controls move to the left
+				TabList.Peek().ctrl.Width = Width;
+				TabList.Peek().ctrl.Left = Width;
 			}
-			else
+			else // Layer is new
 			{
-				swooshRight = false;
-				TabList[nwIndex].ctrl.Width = Width;
-				TabList[nwIndex].ctrl.Left = -Width;
+				swooshRight = false; // controls move to the right
+				WorkLayer = TabList.Pop();
+				while (TabList.Count - 1 > nwIndex)
+					TabList.Pop().Dispose();
+				TabList.Peek().ctrl.Width = Width;
+				TabList.Peek().ctrl.Left = -Width;
 			}
-			TabList[nwIndex].ctrl.Top = PATHBOXHEIGHT + 1;
-			TabList[nwIndex].ctrl.Height = Height - PATHBOXHEIGHT - 1;
-			TabList[nwIndex].ctrl.SuspendLayout();
+			TabList.Peek().ctrl.Top = PATHBOXHEIGHT + 1;
+			TabList.Peek().ctrl.Height = Height - PATHBOXHEIGHT - 1;
+			TabList.Peek().ctrl.SuspendLayout();
 			//TabList[nwIndex].ctrl.Enabled = false;
 
-			TabList[selectedIndex].ctrl.Dock = DockStyle.None;
-			TabList[selectedIndex].ctrl.Top = PATHBOXHEIGHT + 1;
-			TabList[selectedIndex].ctrl.Left = 0;
-			TabList[selectedIndex].ctrl.Width = Width;
-			TabList[selectedIndex].ctrl.Height = Height - PATHBOXHEIGHT - 1;
-			TabList[selectedIndex].ctrl.SuspendLayout();
+			WorkLayer.ctrl.Dock = DockStyle.None;
+			WorkLayer.ctrl.Top = PATHBOXHEIGHT + 1;
+			WorkLayer.ctrl.Left = 0;
+			WorkLayer.ctrl.Width = Width;
+			WorkLayer.ctrl.Height = Height - PATHBOXHEIGHT - 1;
+			WorkLayer.ctrl.SuspendLayout();
 			//TabList[selectedIndex].ctrl.Enabled = false;
 
-			for (int i = 0; i < TabList.Count; i++)
-				TabList[i].btn.Enabled = i <= nwIndex;
+			//for (int i = 0; i < TabList.Count; i++)
+			//	TabList[i].btn.Enabled = i <= nwIndex;
 
-			oldindex = selectedIndex;
-			selectedIndex = nwIndex;
 			swooshTimer.Start();
 		}
 
 		protected override void OnResize(EventArgs e)
 		{
-			ResizeAll();
+			ResizeAll(false);
 			base.OnResize(e);
 		}
 
-		private void ResizeAll()
+		private void ResizeAll(bool stopTimer)
 		{
-			swooshTimer.Stop();
+			if (stopTimer) swooshTimer.Stop();
 			if (TabList.Count == 0) return;
 
 			LayerLevel last = null;
-			foreach (LayerLevel ll in TabList)
+			int index = 0;
+			foreach (LayerLevel ll in TabList.Reverse())
 			{
-				ll.btn.Index = TabList.IndexOf(ll);
+				ll.btn.Index = index++;
 				if (last == null)
 					ll.btn.Location = new Point(1, 1);
 				else
 					ll.btn.Location = new Point(last.lbl.Right - 1, 1);
+				ll.lbl.Visible = true;
+				ll.btn.Visible = true;
 				ll.lbl.Location = new Point(ll.btn.Right - 1, 1);
 
-				if (TabList.IndexOf(ll) == TabList.Count - 1)
+
+				if (ll == TabList.Peek())
 				{
 					ll.ctrl.Dock = DockStyle.Bottom;
 					ll.ctrl.Height = Height - PATHBOXHEIGHT - 1;
@@ -145,14 +167,15 @@ namespace ILPatcher
 		public Label lbl;
 		private SwooshPanel parent;
 
-		public LayerLevel(SwooshPanel parent, Control c, string name)
+		public LayerLevel(SwooshPanel _parent, Control c, string name)
 		{
-			this.parent = parent;
+			parent = _parent;
 			ctrl = c;
-			ctrl.Parent = parent;
+			ctrl.Parent = _parent;
 			btn = new CustomButton(name);
-			btn.Parent = parent;
+			btn.Parent = _parent;
 			btn.Click += btn_Click;
+			btn.Visible = false;
 			lbl = new Label()
 			{
 				AutoSize = true,
@@ -163,6 +186,7 @@ namespace ILPatcher
 				Width = 0,
 				MinimumSize = new Size(0, SwooshPanel.PATHBOXHEIGHT),
 				MaximumSize = new Size(0, SwooshPanel.PATHBOXHEIGHT),
+				Visible = false,
 			};
 		}
 
@@ -174,6 +198,16 @@ namespace ILPatcher
 		public override string ToString()
 		{
 			return btn.Left + " " + lbl.Left + " " + btn.Text;
+		}
+
+		public void Dispose()
+		{
+			parent.Controls.Remove(btn);
+			parent.Controls.Remove(lbl);
+			parent.Controls.Remove(ctrl);
+			btn.Dispose();
+			lbl.Dispose();
+			ctrl.Dispose();
 		}
 	}
 

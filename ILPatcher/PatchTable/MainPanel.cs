@@ -111,6 +111,29 @@ namespace ILPatcher
 		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
 			if (structureViever1.SelectedNode == null) return;
+			TypeDefinition TypDef = structureViever1.SelectedNode.Tag as TypeDefinition;
+			if (TypDef == null) return;
+
+			string test = @"using System.Windows.Forms;
+							namespace DefNamSp
+							{
+							  public class DefClass
+							  {
+								public void DefFunc()
+								{
+									MessageBox.Show(""Message Successfuly Injected"");
+								}
+							  }
+							}";
+			CSCompiler csc = new CSCompiler(AssemblyDef);
+			Mono.Cecil.MethodDefinition md = csc.InjectCode(test);
+			if (md == null) return;
+			MethodDefinition md2 = new MethodDefinition("blub", Mono.Cecil.MethodAttributes.Public, TypDef);
+			TypDef.Methods.Add(md2);
+			foreach (Instruction i in md.Body.Instructions)
+				md2.Body.Instructions.Add(i);
+
+			/*if (structureViever1.SelectedNode == null) return;
 			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
 			if (MetDef == null) return;
 
@@ -126,14 +149,14 @@ namespace ILPatcher
 			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldc_I4_0));
 			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldc_I4_S, (sbyte)64));
 			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Call, method2));
-			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Pop));*/
+			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Pop)); //* /
 
 			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "test3"));
 			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "test4"));
 			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
 			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)64));
 			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Call, method2));
-			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Pop));
+			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Pop)); // */
 
 			using (SaveFileDialog saveFileDialog = new SaveFileDialog
 			{

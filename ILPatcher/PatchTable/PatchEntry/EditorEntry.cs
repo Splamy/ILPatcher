@@ -34,9 +34,14 @@ namespace ILPatcher
 			callbackAdd = _cbAdd;
 		}
 
-		private void btnAddILPatch_Click(object sender, EventArgs e)
+		private void btnILMethodFixed_Click(object sender, EventArgs e)
 		{
 			((SwooshPanel)Parent).PushPanel(new EditorILPattern(Add), "PatchAction: ILMethodFixed");
+		}
+
+		private void btnMethodCreator_Click(object sender, EventArgs e)
+		{
+			((SwooshPanel)Parent).PushPanel(new EditorMethodCreator(Add), "PatchAction: MethodCreator");
 		}
 
 		private void btnOK_Click(object sender, EventArgs e)
@@ -111,5 +116,7 @@ namespace ILPatcher
 		{
 			LoadEntry(patchEntry);
 		}
+
+
 	}
 }

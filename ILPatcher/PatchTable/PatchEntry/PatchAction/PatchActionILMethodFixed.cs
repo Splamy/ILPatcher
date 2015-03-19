@@ -43,6 +43,12 @@ namespace ILPatcher
 
 		public override bool Save(XmlNode output)
 		{
+			if (MethodDef == null)
+			{
+				Log.Write(Log.Level.Careful, "The PatchAction(ILMethodFixed) ", ActionName, " is empty and won't be saved!");
+				return false;
+			}
+
 			NameCompressor nc = NameCompressor.Instance;
 
 			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
@@ -113,7 +119,7 @@ namespace ILPatcher
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
-			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Error, "Node ", input.Name, " has no Childnodes"); return false; }
+			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Careful, "Node ", input.Name, " has no Childnodes"); return true; }
 
 			XmlElement PatchList = null;
 			for (int i = 0; i < input.ChildNodes.Count; i++)
@@ -130,7 +136,7 @@ namespace ILPatcher
 			if (MethodDef == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
 
 			int instructioncount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
-			InstructionInfo[] iibuffer = new InstructionInfo[instructioncount];
+			AnyArray<InstructionInfo> iibuffer = new AnyArray<InstructionInfo>(instructioncount);
 
 			if (MethodDef.Body.Instructions.Count != instructioncount)
 			{
@@ -147,10 +153,9 @@ namespace ILPatcher
 			Instruction iDummy = Instruction.Create(OpCodes.Nop);
 			XmlElement xDummy = PatchList.CreateCompressedElement(SST.NAME);
 
-			for (int i = 0; i < instructioncount; i++)
+			foreach (XmlElement xelem in PatchList.ChildNodes)
 			{
-				XmlElement xelem = PatchList.ChildNodes[i] as XmlElement;
-				if (xelem == null) { Log.Write(Log.Level.Warning, "PatchList elemtent nr.", i.ToString(), " couldn't be found"); PatchStatus = PatchStatus.Broken; continue; }
+				if (xelem.Name != nc[SST.Instruction]) { Log.Write(Log.Level.Warning, "PatchList elemtent \"", xelem.Name, "\" isnot recognized"); PatchStatus = PatchStatus.Broken; continue; }
 
 				InstructionInfo nII = new InstructionInfo();
 				XmlAttribute xdelatt = xelem.Attributes[nc[SST.Delete]];
@@ -289,18 +294,37 @@ namespace ILPatcher
 				}
 				#endregion
 
-				iibuffer[i] = nII;
+				iibuffer[nII.NewInstructionNum] = nII;
+			}
+
+			instructPatchList = new List<InstructionInfo>(iibuffer.ToArray());
+
+			if (!instructPatchList.All(x => x != null))
+			{
+				Log.Write(Log.Level.Error, "PatchList has holes: ", string.Join<int>(", ", instructPatchList.Select((b, i) => b == null ? i : -1).Where(i => i != -1).ToArray()));
+				PatchStatus = PatchStatus.Broken;
 			}
 
 			foreach (PostInitData pid in postinitbrs)
 			{
 				if (pid.isArray)
-					iibuffer[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll<int, Instruction>(pid.targetArray, a => iibuffer.First(x => x.NewInstructionNum == a).NewInstruction); // TODO: Check correct (but seems to be ok)
+				{
+					bool success = true;
+					instructPatchList[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll<int, Instruction>(pid.targetArray, a =>
+					{
+						InstructionInfo pidinstr = instructPatchList.First(x => x.NewInstructionNum == a);
+						if (pidinstr == null) { success = false; Log.Write(Log.Level.Error, "PID_At: ", a.ToString()); return null; }
+						return pidinstr.NewInstruction;
+					});
+					if (!success) { Log.Write(Log.Level.Error, "PostInitData failed: ", pid.ToString()); PatchStatus = PatchStatus.Broken; continue; }
+				}
 				else
-					iibuffer[pid.InstructionNum].NewInstruction.Operand = iibuffer.First(x => x.NewInstructionNum == pid.targetNum).NewInstruction;
+				{
+					InstructionInfo pidinstr = instructPatchList.First(x => x.NewInstructionNum == pid.targetNum);
+					if (pidinstr == null) { Log.Write(Log.Level.Error, "PostInitData failed: ", pid.ToString()); PatchStatus = PatchStatus.Broken; continue; }
+					iibuffer[pid.InstructionNum].NewInstruction.Operand = pidinstr.NewInstruction;
+				}
 			}
-
-			instructPatchList = new List<InstructionInfo>(iibuffer);
 
 			if (PatchStatus == PatchStatus.Unset)
 				PatchStatus = PatchStatus.WoringPerfectly;
@@ -414,6 +438,20 @@ namespace ILPatcher
 			public bool isArray;
 			public int targetNum;
 			public int[] targetArray;
+
+			public override string ToString()
+			{
+				if (isArray)
+				{
+					if (targetArray != null)
+						return InstructionNum + " -> {" + string.Join(", ", targetArray) + "}";
+					else
+						return InstructionNum + " -> null";
+				}
+				else
+					return InstructionNum + " -> " + targetNum;
+			}
+
 		}
 	}
 }

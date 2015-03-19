@@ -31,10 +31,10 @@
 			this.txtPatchEntryName = new System.Windows.Forms.TextBox();
 			this.lblName = new System.Windows.Forms.Label();
 			this.mEntryList = new MetroObjects.MListBox();
-			this.btnAddILPatch = new System.Windows.Forms.Button();
-			this.btnAoBPatch = new System.Windows.Forms.Button();
+			this.btnILMethodFixed = new System.Windows.Forms.Button();
 			this.btnOK = new System.Windows.Forms.Button();
 			this.btnEditPatchAction = new System.Windows.Forms.Button();
+			this.btnMethodCreator = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// txtPatchEntryName
@@ -64,32 +64,19 @@
 			this.mEntryList.TabIndex = 14;
 			this.mEntryList.Text = "mListBox1";
 			// 
-			// btnAddILPatch
+			// btnILMethodFixed
 			// 
-			this.btnAddILPatch.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnAddILPatch.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
-			this.btnAddILPatch.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnAddILPatch.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnAddILPatch.Location = new System.Drawing.Point(5, 35);
-			this.btnAddILPatch.Name = "btnAddILPatch";
-			this.btnAddILPatch.Size = new System.Drawing.Size(100, 25);
-			this.btnAddILPatch.TabIndex = 18;
-			this.btnAddILPatch.Text = "Add IL Patch";
-			this.btnAddILPatch.UseVisualStyleBackColor = false;
-			this.btnAddILPatch.Click += new System.EventHandler(this.btnAddILPatch_Click);
-			// 
-			// btnAoBPatch
-			// 
-			this.btnAoBPatch.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnAoBPatch.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
-			this.btnAoBPatch.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			this.btnAoBPatch.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnAoBPatch.Location = new System.Drawing.Point(5, 65);
-			this.btnAoBPatch.Name = "btnAoBPatch";
-			this.btnAoBPatch.Size = new System.Drawing.Size(100, 25);
-			this.btnAoBPatch.TabIndex = 19;
-			this.btnAoBPatch.Text = "Add AoB Patch";
-			this.btnAoBPatch.UseVisualStyleBackColor = false;
+			this.btnILMethodFixed.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnILMethodFixed.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
+			this.btnILMethodFixed.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnILMethodFixed.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+			this.btnILMethodFixed.Location = new System.Drawing.Point(5, 35);
+			this.btnILMethodFixed.Name = "btnILMethodFixed";
+			this.btnILMethodFixed.Size = new System.Drawing.Size(100, 25);
+			this.btnILMethodFixed.TabIndex = 18;
+			this.btnILMethodFixed.Text = "ILMethodFixed";
+			this.btnILMethodFixed.UseVisualStyleBackColor = false;
+			this.btnILMethodFixed.Click += new System.EventHandler(this.btnILMethodFixed_Click);
 			// 
 			// btnOK
 			// 
@@ -111,7 +98,7 @@
 			this.btnEditPatchAction.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnEditPatchAction.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnEditPatchAction.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnEditPatchAction.Location = new System.Drawing.Point(5, 96);
+			this.btnEditPatchAction.Location = new System.Drawing.Point(5, 97);
 			this.btnEditPatchAction.Name = "btnEditPatchAction";
 			this.btnEditPatchAction.Size = new System.Drawing.Size(100, 25);
 			this.btnEditPatchAction.TabIndex = 21;
@@ -119,14 +106,28 @@
 			this.btnEditPatchAction.UseVisualStyleBackColor = false;
 			this.btnEditPatchAction.Click += new System.EventHandler(this.btnEditPatchAction_Click);
 			// 
+			// btnMethodCreator
+			// 
+			this.btnMethodCreator.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnMethodCreator.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
+			this.btnMethodCreator.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnMethodCreator.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+			this.btnMethodCreator.Location = new System.Drawing.Point(5, 66);
+			this.btnMethodCreator.Name = "btnMethodCreator";
+			this.btnMethodCreator.Size = new System.Drawing.Size(100, 25);
+			this.btnMethodCreator.TabIndex = 22;
+			this.btnMethodCreator.Text = "MethodCreator";
+			this.btnMethodCreator.UseVisualStyleBackColor = false;
+			this.btnMethodCreator.Click += new System.EventHandler(this.btnMethodCreator_Click);
+			// 
 			// EditorEntry
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.btnMethodCreator);
 			this.Controls.Add(this.btnEditPatchAction);
 			this.Controls.Add(this.btnOK);
-			this.Controls.Add(this.btnAoBPatch);
-			this.Controls.Add(this.btnAddILPatch);
+			this.Controls.Add(this.btnILMethodFixed);
 			this.Controls.Add(this.mEntryList);
 			this.Controls.Add(this.txtPatchEntryName);
 			this.Controls.Add(this.lblName);
@@ -143,9 +144,9 @@
 		private System.Windows.Forms.TextBox txtPatchEntryName;
 		private System.Windows.Forms.Label lblName;
 		private MetroObjects.MListBox mEntryList;
-		private System.Windows.Forms.Button btnAddILPatch;
-		private System.Windows.Forms.Button btnAoBPatch;
+		private System.Windows.Forms.Button btnILMethodFixed;
 		private System.Windows.Forms.Button btnOK;
 		private System.Windows.Forms.Button btnEditPatchAction;
+		private System.Windows.Forms.Button btnMethodCreator;
 	}
 }

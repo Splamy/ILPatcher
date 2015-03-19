@@ -319,12 +319,12 @@ namespace ILPatcher
 		/// <returns>Unique ID for each object</returns>
 		public int Reference(object _operand)
 		{
-			// GenericInstanceMethod
-			if (_operand as GenericInstanceType != null)
+			if (_operand == null)
 			{
-				Console.WriteLine("blub");
-				//return 0;
+				Log.Write(Log.Level.Warning, "Can't reference <null>");
+				return -1;
 			}
+
 			for (int i = 0; i < MemberList.Length; i++)
 			{
 				if (!MemberList[i].resolved)
@@ -339,9 +339,6 @@ namespace ILPatcher
 						return i;
 				}
 			}
-
-
-			//foreach (KeyValuePair<int, OperandInfo> entry in MemberList)
 
 			Type t = _operand.GetType();
 			OperandInfoT _oit;
@@ -810,54 +807,128 @@ namespace ILPatcher
 
 		// SUPPORT FUNCTIONS *************************************************
 
-		/// <summary>Creates a new Intruction depending on the given val object.
-		/// GenInstruction will automatically use the correct Instruction.Create for each object type</summary>
+		/// <summary>Creates a new Intruction depending on the OpCodes' OperandType.
+		/// GenInstruction will automatically use the correct Instruction.Create for each object type
+		/// and tries to parse, if it is a string</summary>
 		/// <param name="opc">The OpCode for the new Instruction</param>
 		/// <param name="val">The operand for the new Instruction</param>
 		/// <returns>Returns the new Instruction if successful, otherwise null.</returns>
 		public static Instruction GenInstruction(OpCode opc, object val)
 		{
-			if (opc.OperandType == OperandType.InlineNone)
-				return Instruction.Create(opc);
-			else
+			Type t = null;
+			if (opc.OperandType != OperandType.InlineNone)
 			{
-				Type t = val.GetType();
+				if (val != null)
+					t = val.GetType();
+				else
+				{
+					Log.Write(Log.Level.Error, "Operand <" + opc.Name + "> must not be null with this OpCode.OperandType: ", opc.OperandType.ToString());
+					return null;
+				}
+			}
+			switch (opc.OperandType)
+			{
+			case OperandType.InlineArg:
+			case OperandType.ShortInlineArg:
+				if (typeof(ParameterDefinition).IsAssignableFrom(t))
+					return Instruction.Create(opc, (ParameterDefinition)val);
+				break;
+			case OperandType.InlineBrTarget:
+			case OperandType.ShortInlineBrTarget:
+				if (typeof(Instruction).IsAssignableFrom(t))
+					return Instruction.Create(opc, (Instruction)val);
+				break;
+			case OperandType.InlineField:
+				if (typeof(FieldReference).IsAssignableFrom(t))
+					return Instruction.Create(opc, (FieldReference)val);
+				break;
+			case OperandType.InlineI:
+				Int32 val_Int32;
+				if (t == typeof(Int32))
+					return Instruction.Create(opc, (Int32)val);
+				else if (t == typeof(string) && Int32.TryParse((string)val, out val_Int32))
+					return Instruction.Create(opc, val_Int32);
+				break;
+			case OperandType.InlineI8:
+				Int64 val_Int64;
+				if (t == typeof(Int64))
+					return Instruction.Create(opc, (Int64)val);
+				else if (t == typeof(string) && Int64.TryParse((string)val, out val_Int64))
+					return Instruction.Create(opc, val_Int64);
+				break;
+			case OperandType.InlineMethod:
+				if (typeof(MethodReference).IsAssignableFrom(t))
+					return Instruction.Create(opc, (MethodReference)val);
+				break;
+			case OperandType.InlineNone:
+				return Instruction.Create(opc);
+			case OperandType.InlineR:
+				Double val_Double;
+				if (t == typeof(Double))
+					return Instruction.Create(opc, (Double)val);
+				else if (t == typeof(string) && Double.TryParse((string)val, out val_Double))
+					return Instruction.Create(opc, val_Double);
+				break;
+			case OperandType.InlineString:
+				if (t == typeof(string))
+					return Instruction.Create(opc, (string)val);
+				break;
+			case OperandType.InlineSwitch:
+				if (t.IsAssignableFrom(typeof(Instruction[])))
+					return Instruction.Create(opc, (Instruction[])val);
+				break;
+			case OperandType.InlineTok:
 				if (typeof(TypeReference).IsAssignableFrom(t))
 					return Instruction.Create(opc, (TypeReference)val);
-				else if (typeof(CallSite).IsAssignableFrom(t))
-					return Instruction.Create(opc, (CallSite)val);
 				else if (typeof(MethodReference).IsAssignableFrom(t))
 					return Instruction.Create(opc, (MethodReference)val);
 				else if (typeof(FieldReference).IsAssignableFrom(t))
 					return Instruction.Create(opc, (FieldReference)val);
-				else if (t == typeof(string))
-					return Instruction.Create(opc, (string)val);
-				else if (t == typeof(sbyte))
-					return Instruction.Create(opc, (sbyte)val);
-				else if (t == typeof(byte))
-					return Instruction.Create(opc, (byte)val);
-				else if (t == typeof(int))
-					return Instruction.Create(opc, (int)val);
-				else if (t == typeof(long))
-					return Instruction.Create(opc, (long)val);
-				else if (t == typeof(float))
-					return Instruction.Create(opc, (float)val);
-				else if (t == typeof(double))
-					return Instruction.Create(opc, (double)val);
-				else if (typeof(Instruction).IsAssignableFrom(t))
-					return Instruction.Create(opc, (Instruction)val);
-				else if (t.IsAssignableFrom(typeof(Instruction[])))
-					return Instruction.Create(opc, (Instruction[])val);
-				else if (typeof(VariableDefinition).IsAssignableFrom(t))
+				break;
+			case OperandType.InlineType:
+				if (typeof(TypeReference).IsAssignableFrom(t))
+					return Instruction.Create(opc, (TypeReference)val);
+				break;
+			case OperandType.InlineVar:
+			case OperandType.ShortInlineVar:
+				if (typeof(VariableDefinition).IsAssignableFrom(t))
 					return Instruction.Create(opc, (VariableDefinition)val);
-				else if (typeof(ParameterDefinition).IsAssignableFrom(t))
-					return Instruction.Create(opc, (ParameterDefinition)val);
+				break;
+			case OperandType.ShortInlineI:
+				if (opc == OpCodes.Ldc_I4_S)
+				{
+					Byte val_Byte;
+					if (t == typeof(Byte))
+						return Instruction.Create(opc, (Byte)val);
+					else if (t == typeof(string) && Byte.TryParse((string)val, out val_Byte))
+						return Instruction.Create(opc, val_Byte);
+				}
 				else
 				{
-					Log.Write(Log.Level.Error, "Operand Type Could not be cloned. TypeName: ", t.Name, " OperandValue: ", val.ToString());
-					return null;
+					SByte val_SByte;
+					if (t == typeof(SByte))
+						return Instruction.Create(opc, (SByte)val);
+					else if (t == typeof(string) && SByte.TryParse((string)val, out val_SByte))
+						return Instruction.Create(opc, val_SByte);
 				}
+				break;
+			case OperandType.ShortInlineR:
+				Single val_Single;
+				if (t == typeof(Single))
+					return Instruction.Create(opc, (Single)val);
+				else if (t == typeof(string) && Single.TryParse((string)val, out val_Single))
+					return Instruction.Create(opc, val_Single);
+				break;
+			case OperandType.InlinePhi:
+			case OperandType.InlineSig:
+			default:
+				if (typeof(CallSite).IsAssignableFrom(t))
+					return Instruction.Create(opc, (CallSite)val);
+				break;
 			}
+
+			Log.Write(Log.Level.Error, "Operand Type Could not be created. TypeName: ", t.Name, " OperandValue: ", val.ToString());
+			return null;
 		}
 
 		/// <summary>Clears the current reference table</summary>

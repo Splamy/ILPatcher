@@ -252,8 +252,9 @@ namespace ILPatcher
 
 			Patchaction = loadpa;
 			MetDef = loadpa.MethodDef;
+			if (MetDef != null)
+				txtMethodFullName.Text = MetDef.FullName;
 			txtPatchActionName.Text = loadpa.ActionName;
-			txtMethodFullName.Text = MetDef.FullName;
 
 			if (loadpa.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", loadpa.ActionName, " is not initialized correctly"); return; }
 
@@ -379,8 +380,8 @@ namespace ILPatcher
 			case OperandType.ShortInlineR:
 				currentPOT = PickOperandType.Single;
 				break;
-			case OperandType.InlineSig:
 			case OperandType.InlinePhi:
+			case OperandType.InlineSig:
 			default:
 				Log.Write(Log.Level.Warning, "Not switced OperandType: ", instr.OpCode.Name);
 				break;

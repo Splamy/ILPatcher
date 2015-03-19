@@ -106,6 +106,7 @@
     <Compile Include="PatchTable\PatchEntry\PatchAction\PatchActionMethodCreator.cs" />
     <Compile Include="Utility\CecilFormatter.cs" />
     <Compile Include="Utility\AnyArray.cs" />
+    <Compile Include="Utility\CSCompiler.cs" />
     <Compile Include="Utility\ErrorLogger.cs" />
     <Compile Include="Utility\ExtensionMethods.cs" />
     <Compile Include="Utility\ILManager.cs" />
