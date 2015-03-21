@@ -120,7 +120,7 @@ namespace ILPatcher
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
-			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Careful, "Node ", input.Name, " has no Childnodes"); return true; }
+			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Careful, "Node ", input.Name, " has no Childnodes"); return false; }
 
 			XmlElement PatchList = null;
 			for (int i = 0; i < input.ChildNodes.Count; i++)
@@ -161,6 +161,7 @@ namespace ILPatcher
 				XmlAttribute xdelatt = xelem.Attributes[nc[SST.Delete]];
 				OpCode opcode = ILManager.OpCodeLookup[xelem.GetAttribute(SST.OpCode)];
 
+				// TODO: merge old and new intruction loading, since writing everything twice is annoying and mistakes are made every time...
 				if (xdelatt != null)
 				#region Old_Instruction
 				{
@@ -223,7 +224,7 @@ namespace ILPatcher
 						{
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, iDummy);
 							PostInitData pid = new PostInitData();
-							pid.InstructionNum = nII.OldInstructionNum;
+							pid.InstructionNum = nII.NewInstructionNum;
 							pid.isArray = false;
 							pid.targetNum = int.Parse(operandvalue);
 							postinitbrs.Add(pid);
@@ -232,7 +233,7 @@ namespace ILPatcher
 						{
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, new[] { iDummy });
 							PostInitData pid = new PostInitData();
-							pid.InstructionNum = nII.OldInstructionNum;
+							pid.InstructionNum = nII.NewInstructionNum;
 							pid.isArray = true;
 							pid.targetArray = Array.ConvertAll<string, int>(operandvalue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
 							postinitbrs.Add(pid);
@@ -301,6 +302,7 @@ namespace ILPatcher
 			{
 				Log.Write(Log.Level.Error, "PatchList has holes: ", string.Join<int>(", ", instructPatchList.Select((b, i) => b == null ? i : -1).Where(i => i != -1).ToArray()));
 				PatchStatus = PatchStatus.Broken;
+				return false;
 			}
 
 			foreach (PostInitData pid in postinitbrs)
@@ -320,7 +322,7 @@ namespace ILPatcher
 				{
 					InstructionInfo pidinstr = instructPatchList.First(x => x.NewInstructionNum == pid.targetNum);
 					if (pidinstr == null) { Log.Write(Log.Level.Error, "PostInitData failed: ", pid.ToString()); PatchStatus = PatchStatus.Broken; continue; }
-					iibuffer[pid.InstructionNum].NewInstruction.Operand = pidinstr.NewInstruction;
+					instructPatchList[pid.InstructionNum].NewInstruction.Operand = pidinstr.NewInstruction;
 				}
 			}
 

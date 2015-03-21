@@ -717,10 +717,14 @@ namespace ILPatcher
 				// Subresolving references
 				foreach (AssemblyNameReference anr in ModDef.AssemblyReferences)
 				{
-					AssemblyDefinition AssSubRef = ModDef.AssemblyResolver.Resolve(anr);
-					tnModDef.Add(anr.Name, AssSubRef.FullName, AssSubRef, StructureView.structure);
-					if (SubResolveDepth > 0)
-						InitTree(AssSubRef, SubResolveDepth - 1);
+					try
+					{
+						AssemblyDefinition AssSubRef = ModDef.AssemblyResolver.Resolve(anr);
+						tnModDef.Add(anr.Name, AssSubRef.FullName, AssSubRef, StructureView.structure);
+						if (SubResolveDepth > 0)
+							InitTree(AssSubRef, SubResolveDepth - 1);
+					}
+					catch { Log.Write(Log.Level.Warning, "AssemblyReference \"", anr.Name, "\" couldn't be found for \"", ModDef.Name, "\""); }
 				}
 
 				Dictionary<string, ILNode> nsDict = new Dictionary<string, ILNode>();
