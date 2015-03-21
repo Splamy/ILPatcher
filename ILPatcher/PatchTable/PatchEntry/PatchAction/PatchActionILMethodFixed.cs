@@ -115,12 +115,12 @@ namespace ILPatcher
 
 			return true;
 		}
-		//MethodDef.Body.Instructions.Count
+
 		public override bool Load(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
 
-			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Careful, "Node ", input.Name, " has no Childnodes"); return false; }
+			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Careful, "Node ", input.Name, " has no Childnodes"); PatchStatus = PatchStatus.Broken; return false; }
 
 			XmlElement PatchList = null;
 			for (int i = 0; i < input.ChildNodes.Count; i++)
@@ -143,16 +143,16 @@ namespace ILPatcher
 				Log.Write(Log.Level.Error, "The PatchAction \"", ActionName, "\" cannot be applied to a changend method"); PatchStatus = PatchStatus.Broken; return false;
 			}
 
-			//TODO init with given params, instead of static
+			// TODO: init with given params, instead of static
 			AnyArray<InstructionInfo> iibuffer = new AnyArray<InstructionInfo>(OriginalInstructionCount);
 			bool checkopcdes = true;
 			bool resolveparams = false; // resolves types/methods/...
 			bool checkprimitives = true; // checks if primitive types are identical
 
 			List<PostInitData> postinitbrs = new List<PostInitData>();
-			Instruction iDummy = Instruction.Create(OpCodes.Nop);
 			XmlElement xDummy = PatchList.CreateCompressedElement(SST.NAME);
 
+			#region Load all InstructionInfo
 			foreach (XmlElement xelem in PatchList.ChildNodes)
 			{
 				if (xelem.Name != nc[SST.Instruction]) { Log.Write(Log.Level.Warning, "PatchList elemtent \"", xelem.Name, "\" is not recognized"); PatchStatus = PatchStatus.Broken; continue; }
@@ -161,12 +161,13 @@ namespace ILPatcher
 				XmlAttribute xdelatt = xelem.Attributes[nc[SST.Delete]];
 				OpCode opcode = ILManager.OpCodeLookup[xelem.GetAttribute(SST.OpCode)];
 
-				// TODO: merge old and new intruction loading, since writing everything twice is annoying and mistakes are made every time...
-				if (xdelatt != null)
-				#region Old_Instruction
+				if (xdelatt != null) // Old_Instruction
 				{
+					nII.Delete = xdelatt.Value == nc[SST.True];
+
+					//Load old Instruction into InstructionInfo
 					nII.OldInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
-					if (nII.OldInstructionNum < MethodDef.Body.Instructions.Count)
+					if (nII.OldInstructionNum < OriginalInstructionCount)
 					{
 						nII.OldInstruction = MethodDef.Body.Instructions[nII.OldInstructionNum];
 						if (checkopcdes && opcode != nII.OldInstruction.OpCode)
@@ -176,135 +177,85 @@ namespace ILPatcher
 							nII.OpCodeMismatch = true;
 						}  // TODO: set mismatch | from-to log
 					}
-					nII.Delete = xdelatt.Value == nc[SST.True];
+					else continue;
 
-					if (checkprimitives) // 3 cases >> Old:PV // New:PV_same | New:PV_change | New:AnyVal
+					if (checkprimitives)
 					{
-						XmlAttribute xprim = xelem.Attributes[nc[SST.PrimitiveValue]];
-						if (xprim != null && nII.OldInstructionNum < MethodDef.Body.Instructions.Count)
+						if (opcode.OperandType == nII.OldInstruction.OpCode.OperandType)
 						{
-							Operand2Node(xDummy, MethodDef.Body.Instructions[nII.OldInstructionNum], false);
-
-							XmlAttribute xprimcmp = xDummy.Attributes[nc[SST.PrimitiveValue]];
-							nII.PrimitiveMismatch = xprimcmp == null || xprimcmp.Value != xprim.Value;
-
-							xDummy.Attributes.RemoveAll();
+							string oldPrimOperand;
+							if (nII.OldInstruction.Operand == null)
+								nII.PrimitiveMismatch = xelem.GetAttribute(SST.PrimitiveValue, out oldPrimOperand);
+							else
+								nII.PrimitiveMismatch = xelem.GetAttribute(SST.PrimitiveValue) != nII.OldInstruction.Operand.ToString();
 						}
+						else nII.PrimitiveMismatch = true;
 					}
+
 					if (resolveparams)
 					{
 						Log.Write(Log.Level.Info, "Resolve not implemented yet.");
-						//TODO: PatchStatus = PatchStatus.Broken; of not found ref
+						//TODO: PatchStatus = PatchStatus.Broken; of not found ref implement, when DeepTypeCompare works
 					}
 
-					if (xelem.ChildNodes.Count == 1)
+					if (xelem.ChildNodes.Count == 1) // check if patchnode exists
 					{
 						XmlElement xpatchelem = xelem.ChildNodes[0] as XmlElement;
 
 						string instnum = xpatchelem.GetAttribute(SST.InstructionNum);
-						string patchopcode = xpatchelem.GetAttribute(SST.OpCode);
-
-						if (instnum == string.Empty)
+						if (instnum == string.Empty) // check InstructionNum Patch
 							nII.NewInstructionNum = nII.OldInstructionNum;
 						else
 							nII.NewInstructionNum = int.Parse(instnum);
 
 						OpCode patchopc;
-						if (patchopcode == string.Empty)
+						string patchopcode = xpatchelem.GetAttribute(SST.OpCode);
+						if (patchopcode == string.Empty) // check Opcode patch
 							patchopc = opcode;
 						else
 							patchopc = ILManager.OpCodeLookup[patchopcode];
 
-						string operandvalue;
-						if (xpatchelem.GetAttribute(SST.PrimitiveValue, out operandvalue))
-							nII.NewInstruction = ILManager.GenInstruction(patchopc, operandvalue);
-						else if ((operandvalue = xpatchelem.GetAttribute(SST.Resolve)) != string.Empty)
-							nII.NewInstruction = ILManager.GenInstruction(patchopc, ILManager.Instance.Resolve(operandvalue.ToBaseInt()));
-						else if ((operandvalue = xpatchelem.GetAttribute(SST.BrTargetIndex)) != string.Empty)
-						{
-							nII.NewInstruction = ILManager.GenInstruction(patchopc, iDummy);
-							PostInitData pid = new PostInitData();
-							pid.InstructionNum = nII.NewInstructionNum;
-							pid.isArray = false;
-							pid.targetNum = int.Parse(operandvalue);
-							postinitbrs.Add(pid);
-						}
-						else if (xpatchelem.GetAttribute(SST.BrTargetArray, out operandvalue))
-						{
-							nII.NewInstruction = ILManager.GenInstruction(patchopc, new[] { iDummy });
-							PostInitData pid = new PostInitData();
-							pid.InstructionNum = nII.NewInstructionNum;
-							pid.isArray = true;
-							pid.targetArray = Array.ConvertAll<string, int>(operandvalue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-							postinitbrs.Add(pid);
-						}
-						else
+						nII.NewInstruction = Node2Instruction(xpatchelem, patchopc, nII.NewInstructionNum, postinitbrs);
+						if (nII.NewInstruction == null)
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, nII.OldInstruction.Operand);
 					}
-					else
+					else // no patchnode -> clone old one
 					{
 						nII.NewInstructionNum = nII.OldInstructionNum;
 						nII.NewInstruction = nII.OldInstruction.Clone();
 					}
 				}
-				#endregion
-				else
-				#region New_Instruction
+				else // New_Instruction
 				{
 					nII.OldInstructionNum = -1;
 					nII.NewInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
-
-					string operandvalue;
-					if (xelem.GetAttribute(SST.PrimitiveValue, out operandvalue))
-						nII.NewInstruction = ILManager.GenInstruction(opcode, operandvalue);
-					else if ((operandvalue = xelem.GetAttribute(SST.Resolve)) != string.Empty)
+					nII.NewInstruction = Node2Instruction(xelem, opcode, nII.NewInstructionNum, postinitbrs);
+					if (nII.NewInstruction == null)
 					{
-						if (!operandvalue.Contains(' '))
-						{
-							nII.NewInstruction = ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(operandvalue.ToBaseInt()));
-						}
-						else
-						{
-							Log.Write(Log.Level.Warning, "Extended Resolving is still in development. The PatchAcion will be marked as broken.\nOpCode using ResolveEx: ",
-							 opcode.Name, "\nOperandID in the current PatchList: ", operandvalue);
-							PatchStatus = PatchStatus.Broken;
-						}
+						PatchStatus = PatchStatus.Broken;
+						Log.Write(Log.Level.Error, "Expected Operand for '", opcode.Name, "', but no matching Attribute was found in ", xelem.InnerXml);
+						nII.NewInstruction = Instruction.Create(OpCodes.Nop);
+						nII.NewInstruction.OpCode = opcode;
+						nII.NewInstruction.Operand = "!!!!! Dummy !!!!!";
 					}
-					else if ((operandvalue = xelem.GetAttribute(SST.BrTargetIndex)) != string.Empty)
-					{
-						nII.NewInstruction = nII.NewInstruction = ILManager.GenInstruction(opcode, iDummy);
-						PostInitData pid = new PostInitData();
-						pid.InstructionNum = nII.NewInstructionNum;
-						pid.isArray = false;
-						pid.targetNum = int.Parse(operandvalue);
-						postinitbrs.Add(pid);
-					}
-					else if (xelem.GetAttribute(SST.BrTargetArray, out operandvalue))
-					{
-						nII.NewInstruction = nII.NewInstruction = ILManager.GenInstruction(opcode, new[] { iDummy });
-						PostInitData pid = new PostInitData();
-						pid.InstructionNum = nII.NewInstructionNum;
-						pid.isArray = true;
-						pid.targetArray = Array.ConvertAll<string, int>(operandvalue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-						postinitbrs.Add(pid);
-					}
-					else
-						nII.NewInstruction = ILManager.GenInstruction(opcode, null);
 				}
-				#endregion
 
 				iibuffer[nII.NewInstructionNum] = nII;
 			}
+			#endregion
 
 			instructPatchList = new List<InstructionInfo>(iibuffer.ToArray());
 
+			#region Check for not loaded Instructions
 			if (!instructPatchList.All(x => x != null))
 			{
 				Log.Write(Log.Level.Error, "PatchList has holes: ", string.Join<int>(", ", instructPatchList.Select((b, i) => b == null ? i : -1).Where(i => i != -1).ToArray()));
 				PatchStatus = PatchStatus.Broken;
 				return false;
 			}
+			#endregion
 
+			#region Set all jump operands from PostInitData
 			foreach (PostInitData pid in postinitbrs)
 			{
 				if (pid.isArray)
@@ -325,6 +276,7 @@ namespace ILPatcher
 					instructPatchList[pid.InstructionNum].NewInstruction.Operand = pidinstr.NewInstruction;
 				}
 			}
+			#endregion
 
 			if (PatchStatus == PatchStatus.Unset)
 				PatchStatus = PatchStatus.WoringPerfectly;
@@ -332,7 +284,7 @@ namespace ILPatcher
 			return true;
 		}
 
-		public void Operand2Node(XmlElement xParent, Instruction i, bool OldI)
+		private void Operand2Node(XmlElement xParent, Instruction i, bool OldI)
 		{
 			OpCode oc = i.OpCode;
 			object operand = i.Operand;
@@ -399,32 +351,119 @@ namespace ILPatcher
 			case OperandType.InlineSig:
 			case OperandType.InlinePhi:
 			default:
-				Log.Write(Log.Level.Error, "Opcode not processed: ", oc.OperandType.ToString());
+				Log.Write(Log.Level.Error, "Opcode not processed: ", oc.Name);
 				break;
 			}
 		}
 
+		private Instruction Node2Instruction(XmlElement xOperandNode, OpCode opcode, int nInstructionNum, List<PostInitData> postinitbrs)
+		{
+			NameCompressor nc = NameCompressor.Instance;
+
+			switch (opcode.OperandType)
+			{
+			case OperandType.InlineNone:
+				return ILManager.GenInstruction(opcode, null);
+
+			case OperandType.InlineI:
+			case OperandType.InlineI8:
+			case OperandType.InlineR:
+			case OperandType.InlineString:
+			case OperandType.ShortInlineI:
+			case OperandType.ShortInlineR:
+				string primVal;
+				if (xOperandNode.GetAttribute(SST.PrimitiveValue, out primVal))
+					return ILManager.GenInstruction(opcode, primVal);
+				else
+					Log.Write(Log.Level.Error, "Expected 'PrimitiveValue' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
+				break;
+
+			case OperandType.InlineField:
+			case OperandType.InlineMethod:
+			case OperandType.InlineTok:
+			case OperandType.InlineType:
+				string opVal = xOperandNode.GetAttribute(SST.Resolve);
+				if (opVal != string.Empty)
+					return ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(opVal.ToBaseInt()));
+				else
+					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
+				break;
+
+			case OperandType.InlineArg:
+			case OperandType.ShortInlineArg:
+				string[] parArrVal = xOperandNode.GetAttribute(SST.Resolve).Split(' ');
+				if (parArrVal.Length != 2)
+				{
+					int parIndexVal = int.Parse(parArrVal[0]);
+					//object parTypVal = ILManager.Instance.Resolve(parArrVal[1].ToBaseInt());
+					return ILManager.GenInstruction(opcode, MethodDef.Parameters[parIndexVal]);
+				}
+				else
+					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
+				break;
+
+			case OperandType.InlineVar:
+			case OperandType.ShortInlineVar:
+				string[] varArrVal = xOperandNode.GetAttribute(SST.Resolve).Split(' ');
+				if (varArrVal.Length != 2)
+				{
+					int varIndexVal = int.Parse(varArrVal[0]);
+					//object varTypVal = ILManager.Instance.Resolve(varArrVal[1].ToBaseInt());
+					return ILManager.GenInstruction(opcode, MethodDef.Parameters[varIndexVal]);
+				}
+				else
+					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
+				break;
+
+			case OperandType.InlineBrTarget:
+			case OperandType.ShortInlineBrTarget:
+				string briVal = xOperandNode.GetAttribute(SST.BrTargetIndex);
+				if (briVal != string.Empty)
+				{
+					PostInitData pid = new PostInitData();
+					pid.InstructionNum = nInstructionNum;
+					pid.isArray = false;
+					pid.targetNum = int.Parse(briVal);
+					postinitbrs.Add(pid);
+					ILManager.GenInstruction(opcode, Instruction.Create(OpCodes.Nop));
+				}
+				break;
+
+			case OperandType.InlineSwitch:
+				string braVal = xOperandNode.GetAttribute(SST.BrTargetArray);
+				if (braVal != string.Empty)
+				{
+					PostInitData pid = new PostInitData();
+					pid.InstructionNum = nInstructionNum;
+					pid.isArray = true;
+					pid.targetArray = Array.ConvertAll<string, int>(braVal.Trim().Split(new[] { ' ' }), s => int.Parse(s));
+					postinitbrs.Add(pid);
+					ILManager.GenInstruction(opcode, new Instruction[0]);
+				}
+				break;
+
+			case OperandType.InlineSig:
+			case OperandType.InlinePhi:
+			default:
+				Log.Write(Log.Level.Error, "Opcode not processed: ", opcode.Name);
+				break;
+			}
+			return null;
+		}
+
 		private int FindInstruction(Instruction i, bool OldI)
 		{
+			int res = -1;
 			if (OldI)
-			{
-				/*for (int j = 0; j < instructPatchList.Count; j++)
-					if (instructPatchList[j].OldInstruction == i)
-						return instructPatchList[j].OldInstructionNum;*/
-				Mono.Collections.Generic.Collection<Instruction> gencol = MethodDef.Body.Instructions;
-				int gcolcnt = gencol.Count;
-				for (int j = 0; j < gcolcnt; j++)
-					if (gencol[j] == i)
-						return j;
-			}
+				res = MethodDef.Body.Instructions.IndexOf(i);
 			else
 			{
-				for (int j = 0; j < instructPatchList.Count; j++)
-					if (instructPatchList[j].NewInstruction == i)
-						return instructPatchList[j].NewInstructionNum;
+				InstructionInfo fII = instructPatchList.First<InstructionInfo>(x => x.NewInstruction == i);
+				if (fII != null) res = fII.NewInstructionNum;
 			}
-			Log.Write(Log.Level.Warning, "Instruction not found: ", i.Offset.ToString());
-			return -1;
+
+			if (res == -1) Log.Write(Log.Level.Warning, "Instruction not found: ", i.Offset.ToString());
+			return res;
 		}
 
 		public void SetInitWorking(MethodDefinition MetDef)

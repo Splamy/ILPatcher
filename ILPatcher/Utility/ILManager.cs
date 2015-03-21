@@ -79,11 +79,11 @@ namespace ILPatcher
 			for (int i = 0; i < MemberList.Length; i++)
 			{
 				OperandInfo oi = MemberList[i];
-				switch (MemberList[i].oit)
+				switch (oi.oit)
 				{
 				case OperandInfoT.ParameterDefinition:
 				case OperandInfoT.ParameterReference:
-					Log.Write(Log.Level.Warning, "PT resolving is obsolete: ", MemberList[i].ToString());
+					Log.Write(Log.Level.Warning, "PT resolving is obsolete: ", oi.ToString());
 					//todo reenable
 					if (oi.resolved)
 						Reference(((ParameterReference)oi.operand).ParameterType);
@@ -116,7 +116,7 @@ namespace ILPatcher
 					break;
 				case OperandInfoT.VariableDefinition:
 				case OperandInfoT.VariableReference:
-					Log.Write(Log.Level.Warning, "VD resolving is obsolete: ", MemberList[i].ToString());
+					Log.Write(Log.Level.Warning, "VD resolving is obsolete: ", oi.ToString());
 					//todo reenable
 					if (oi.resolved)
 						Reference(((VariableReference)oi.operand).VariableType);
@@ -131,12 +131,16 @@ namespace ILPatcher
 					break;
 				case OperandInfoT.CallSite:
 					if (oi.resolved)
-						xCS.CreateAttribute(i, ((CallSite)MemberList[i].operand).FullName);
+					{
+						XmlElement xElem = xCS.InsertCompressedElement(i);
+						xElem.CreateAttribute(SST.NAME, ((CallSite)MemberList[i].operand).FullName);
+						Log.Write(Log.Level.Error, "Unhandled CallSite: ", oi.ToString());
+					}
 					else
 						xCS.AppendClonedChild(oi.rawData);
 					break;
 				default:
-					Log.Write(Log.Level.Error, "Not saved Member Entry: ", MemberList[i].oit.ToString());
+					Log.Write(Log.Level.Error, "Not saved Member Entry: ", oi.oit.ToString());
 					break;
 				}
 			}
@@ -812,7 +816,7 @@ namespace ILPatcher
 
 		// SUPPORT FUNCTIONS *************************************************
 
-		/// <summary>Creates a new Intruction depending on the OpCodes' OperandType.
+		/// <summary>Creates a new Instruction depending on the OpCodes' OperandType.
 		/// GenInstruction will automatically use the correct Instruction.Create for each object type
 		/// and tries to parse, if it is a string</summary>
 		/// <param name="opc">The OpCode for the new Instruction</param>
