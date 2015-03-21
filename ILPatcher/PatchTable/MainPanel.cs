@@ -336,7 +336,7 @@ namespace ILPatcher
 					File.Copy(AssemblyPath, backupPath);
 				tabInfoControl.SelectedIndex = 2;
 				for (int i = 0; i < tablemgr.EntryList.Count; i++)
-					if (clbPatchList.GetSelected(i))
+					if (clbPatchList.GetItemChecked(i))
 						tablemgr.EntryList[i].Execute();
 				AssemblyDef.Write(AssemblyPath);
 			}

@@ -20,6 +20,7 @@ namespace ILPatcher
 		public override PatchStatus PatchStatus { get { return _PatchStatus; } protected set { _PatchStatus = value; } }
 
 		public MethodDefinition MethodDef;
+		private int OriginalInstructionCount;
 		public List<InstructionInfo> instructPatchList;
 
 		public PatchActionILMethodFixed()
@@ -58,7 +59,7 @@ namespace ILPatcher
 
 			XmlElement xListPatched = output.InsertCompressedElement(SST.PatchList);
 			xListPatched.CreateAttribute(SST.MethodPath, ILManager.Instance.Reference(MethodDef).ToBaseAlph());
-			xListPatched.CreateAttribute(SST.InstructionCount, MethodDef.Body.Instructions.Count.ToString());
+			xListPatched.CreateAttribute(SST.InstructionCount, OriginalInstructionCount.ToString());
 
 			int instructionPos = 0;
 			foreach (InstructionInfo II in instructPatchList)
@@ -114,7 +115,7 @@ namespace ILPatcher
 
 			return true;
 		}
-
+		//MethodDef.Body.Instructions.Count
 		public override bool Load(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
@@ -135,16 +136,15 @@ namespace ILPatcher
 			MethodDef = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
 			if (MethodDef == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
 
-			int instructioncount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
-			AnyArray<InstructionInfo> iibuffer = new AnyArray<InstructionInfo>(instructioncount);
-
-			if (MethodDef.Body.Instructions.Count != instructioncount)
+			OriginalInstructionCount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
+			if (MethodDef.Body.Instructions.Count != OriginalInstructionCount)
 			{
 				// new method body has changed -> patching the new assembly will not work
-				Log.Write(Log.Level.Error, "The patch script cannot be applied to the changend method"); PatchStatus = PatchStatus.Broken; return false;
+				Log.Write(Log.Level.Error, "The PatchAction \"", ActionName, "\" cannot be applied to a changend method"); PatchStatus = PatchStatus.Broken; return false;
 			}
 
 			//TODO init with given params, instead of static
+			AnyArray<InstructionInfo> iibuffer = new AnyArray<InstructionInfo>(OriginalInstructionCount);
 			bool checkopcdes = true;
 			bool resolveparams = false; // resolves types/methods/...
 			bool checkprimitives = true; // checks if primitive types are identical
@@ -155,7 +155,7 @@ namespace ILPatcher
 
 			foreach (XmlElement xelem in PatchList.ChildNodes)
 			{
-				if (xelem.Name != nc[SST.Instruction]) { Log.Write(Log.Level.Warning, "PatchList elemtent \"", xelem.Name, "\" isnot recognized"); PatchStatus = PatchStatus.Broken; continue; }
+				if (xelem.Name != nc[SST.Instruction]) { Log.Write(Log.Level.Warning, "PatchList elemtent \"", xelem.Name, "\" is not recognized"); PatchStatus = PatchStatus.Broken; continue; }
 
 				InstructionInfo nII = new InstructionInfo();
 				XmlAttribute xdelatt = xelem.Attributes[nc[SST.Delete]];
@@ -173,7 +173,7 @@ namespace ILPatcher
 							PatchStatus = PatchStatus.Broken;
 							Log.Write(Log.Level.Careful, "Opcode of Instruction ", nII.OldInstructionNum.ToString(), " has changed");
 							nII.OpCodeMismatch = true;
-						}  // TODO set mismatch | from-to log
+						}  // TODO: set mismatch | from-to log
 					}
 					nII.Delete = xdelatt.Value == nc[SST.True];
 
@@ -193,7 +193,7 @@ namespace ILPatcher
 					if (resolveparams)
 					{
 						Log.Write(Log.Level.Info, "Resolve not implemented yet.");
-						//todo PatchStatus = PatchStatus.Broken; of not found ref
+						//TODO: PatchStatus = PatchStatus.Broken; of not found ref
 					}
 
 					if (xelem.ChildNodes.Count == 1)
@@ -237,10 +237,8 @@ namespace ILPatcher
 							pid.targetArray = Array.ConvertAll<string, int>(operandvalue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
 							postinitbrs.Add(pid);
 						}
-						else if (nII.OldInstruction.Operand != null)
-							nII.NewInstruction = nII.OldInstruction.Clone();
 						else
-							nII.NewInstruction = ILManager.GenInstruction(patchopc, null);
+							nII.NewInstruction = ILManager.GenInstruction(patchopc, nII.OldInstruction.Operand);
 					}
 					else
 					{
@@ -427,8 +425,10 @@ namespace ILPatcher
 			return -1;
 		}
 
-		public void SetInitWorking()
+		public void SetInitWorking(MethodDefinition MetDef)
 		{
+			MethodDef = MetDef;
+			OriginalInstructionCount = MetDef.Body.Instructions.Count;
 			_PatchStatus = PatchStatus.WoringPerfectly;
 		}
 

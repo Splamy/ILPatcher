@@ -363,7 +363,8 @@ namespace ILPatcher
 
 			foreach (XmlNode xElem in xNode.ChildNodes)
 			{
-				//skip kown nodes
+				if (xElem.Name == "PatchEntry")
+					continue;
 				foreach (XmlNode xItem in xElem.ChildNodes)
 				{
 					OperandInfo oi = new OperandInfo();
@@ -505,7 +506,7 @@ namespace ILPatcher
 
 			foreach (FieldDefinition field in TypDefDT.Fields)
 			{
-				if (field.Name == Name && field.FieldType == TypDefFT)
+				if (field.Name == Name && field.FieldType.FullName == TypDefFT.FullName) // TODO: insteal of fullname, make DeepTypeCompare(Type a,Type b)
 				{
 					Type t = field.GetType();
 					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
@@ -897,19 +898,19 @@ namespace ILPatcher
 			case OperandType.ShortInlineI:
 				if (opc == OpCodes.Ldc_I4_S)
 				{
-					Byte val_Byte;
-					if (t == typeof(Byte))
-						return Instruction.Create(opc, (Byte)val);
-					else if (t == typeof(string) && Byte.TryParse((string)val, out val_Byte))
-						return Instruction.Create(opc, val_Byte);
-				}
-				else
-				{
 					SByte val_SByte;
 					if (t == typeof(SByte))
 						return Instruction.Create(opc, (SByte)val);
 					else if (t == typeof(string) && SByte.TryParse((string)val, out val_SByte))
 						return Instruction.Create(opc, val_SByte);
+				}
+				else
+				{
+					Byte val_Byte;
+					if (t == typeof(Byte))
+						return Instruction.Create(opc, (Byte)val);
+					else if (t == typeof(string) && Byte.TryParse((string)val, out val_Byte))
+						return Instruction.Create(opc, val_Byte);
 				}
 				break;
 			case OperandType.ShortInlineR:

@@ -69,10 +69,9 @@ namespace ILPatcher
 			if (Patchaction == null)
 			{
 				Patchaction = new PatchActionILMethodFixed();
-				Patchaction.SetInitWorking();
+				Patchaction.SetInitWorking(MetDef);
 
 				Patchaction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
-				Patchaction.MethodDef = MetDef;
 			}
 
 			Patchaction.ActionName = txtPatchActionName.Text;
@@ -373,9 +372,9 @@ namespace ILPatcher
 				break;
 			case OperandType.ShortInlineI:
 				if (instr.OpCode == OpCodes.Ldc_I4_S)
-					currentPOT = PickOperandType.Byte;
-				else
 					currentPOT = PickOperandType.SByte;
+				else
+					currentPOT = PickOperandType.Byte;
 				break;
 			case OperandType.ShortInlineR:
 				currentPOT = PickOperandType.Single;

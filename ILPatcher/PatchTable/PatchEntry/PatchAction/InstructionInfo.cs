@@ -104,8 +104,8 @@ namespace ILPatcher
 				g.FillRectangle(hbrMismatch, 102, rec.Top, rec.Right - 102, Height);
 			if (NewInstruction.Operand == null)
 				g.DrawString("-", Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
-			else // TODO: operand type at the beginning only temp
-				g.DrawString(NewInstruction.Operand.GetType().Name + " " + CecilFormatter.TryFormat(NewInstruction.Operand), Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
+			else // TODO: operand type at the beginning only temp: NewInstruction.Operand.GetType().Name + " " +
+				g.DrawString(CecilFormatter.TryFormat(NewInstruction.Operand), Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
 		}
 
 		public override void RefreshHeight(System.Drawing.Graphics g, int nWidth)

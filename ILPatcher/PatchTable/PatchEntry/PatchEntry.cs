@@ -53,12 +53,11 @@ namespace ILPatcher
 				if (xnode.Name == nc[SST.PatchAction])
 				{
 					string pt = xnode.GetAttribute(SST.PatchType);
-					string pn = xnode.GetAttribute(SST.NAME);
-
 					PatchActionType pat;
 					if (!Enum.TryParse<PatchActionType>(pt, out pat))
 					{
-						Log.Write(Log.Level.Warning, "PatchType (", pt, ") not found");
+						string pn = xnode.GetAttribute(SST.NAME);
+						Log.Write(Log.Level.Warning, "PatchType \"", pt, "\" couldn't be found");
 						continue;
 					}
 					PatchAction pa = null;

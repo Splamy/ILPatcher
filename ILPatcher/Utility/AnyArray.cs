@@ -64,7 +64,9 @@ namespace ILPatcher
 
 		public T[] ToArray()
 		{
-			return (T[])array.Clone();
+			T[] tmp = new T[max];
+			Array.Copy(array, tmp, max);
+			return tmp;
 		}
 	}
 }
