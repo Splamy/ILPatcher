@@ -27,6 +27,8 @@ namespace ILPatcher
 		{
 		}
 
+		/// <summary>Executes its patch-routine to the currently loaded Assembly data</summary>
+		/// <returns>Returns true if it succeeded, false otherwise</returns>
 		public override bool Execute()
 		{
 			AnyArray<Instruction> cpyBuffer = new AnyArray<Instruction>();
@@ -42,6 +44,9 @@ namespace ILPatcher
 			return true; // no safety checks atm
 		}
 
+		/// <summary>Saves the patch data to an XmlNode</summary>
+		/// <param name="output">The node where the Instructions will be added as childnodes</param>
+		/// <returns>Returns true if it succeeded, false otherwise</returns>
 		public override bool Save(XmlNode output)
 		{
 			if (MethodDef == null)
@@ -116,6 +121,9 @@ namespace ILPatcher
 			return true;
 		}
 
+		/// <summary>Loads the patch data from an XmlNode</summary>
+		/// <param name="input">The XmlNode containing the Instruction nodes</param>
+		/// <returns>Returns true if it succeeded, false otherwise</returns>
 		public override bool Load(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
@@ -284,6 +292,10 @@ namespace ILPatcher
 			return true;
 		}
 
+		/// <summary>Saves an Operand from an Instruction to a Instruction XmlNode</summary>
+		/// <param name="xParent">The XmlNode where the new Instruction XmlNode will be added as child node</param>
+		/// <param name="i">The Instruction with the Operand to be saved</param>
+		/// <param name="OldI">If the Instruction is a branch, true will look for the target in the old Instruction list, false in the new one</param>
 		private void Operand2Node(XmlElement xParent, Instruction i, bool OldI)
 		{
 			OpCode oc = i.OpCode;
@@ -356,6 +368,12 @@ namespace ILPatcher
 			}
 		}
 
+		/// <summary>Reads an XmlNode and creates an Instruction from the data</summary>
+		/// <param name="xOperandNode">The XmlElement containing the operand info, created by Operand2Node</param>
+		/// <param name="opcode">The OpCode the new Instruction should have, independently of the XmlElement</param>
+		/// <param name="nInstructionNum">The NewInstructionNum the Instruction will have after the patch (InstructionInfo.NewInstructionNum)</param>
+		/// <param name="postinitbrs">A reference to the PostInitData list, in order to load branch Instructions correctly</param>
+		/// <returns>Returns the new Instruction if succeeded, null otherwise</returns>
 		private Instruction Node2Instruction(XmlElement xOperandNode, OpCode opcode, int nInstructionNum, List<PostInitData> postinitbrs)
 		{
 			NameCompressor nc = NameCompressor.Instance;
@@ -451,6 +469,10 @@ namespace ILPatcher
 			return null;
 		}
 
+		/// <summary>Looks for the index of a Instruction</summary>
+		/// <param name="i">The instruction to be searched</param>
+		/// <param name="OldI">True will look for the target in the old Instruction list, false in the new one</param>
+		/// <returns></returns>
 		private int FindInstruction(Instruction i, bool OldI)
 		{
 			int res = -1;
@@ -466,6 +488,8 @@ namespace ILPatcher
 			return res;
 		}
 
+		/// <summary>Sets the status of the Patch to "WorkingPerfectly" and and saves the given MethodDefinition</summary>
+		/// <param name="MetDef">The MethodDefinition for this Patch</param>
 		public void SetInitWorking(MethodDefinition MetDef)
 		{
 			MethodDef = MetDef;
@@ -473,13 +497,20 @@ namespace ILPatcher
 			_PatchStatus = PatchStatus.WoringPerfectly;
 		}
 
+		/// <summary>Data staructure to save branch Instructions in order to initialize the later</summary>
 		private class PostInitData
 		{
+			/// <summary>The index of the branch Instruction after the patch</summary>
 			public int InstructionNum;
+			/// <summary>True if the Instruction is a switch, false if single branch</summary>
 			public bool isArray;
+			/// <summary>The branch target index after the patch</summary>
 			public int targetNum;
+			/// <summary>The switch targets after the patch</summary>
 			public int[] targetArray;
 
+			/// <summary>Prints a human readable branch patch</summary>
+			/// <returns>Returns the String</returns>
 			public override string ToString()
 			{
 				if (isArray)
