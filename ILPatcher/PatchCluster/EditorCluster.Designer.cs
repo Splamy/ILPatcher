@@ -1,6 +1,6 @@
 ﻿namespace ILPatcher
 {
-	partial class EditorEntry
+	partial class EditorCluster
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,22 +28,22 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.txtPatchEntryName = new System.Windows.Forms.TextBox();
+			this.txtPatchClusterName = new System.Windows.Forms.TextBox();
 			this.lblName = new System.Windows.Forms.Label();
-			this.mEntryList = new MetroObjects.MListBox();
+			this.mClusterList = new MetroObjects.MListBox();
 			this.btnILMethodFixed = new System.Windows.Forms.Button();
 			this.btnOK = new System.Windows.Forms.Button();
 			this.btnEditPatchAction = new System.Windows.Forms.Button();
 			this.btnMethodCreator = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
-			// txtPatchEntryName
+			// txtPatchClusterName
 			// 
-			this.txtPatchEntryName.Location = new System.Drawing.Point(111, 10);
-			this.txtPatchEntryName.Name = "txtPatchEntryName";
-			this.txtPatchEntryName.Size = new System.Drawing.Size(317, 20);
-			this.txtPatchEntryName.TabIndex = 13;
-			this.txtPatchEntryName.Text = "DefaultEntryN";
+			this.txtPatchClusterName.Location = new System.Drawing.Point(111, 10);
+			this.txtPatchClusterName.Name = "txtPatchClusterName";
+			this.txtPatchClusterName.Size = new System.Drawing.Size(317, 20);
+			this.txtPatchClusterName.TabIndex = 13;
+			this.txtPatchClusterName.Text = "DefaultClusterN";
 			// 
 			// lblName
 			// 
@@ -55,14 +55,14 @@
 			this.lblName.Text = "Name:";
 			this.lblName.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
-			// mEntryList
+			// mClusterList
 			// 
-			this.mEntryList.Location = new System.Drawing.Point(111, 35);
-			this.mEntryList.MinimumSize = new System.Drawing.Size(50, 50);
-			this.mEntryList.Name = "mEntryList";
-			this.mEntryList.Size = new System.Drawing.Size(317, 170);
-			this.mEntryList.TabIndex = 14;
-			this.mEntryList.Text = "mListBox1";
+			this.mClusterList.Location = new System.Drawing.Point(111, 35);
+			this.mClusterList.MinimumSize = new System.Drawing.Size(50, 50);
+			this.mClusterList.Name = "mClusterList";
+			this.mClusterList.Size = new System.Drawing.Size(317, 170);
+			this.mClusterList.TabIndex = 14;
+			this.mClusterList.Text = "mListBox1";
 			// 
 			// btnILMethodFixed
 			// 
@@ -120,7 +120,7 @@
 			this.btnMethodCreator.UseVisualStyleBackColor = false;
 			this.btnMethodCreator.Click += new System.EventHandler(this.btnMethodCreator_Click);
 			// 
-			// EditorEntry
+			// EditorCluster
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -128,12 +128,12 @@
 			this.Controls.Add(this.btnEditPatchAction);
 			this.Controls.Add(this.btnOK);
 			this.Controls.Add(this.btnILMethodFixed);
-			this.Controls.Add(this.mEntryList);
-			this.Controls.Add(this.txtPatchEntryName);
+			this.Controls.Add(this.mClusterList);
+			this.Controls.Add(this.txtPatchClusterName);
 			this.Controls.Add(this.lblName);
-			this.Name = "EditorEntry";
+			this.Name = "EditorCluster";
 			this.Size = new System.Drawing.Size(431, 214);
-			this.Resize += new System.EventHandler(this.EditorEntry_Resize);
+			this.Resize += new System.EventHandler(this.EditorCluster_Resize);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -141,9 +141,9 @@
 
 		#endregion
 
-		private System.Windows.Forms.TextBox txtPatchEntryName;
+		private System.Windows.Forms.TextBox txtPatchClusterName;
 		private System.Windows.Forms.Label lblName;
-		private MetroObjects.MListBox mEntryList;
+		private MetroObjects.MListBox mClusterList;
 		private System.Windows.Forms.Button btnILMethodFixed;
 		private System.Windows.Forms.Button btnOK;
 		private System.Windows.Forms.Button btnEditPatchAction;

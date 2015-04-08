@@ -22,7 +22,7 @@ namespace ILPatcher
 		public CSCompiler(AssemblyDefinition mainAssDef)
 		{
 			AssDef = mainAssDef;
-			AssDef.MainModule.Import(new MethodReference(),))
+			//AssDef.MainModule.Import(new MethodReference(),))
 		}
 
 		public MethodDefinition InjectCode(string code)

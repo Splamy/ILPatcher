@@ -16,8 +16,6 @@ namespace ILPatcher
 	public class PatchActionILMethodFixed : PatchAction, ISaveToFile
 	{
 		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodFixed; } protected set { } }
-		private PatchStatus _PatchStatus = PatchStatus.Unset;
-		public override PatchStatus PatchStatus { get { return _PatchStatus; } protected set { _PatchStatus = value; } }
 
 		public MethodDefinition MethodDef;
 		private int OriginalInstructionCount;
@@ -494,7 +492,7 @@ namespace ILPatcher
 		{
 			MethodDef = MetDef;
 			OriginalInstructionCount = MetDef.Body.Instructions.Count;
-			_PatchStatus = PatchStatus.WoringPerfectly;
+			PatchStatus = PatchStatus.WoringPerfectly;
 		}
 
 		/// <summary>Data staructure to save branch Instructions in order to initialize the later</summary>

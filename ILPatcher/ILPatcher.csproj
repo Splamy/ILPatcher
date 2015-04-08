@@ -97,30 +97,32 @@
     <Compile Include="GeneralInterface\PatchQuestionWindow.Designer.cs">
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\PatchAction\EditorMethodCreator.cs">
+    <Compile Include="PatchAction\EditorMethodCreator.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\PatchAction\EditorMethodCreator.Designer.cs">
+    <Compile Include="PatchAction\EditorMethodCreator.Designer.cs">
       <DependentUpon>EditorMethodCreator.cs</DependentUpon>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\PatchAction\PatchActionMethodCreator.cs" />
+    <Compile Include="PatchAction\PatchActionMethodCreator.cs" />
+    <Compile Include="PatchCluster\PatchActionItem.cs" />
     <Compile Include="Utility\CecilFormatter.cs" />
     <Compile Include="Utility\AnyArray.cs" />
+    <Compile Include="Utility\CecilHelper.cs" />
     <Compile Include="Utility\CSCompiler.cs" />
     <Compile Include="Utility\ErrorLogger.cs" />
     <Compile Include="Utility\ExtensionMethods.cs" />
     <Compile Include="Utility\ILManager.cs" />
     <Compile Include="Utility\NameCompressor.cs" />
-    <Compile Include="PatchTable\PatchEntry\EditorEntry.cs">
+    <Compile Include="PatchCluster\EditorCluster.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\EditorEntry.Designer.cs">
-      <DependentUpon>EditorEntry.cs</DependentUpon>
+    <Compile Include="PatchCluster\EditorCluster.Designer.cs">
+      <DependentUpon>EditorCluster.cs</DependentUpon>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\PatchAction\EditorILPattern.cs">
+    <Compile Include="PatchAction\EditorILPattern.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\PatchAction\EditorILPattern.Designer.cs">
+    <Compile Include="PatchAction\EditorILPattern.Designer.cs">
       <DependentUpon>EditorILPattern.cs</DependentUpon>
     </Compile>
     <Compile Include="GeneralInterface\MainForm.cs">
@@ -145,10 +147,10 @@
     <Compile Include="GeneralInterface\MultiPicker.Designer.cs">
       <DependentUpon>MultiPicker.cs</DependentUpon>
     </Compile>
-    <Compile Include="PatchTable\PatchEntry\PatchAction\InstructionInfo.cs" />
-    <Compile Include="PatchTable\PatchEntry\PatchAction\PatchAction.cs" />
-    <Compile Include="PatchTable\PatchEntry\PatchAction\PatchActionILMethodFixed.cs" />
-    <Compile Include="PatchTable\PatchEntry\PatchEntry.cs" />
+    <Compile Include="PatchAction\InstructionInfo.cs" />
+    <Compile Include="PatchAction\PatchAction.cs" />
+    <Compile Include="PatchAction\PatchActionILMethodFixed.cs" />
+    <Compile Include="PatchCluster\PatchCluster.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GeneralInterface\StructureViewer.cs">
@@ -159,13 +161,14 @@
     </Compile>
     <Compile Include="PatchTable\TableManager.cs" />
     <Compile Include="Utility\ErrorLoggerItem.cs" />
+    <Compile Include="Utility\XMLUtility.cs" />
     <EmbeddedResource Include="GeneralInterface\InstructArrPicker.resx">
       <DependentUpon>InstructArrPicker.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PatchTable\PatchEntry\EditorEntry.resx">
-      <DependentUpon>EditorEntry.cs</DependentUpon>
+    <EmbeddedResource Include="PatchCluster\EditorCluster.resx">
+      <DependentUpon>EditorCluster.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PatchTable\PatchEntry\PatchAction\EditorILPattern.resx">
+    <EmbeddedResource Include="PatchAction\EditorILPattern.resx">
       <DependentUpon>EditorILPattern.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GeneralInterface\MainForm.resx">
@@ -180,7 +183,7 @@
     <EmbeddedResource Include="GeneralInterface\PatchQuestionWindow.resx">
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PatchTable\PatchEntry\PatchAction\EditorMethodCreator.resx">
+    <EmbeddedResource Include="PatchAction\EditorMethodCreator.resx">
       <DependentUpon>EditorMethodCreator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

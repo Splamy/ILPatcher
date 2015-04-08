@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace ILPatcher
 {
-	public class PatchEntry : ISaveToFile
+	public class PatchCluster : ISaveToFile
 	{
-		public string EntryName;
+		public string ClusterName;
 		public List<PatchAction> ActionList;
 
-		public PatchEntry()
+		public PatchCluster()
 		{
 			ActionList = new List<PatchAction>();
-			EntryName = string.Empty;
+			ClusterName = string.Empty;
 		}
 
 		public void Execute()
@@ -31,11 +31,11 @@ namespace ILPatcher
 
 		public bool Save(XmlNode output)
 		{
-			XmlElement xPatchEntryNode = output.InsertCompressedElement(SST.PatchEntry);
-			xPatchEntryNode.CreateAttribute(SST.NAME, EntryName);
+			XmlElement xPatchClusterNode = output.InsertCompressedElement(SST.PatchCluster);
+			xPatchClusterNode.CreateAttribute(SST.NAME, ClusterName);
 			foreach (PatchAction pa in ActionList)
 			{
-				XmlElement xPatchActionNode = xPatchEntryNode.InsertCompressedElement(SST.PatchAction); //parent
+				XmlElement xPatchActionNode = xPatchClusterNode.InsertCompressedElement(SST.PatchAction); //parent
 
 				xPatchActionNode.CreateAttribute(SST.PatchType, string.Empty);
 				xPatchActionNode.CreateAttribute(SST.NAME, string.Empty);

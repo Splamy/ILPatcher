@@ -10,16 +10,16 @@ namespace ILPatcher
 	public class TableManager : ISaveToFile
 	{
 		public string filename;
-		public List<PatchEntry> EntryList;
+		public List<PatchCluster> ClusterList;
 
 		public TableManager()
 		{
-			EntryList = new List<PatchEntry>();
+			ClusterList = new List<PatchCluster>();
 		}
 
 		public void Execute()
 		{
-			EntryList.ForEach(pe => pe.Execute());
+			ClusterList.ForEach(pe => pe.Execute());
 		}
 
 		public bool Save(XmlNode output)
@@ -27,7 +27,7 @@ namespace ILPatcher
 			NameCompressor nc = NameCompressor.Instance;
 
 			XmlElement xPatchTableNode = output.InsertCompressedElement(SST.PatchTable);
-			foreach (PatchEntry pe in EntryList)
+			foreach (PatchCluster pe in ClusterList)
 				pe.Save(xPatchTableNode);
 			ILManager.Instance.Save(xPatchTableNode);
 			ILManager.Instance.MergeDoubleElements();
@@ -43,10 +43,10 @@ namespace ILPatcher
 
 			foreach (XmlElement xnode in input.ChildNodes)
 			{
-				if (xnode.Name == nc[SST.PatchEntry])
+				if (xnode.Name == nc[SST.PatchCluster])
 				{
-					PatchEntry tmpPE = new PatchEntry();
-					tmpPE.EntryName = xnode.GetAttribute(SST.NAME);
+					PatchCluster tmpPE = new PatchCluster();
+					tmpPE.ClusterName = xnode.GetAttribute(SST.NAME);
 					tmpPE.Load(xnode);
 					Add(tmpPE);
 				}
@@ -54,10 +54,10 @@ namespace ILPatcher
 			return true;
 		}
 
-		public void Add(PatchEntry pe)
+		public void Add(PatchCluster pe)
 		{
-			if (!EntryList.Contains(pe))
-				EntryList.Add(pe);
+			if (!ClusterList.Contains(pe))
+				ClusterList.Add(pe);
 		}
 	}
 }

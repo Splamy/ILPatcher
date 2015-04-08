@@ -10,24 +10,24 @@ using System.Windows.Forms;
 
 namespace ILPatcher
 {
-	public partial class EditorEntry : UserControl
+	public partial class EditorCluster : UserControl
 	{
-		private PatchEntry patchentry;
-		public PatchEntry patchEntry
+		private PatchCluster patchcluster;
+		public PatchCluster patchCluster
 		{
 			get
 			{
-				if (patchentry == null)
-					patchentry = new PatchEntry();
-				patchentry.EntryName = txtPatchEntryName.Text;
-				return patchentry;
+				if (patchcluster == null)
+					patchcluster = new PatchCluster();
+				patchcluster.ClusterName = txtPatchClusterName.Text;
+				return patchcluster;
 			}
-			set { patchentry = value; }
+			set { patchcluster = value; }
 		}
 
-		Action<PatchEntry> callbackAdd;
+		Action<PatchCluster> callbackAdd;
 
-		public EditorEntry(Action<PatchEntry> _cbAdd)
+		public EditorCluster(Action<PatchCluster> _cbAdd)
 		{
 			InitializeComponent();
 
@@ -46,50 +46,50 @@ namespace ILPatcher
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			callbackAdd(patchEntry);
+			callbackAdd(patchCluster);
 			((SwooshPanel)Parent).SwooshBack();
 		}
 
 		public void Add(PatchAction pa)
 		{
-			patchEntry.Add(pa);
-			LoadEntry(patchEntry);
+			patchCluster.Add(pa);
+			LoadCluster(patchCluster);
 		}
 
-		public void LoadEntry(PatchEntry loadpe)
+		public void LoadCluster(PatchCluster loadpe)
 		{
-			mEntryList.ClearItems();
-			patchEntry = loadpe;
+			mClusterList.ClearItems();
+			patchCluster = loadpe;
 			if (loadpe == null)
 			{
-				txtPatchEntryName.Text = "DafaultName_" + new Random().Next(1000);
+				txtPatchClusterName.Text = "DafaultName_" + new Random().Next(1000);
 			}
 			else
 			{
-				txtPatchEntryName.Text = loadpe.EntryName;
+				txtPatchClusterName.Text = loadpe.ClusterName;
 				foreach (PatchAction pa in loadpe.ActionList)
-					mEntryList.AddItem(pa.DisplayName);
+					mClusterList.AddItem(new PatchActionItem(pa));
 			}
-			mEntryList.InvalidateChildren();
+			mClusterList.InvalidateChildren();
 		}
 
-		private void EditorEntry_Resize(object sender, EventArgs e)
+		private void EditorCluster_Resize(object sender, EventArgs e)
 		{
 			const int space = 5;
 			const int labelspace = 100 + 2 * space;
 
-			txtPatchEntryName.Width = Width - (labelspace + space);
-			mEntryList.Width = Width - (labelspace + space);
-			mEntryList.Height = Height - (mEntryList.Top + space);
+			txtPatchClusterName.Width = Width - (labelspace + space);
+			mClusterList.Width = Width - (labelspace + space);
+			mClusterList.Height = Height - (mClusterList.Top + space);
 
 			btnOK.Top = Height - (btnOK.Height + space);
 		}
 
 		private void btnEditPatchAction_Click(object sender, EventArgs e)
 		{
-			if (mEntryList.SelectedIndex >= 0)
+			if (mClusterList.SelectedIndex >= 0)
 			{
-				PatchAction pa = patchEntry.ActionList[mEntryList.SelectedIndex];
+				PatchAction pa = patchCluster.ActionList[mClusterList.SelectedIndex];
 				switch (pa.PatchActionType)
 				{
 				case PatchActionType.ILMethodFixed:
@@ -114,7 +114,7 @@ namespace ILPatcher
 
 		private void ReloadTable()
 		{
-			LoadEntry(patchEntry);
+			LoadCluster(patchCluster);
 		}
 
 

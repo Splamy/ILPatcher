@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Mono.Cecil;
+
 namespace ILPatcher
 {
 	public partial class EditorMethodCreator : UserControl
@@ -15,6 +17,8 @@ namespace ILPatcher
 		public PatchActionMethodCreator Patchaction { get; set; }
 
 		private Action<PatchAction> callbackAdd;
+
+		private AssemblyDefinition AssDef;
 
 		public EditorMethodCreator(Action<PatchAction> _cbAdd)
 		{
@@ -37,7 +41,13 @@ namespace ILPatcher
 		private void button1_Click(object sender, EventArgs e)
 		{
 			CSCompiler csc = new CSCompiler(null);
-			Mono.Cecil.MethodDefinition md = csc.InjectCode(textBox1.Text);
+			MethodReference md = csc.InjectCode(textBox1.Text);
+
+		}
+
+		public void SetAssDef(AssemblyDefinition MyAssDef)
+		{
+			AssDef = MyAssDef;
 		}
 	}
 }

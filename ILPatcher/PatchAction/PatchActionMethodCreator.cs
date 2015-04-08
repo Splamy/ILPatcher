@@ -13,8 +13,6 @@ namespace ILPatcher
 	public class PatchActionMethodCreator : PatchAction
 	{
 		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodCreator; } protected set { } }
-		private PatchStatus _PatchStatus = PatchStatus.Unset;
-		public override PatchStatus PatchStatus { get { return _PatchStatus; } protected set { _PatchStatus = value; } }
 
 		private MethodDefinition NMetDef;
 		private TypeDefinition TpyDef;

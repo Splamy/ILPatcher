@@ -17,9 +17,7 @@ namespace ILPatcher
 {
 	class ILManager
 	{
-		//private Dictionary<int, OperandInfo> MemberList;
 		private AnyArray<OperandInfo> MemberList;
-		//private int MemberCount;
 
 		private Dictionary<string, ILNode> ModuleList;
 
@@ -55,11 +53,10 @@ namespace ILPatcher
 
 		private static NameCompressor nc = NameCompressor.Instance;
 
-		public ILManager()
+		private ILManager()
 		{
-			//MemberList = new Dictionary<int, OperandInfo>();
 			MemberList = new AnyArray<OperandInfo>();
-			//MemberCount = 0;
+
 			ModuleList = new Dictionary<string, ILNode>();
 		}
 
@@ -367,16 +364,16 @@ namespace ILPatcher
 
 			foreach (XmlNode xElem in xNode.ChildNodes)
 			{
-				if (xElem.Name == "PatchEntry")
+				if (xElem.Name == nc[SST.PatchCluster])
 					continue;
 				foreach (XmlNode xItem in xElem.ChildNodes)
 				{
 					OperandInfo oi = new OperandInfo();
-					if (xElem.Name == "MethodReference")
+					if (xElem.Name == nc[SST.MethodReference])
 						oi.oit = OperandInfoT.MethodReference;
-					else if (xElem.Name == "FieldReference")
+					else if (xElem.Name == nc[SST.FieldReference])
 						oi.oit = OperandInfoT.FieldReference;
-					else if (xElem.Name == "TypeReference")
+					else if (xElem.Name == nc[SST.TypeReference])
 						oi.oit = OperandInfoT.TypeReference;
 					else // CalliSite
 					{
@@ -812,6 +809,54 @@ namespace ILPatcher
 		public ICollection<ILNode> getAllNodes()
 		{
 			return ModuleList.Values;
+		}
+
+		/// <summary>Searches for the Cecil Typ/Met/Fld/... matching the seatch path in the loaded ILNode ModuleList</summary>
+		/// <param name="path">A path of the form "asseblyname.namespace.class" or "-.namespace.class.method" to search all assemblys</param>
+		/// <returns>Returns the Cecil object if found, otherwise null</returns>
+		public object FindTypeByName(string path)
+		{
+			string[] pathbreaks = path.Split(new[] { '.', '/' });
+
+			if (pathbreaks.Length == 0)
+			{
+				Log.Write(Log.Level.Warning, "FindTypeByName path is empty");
+				return null;
+			}
+
+			if (pathbreaks[0] == "-")
+			{
+				foreach (ILNode child in ModuleList.Values)
+				{
+					object res = FindTypeByNameRecursive(child, pathbreaks, 1);
+					if (res != null) return res;
+				}
+			}
+			else if (ModuleList.ContainsKey(pathbreaks[0]))
+			{
+				return FindTypeByNameRecursive(ModuleList[pathbreaks[0]], pathbreaks, 1);
+			}
+			return null;
+		}
+
+		/// <summary>Traverses the loaded ILNode children and searches the current path index in its children</summary>
+		/// <param name="searchnode">The ILNode with the children for the current path index</param>
+		/// <param name="path">The array of all path parts</param>
+		/// <param name="index">The current path index</param>
+		/// <returns></returns>
+		private object FindTypeByNameRecursive(ILNode searchnode, string[] path, int index)
+		{
+			if (index >= path.Length) return null;
+
+			foreach (ILNode child in searchnode.Children)
+			{
+				if (child.Name == path[index])
+				{
+					if (index == path.Length - 1) return child.Value;
+					else return FindTypeByNameRecursive(child, path, index + 1);
+				}
+			}
+			return null;
 		}
 
 		// SUPPORT FUNCTIONS *************************************************

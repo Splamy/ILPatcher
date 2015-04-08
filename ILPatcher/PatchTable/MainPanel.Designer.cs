@@ -211,7 +211,7 @@
 			this.btnLoadilp.TabIndex = 19;
 			this.btnLoadilp.Text = "open Patch File (*.ilp)";
 			this.btnLoadilp.UseVisualStyleBackColor = false;
-			this.btnLoadilp.Click += new System.EventHandler(this.btnLoadilp_Click);
+			this.btnLoadilp.Click += new System.EventHandler(this.btnLoadILPatch_Click);
 			// 
 			// txtilpFile
 			// 

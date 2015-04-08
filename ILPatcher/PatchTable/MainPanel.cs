@@ -27,6 +27,7 @@ namespace ILPatcher
 		bool AwaitingAssemblySelect = false;
 		string ilpFiletmp;
 
+
 		public MainPanel()
 		{
 			InitializeComponent();
@@ -39,6 +40,119 @@ namespace ILPatcher
 		{
 			openAssembly();
 		}
+
+		private void btnLoadILPatch_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog openIlp = new OpenFileDialog();
+			openIlp.Filter = "ILPatch File | *.ilp";
+			if (openIlp.ShowDialog() == DialogResult.OK)
+			{
+				ilpFiletmp = openIlp.FileName;
+				txtilpFile.Text = ilpFiletmp;
+				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
+					LoadIlpFile(openIlp.FileName);
+				else
+					AwaitingAssemblySelect = true;
+			}
+		}
+
+
+		private void btnSave_Click(object sender, EventArgs e)
+		{
+			SaveFileDialog sfd = new SaveFileDialog();
+			sfd.AddExtension = true;
+			sfd.OverwritePrompt = true;
+			sfd.CheckPathExists = true;
+			sfd.Filter = "ILPatcher File|*.ilp";
+			if (sfd.ShowDialog() != DialogResult.OK) return;
+			NameCompressor.Compress = false;
+			XmlDocument xDoc = new XmlDocument();
+			tablemgr.Save(xDoc);
+			XMLUtility.SaveToFile(xDoc, sfd.FileName);
+		}
+
+		private void btnNewPatch_Click(object sender, EventArgs e)
+		{
+			OpenCluster(null);
+		}
+
+		private void btnEditPatch_Click(object sender, EventArgs e)
+		{
+			if (clbPatchList.SelectedIndex >= 0)
+				OpenCluster(tablemgr.ClusterList[clbPatchList.SelectedIndex]);
+		}
+
+		private void btnTestpatch_Click(object sender, EventArgs e)
+		{
+			if (structureViever1.SelectedNode == null) return;
+			TypeDefinition TypDef = structureViever1.SelectedNode.Tag as TypeDefinition;
+			if (TypDef == null) return;
+
+			string test = @"using System.Windows.Forms;
+							namespace DefNamSp
+							{
+							  public class DefClass
+							  {
+								public void DefFunc()
+								{
+									MessageBox.Show(""Message Successfuly Injected"");
+								}
+							  }
+							}";
+			CSCompiler csc = new CSCompiler(AssemblyDef);
+			Mono.Cecil.MethodDefinition md = csc.InjectCode(test);
+			if (md == null) return;
+			TypeDefinition tdret = (TypeDefinition)ILManager.Instance.FindTypeByName("-.System.Void");
+			if (tdret == null) return;
+			MethodDefinition md2 = new MethodDefinition("blub", Mono.Cecil.MethodAttributes.Public, tdret);
+			TypDef.Methods.Add(md2);
+
+			CecilHelper.CloneMethodBody(md, md2);
+
+			//foreach (Instruction i in md.Body.Instructions)
+			//	md2.Body.Instructions.Add(i);
+
+			/*if (structureViever1.SelectedNode == null) return;
+			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
+			if (MetDef == null) return;
+
+			//ILProcessor cilProcess = MetDef.Body.GetILProcessor();
+			//MessageBox.Show("Test",);
+			MethodInfo method = typeof(MessageBox).GetMethod("Show",
+			 new Type[] { typeof(string), typeof(string), typeof(MessageBoxButtons), typeof(MessageBoxIcon) });
+			MethodReference method2 = AssemblyDef.MainModule.Import(method);*/
+
+			using (SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				Title = "Save to :",
+				Filter = "Executables | *.exe;*.dll"
+			})
+			{
+				if (saveFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					AssemblyDef.MainModule.Runtime = TargetRuntime.Net_4_0;
+					AssemblyDef.Write(saveFileDialog.FileName);
+					MessageBox.Show("Message Successfuly Injected");
+				}
+			}
+		}
+
+		private void btnExecutePatches_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				string backupPath = AssemblyPath + "_ilpbackup";
+				if (!File.Exists(backupPath))
+					File.Copy(AssemblyPath, backupPath);
+				tabInfoControl.SelectedIndex = 2;
+				for (int i = 0; i < tablemgr.ClusterList.Count; i++)
+					if (clbPatchList.GetItemChecked(i))
+						tablemgr.ClusterList[i].Execute();
+				AssemblyDef.Write(AssemblyPath);
+			}
+			catch (Exception ex) { MessageBox.Show(ex.Message); }
+		}
+
 
 		private void openAssembly()
 		{
@@ -108,128 +222,44 @@ namespace ILPatcher
 			}
 		}
 
-		private void btnTestpatch_Click(object sender, EventArgs e)
+		public void LoadIlpFile(string filename)
 		{
-			if (structureViever1.SelectedNode == null) return;
-			TypeDefinition TypDef = structureViever1.SelectedNode.Tag as TypeDefinition;
-			if (TypDef == null) return;
-
-			string test = @"using System.Windows.Forms;
-							namespace DefNamSp
-							{
-							  public class DefClass
-							  {
-								public void DefFunc()
-								{
-									MessageBox.Show(""Message Successfuly Injected"");
-								}
-							  }
-							}";
-			CSCompiler csc = new CSCompiler(AssemblyDef);
-			Mono.Cecil.MethodDefinition md = csc.InjectCode(test);
-			if (md == null) return;
-			MethodDefinition md2 = new MethodDefinition("blub", Mono.Cecil.MethodAttributes.Public, TypDef);
-			TypDef.Methods.Add(md2);
-			foreach (Instruction i in md.Body.Instructions)
-				md2.Body.Instructions.Add(i);
-
-			/*if (structureViever1.SelectedNode == null) return;
-			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
-			if (MetDef == null) return;
-
-			//ILProcessor cilProcess = MetDef.Body.GetILProcessor();
-			//MessageBox.Show("Test",);
-			MethodInfo method = typeof(MessageBox).GetMethod("Show",
-			 new Type[] { typeof(string), typeof(string), typeof(MessageBoxButtons), typeof(MessageBoxIcon) });
-			MethodReference method2 = AssemblyDef.MainModule.Import(method);
-
-			MetDef.Body.Instructions.Clear();
-			/*MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldstr, "test"));
-			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldstr, "test2"));
-			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldc_I4_0));
-			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Ldc_I4_S, (sbyte)64));
-			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Call, method2));
-			MetDef.Body.Instructions.Add(cilProcess.Create(OpCodes.Pop)); //* /
-
-			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "test3"));
-			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "test4"));
-			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)64));
-			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Call, method2));
-			MetDef.Body.Instructions.Add(Instruction.Create(OpCodes.Pop)); // */
-
-			using (SaveFileDialog saveFileDialog = new SaveFileDialog
+			//mLoading.ON = true;
+			XmlDocument xDoc = XMLUtility.ReadFromFile(filename);
+			if (tablemgr == null) // TODO tableMgr clear
+				tablemgr = new TableManager();
+			XmlNode BaseNode = null;
+			bool Match = false;
+			NameCompressor nc = NameCompressor.Instance;
+			foreach (XmlNode xnode in xDoc.ChildNodes)
 			{
-				Title = "Save to :",
-				Filter = "Executables | *.exe;*.dll"
-			})
-			{
-				if (saveFileDialog.ShowDialog() == DialogResult.OK)
-				{
-					AssemblyDef.MainModule.Runtime = TargetRuntime.Net_4_0;
-					AssemblyDef.Write(saveFileDialog.FileName);
-					MessageBox.Show("Message Successfuly Injected");
-				}
+				if (xnode.Name == nc.GetValComp(SST.PatchTable)) { Match = true; NameCompressor.Compress = true; }
+				else if (xnode.Name == nc.GetValUnComp(SST.PatchTable)) { Match = true; NameCompressor.Compress = false; }
+				if (Match) { BaseNode = xnode; break; }
 			}
-		}
-
-		private void btnSave_Click(object sender, EventArgs e)
-		{
-			SaveFileDialog sfd = new SaveFileDialog();
-			sfd.AddExtension = true;
-			sfd.OverwritePrompt = true;
-			sfd.CheckPathExists = true;
-			sfd.Filter = "ILPatcher File|*.ilp";
-			if (sfd.ShowDialog() != DialogResult.OK) return;
-			NameCompressor.Compress = false;
-			XmlDocument xDoc = new XmlDocument();
-			tablemgr.Save(xDoc);
-			SaveToFile(xDoc, sfd.FileName);
-		}
-
-		static public void SaveToFile(XmlDocument doc, string FileName)
-		{
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = !NameCompressor.Compress;
-			settings.IndentChars = "\t";
-			settings.NewLineChars = "\r\n";
-			settings.NewLineHandling = NewLineHandling.Replace;
-			settings.Encoding = Encoding.UTF8;
-			using (FileStream fs = new FileStream(FileName, FileMode.Create))
+			if (Match)
 			{
-				using (XmlWriter writer = XmlWriter.Create(fs, settings))
-				{
-					doc.Save(writer);
-				}
+				tablemgr.Load(BaseNode);
+				RebuildTable();
 			}
+			else
+				Log.Write(Log.Level.Error, "No PatchTable found!");
+			//mLoading.ON = false;
 		}
 
-		static public XmlDocument ReadFromFile(string FileName)
-		{
-			using (FileStream fs = new FileStream(FileName, FileMode.Open))
-			{
-				using (XmlReader xReader = XmlReader.Create(fs))
-				{
-					XmlDocument xDoc = new XmlDocument();
-					xDoc.Load(xReader);
-					return xDoc;
-				}
-			}
-		}
-
-		private void btnNewPatch_Click(object sender, EventArgs e)
-		{
-			EditorEntry ee = new EditorEntry(Add);
-			ee.LoadEntry(null);
-			((SwooshPanel)Parent).PushPanel(ee, "Patch Entry");
-		}
-
-		public void Add(PatchEntry pe)
+		public void Add(PatchCluster pe)
 		{
 			if (tablemgr == null)
 				tablemgr = new TableManager();
 			tablemgr.Add(pe);
 			RebuildTable();
+		}
+
+		public void OpenCluster(PatchCluster patchcluster)
+		{
+			EditorCluster ee = new EditorCluster(Add);
+			ee.LoadCluster(null);
+			((SwooshPanel)Parent).PushPanel(ee, "Patch Cluster");
 		}
 
 		private void RebuildTable()
@@ -238,8 +268,8 @@ namespace ILPatcher
 			for (int i = 0; i < clbPatchList.Items.Count; i++)
 				checkState[i] = clbPatchList.GetItemChecked(i);
 			clbPatchList.Items.Clear();
-			for (int i = 0; i < tablemgr.EntryList.Count; i++)
-				clbPatchList.Items.Add(tablemgr.EntryList[i].EntryName, i < checkState.Length ? checkState[i] : false);
+			for (int i = 0; i < tablemgr.ClusterList.Count; i++)
+				clbPatchList.Items.Add(tablemgr.ClusterList[i].ClusterName, i < checkState.Length ? checkState[i] : false);
 		}
 
 		private void MainPanel_Resize(object sender, EventArgs e)
@@ -277,71 +307,6 @@ namespace ILPatcher
 			btnSavePatchList.Width = btnEditPatch.Width;
 		}
 
-		private void btnLoadilp_Click(object sender, EventArgs e)
-		{
-			OpenFileDialog openIlp = new OpenFileDialog();
-			openIlp.Filter = "ILPatch File | *.ilp";
-			if (openIlp.ShowDialog() == DialogResult.OK)
-			{
-				ilpFiletmp = openIlp.FileName;
-				txtilpFile.Text = ilpFiletmp;
-				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
-					LoadIlpFile(openIlp.FileName);
-				else
-					AwaitingAssemblySelect = true;
-			}
-		}
-
-		public void LoadIlpFile(string filename)
-		{
-			//mLoading.ON = true;
-			XmlDocument xDoc = ReadFromFile(filename);
-			if (tablemgr == null) // TODO tableMgr clear
-				tablemgr = new TableManager();
-			XmlNode BaseNode = null;
-			bool Match = false;
-			NameCompressor nc = NameCompressor.Instance;
-			foreach (XmlNode xnode in xDoc.ChildNodes)
-			{
-				if (xnode.Name == nc.GetValComp(SST.PatchTable)) { Match = true; NameCompressor.Compress = true; }
-				else if (xnode.Name == nc.GetValUnComp(SST.PatchTable)) { Match = true; NameCompressor.Compress = false; }
-				if (Match) { BaseNode = xnode; break; }
-			}
-			if (Match)
-			{
-				tablemgr.Load(BaseNode);
-				RebuildTable();
-			}
-			else
-				Log.Write(Log.Level.Error, "No PatchTable found!");
-			//mLoading.ON = false;
-		}
-
-		private void btnEditPatch_Click(object sender, EventArgs e)
-		{
-			if (clbPatchList.SelectedIndex >= 0)
-			{
-				EditorEntry ee = new EditorEntry(Add);
-				ee.LoadEntry(tablemgr.EntryList[clbPatchList.SelectedIndex]);
-				((SwooshPanel)Parent).PushPanel(ee, "Patch Entry");
-			}
-		}
-
-		private void btnExecutePatches_Click(object sender, EventArgs e)
-		{
-			try
-			{
-				string backupPath = AssemblyPath + "_ilpbackup";
-				if (!File.Exists(backupPath))
-					File.Copy(AssemblyPath, backupPath);
-				tabInfoControl.SelectedIndex = 2;
-				for (int i = 0; i < tablemgr.EntryList.Count; i++)
-					if (clbPatchList.GetItemChecked(i))
-						tablemgr.EntryList[i].Execute();
-				AssemblyDef.Write(AssemblyPath);
-			}
-			catch (Exception ex) { MessageBox.Show(ex.Message); }
-		}
 
 		private void VisualLog(ErrorLoggerItem eli)
 		{

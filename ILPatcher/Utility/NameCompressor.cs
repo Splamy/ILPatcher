@@ -49,7 +49,7 @@ namespace ILPatcher
 			lowtable = new Tuple<string, string>[(int)SST.SSTLISTEND];
 
 			lowtable[(int)SST.PatchTable] = new Tuple<string, string>("PatchTable", "PAT");
-			lowtable[(int)SST.PatchEntry] = new Tuple<string, string>("PatchEntry", "PE");
+			lowtable[(int)SST.PatchCluster] = new Tuple<string, string>("PatchCluster", "PC");
 
 			lowtable[(int)SST.PatchAction] = new Tuple<string, string>("PatchAction", "PA");
 			lowtable[(int)SST.PatchType] = new Tuple<string, string>("PatchType", "PT");
@@ -124,7 +124,7 @@ namespace ILPatcher
 	public enum SST : int
 	{
 		PatchTable,
-		PatchEntry,
+		PatchCluster,
 
 		PatchAction,
 		PatchType,
