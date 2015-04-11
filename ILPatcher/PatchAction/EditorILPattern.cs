@@ -66,17 +66,20 @@ namespace ILPatcher
 
 		private void btnDone_Click(object sender, EventArgs e)
 		{
-			if (Patchaction == null)
+			if (MetDef != null)
 			{
-				Patchaction = new PatchActionILMethodFixed();
-				Patchaction.SetInitWorking(MetDef);
+				if (Patchaction == null)
+				{
+					Patchaction = new PatchActionILMethodFixed();
+					Patchaction.SetInitWorking(MetDef);
 
-				Patchaction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+					Patchaction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+				}
+
+				Patchaction.ActionName = txtPatchActionName.Text;
+				callbackAdd(Patchaction);
 			}
 
-			Patchaction.ActionName = txtPatchActionName.Text;
-
-			callbackAdd(Patchaction);
 			((SwooshPanel)Parent).SwooshBack();
 		}
 

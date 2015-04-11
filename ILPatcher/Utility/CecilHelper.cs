@@ -10,6 +10,9 @@ using Mono.Cecil.Cil;
 
 namespace ILPatcher
 {
+	/// <summary>
+	/// Taken from Reflexil, See https://github.com/sailro/reflexil
+	/// </summary>
 	public static class CecilHelper
 	{
 		private const System.Reflection.BindingFlags privateflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;

@@ -14,8 +14,10 @@ namespace ILPatcher
 	{
 		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodCreator; } protected set { } }
 
+		public PatchAction FillAction { get; set; }
+
 		private MethodDefinition NMetDef;
-		private TypeDefinition TpyDef;
+		private TypeDefinition ContainingTpyDef;
 
 		public override bool Execute()
 		{

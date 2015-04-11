@@ -16,9 +16,13 @@ namespace ILPatcher
 	{
 		public PatchActionMethodCreator Patchaction { get; set; }
 
+		private MethodDefinition EmptyMethod;
+
 		private Action<PatchAction> callbackAdd;
 
 		private AssemblyDefinition AssDef;
+
+		//https://github.com/PavelTorgashov/FastColoredTextBox
 
 		public EditorMethodCreator(Action<PatchAction> _cbAdd)
 		{
@@ -34,20 +38,29 @@ namespace ILPatcher
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			//callbackAdd(Patchaction);
+			Patchaction = new PatchActionMethodCreator();
+			Patchaction.ActionName = "jknfg jasfjn;sadj ao sdf;j dfg ioafjldf giaglkasfgioj adfdfgjn sddfgj af h";
+			Patchaction.FillAction = new PatchActionILMethodFixed();
+			Patchaction.FillAction.ActionName = "o;ia o;aoia adfgio jad;g dfoi gkjdfhg ihfguh dkjas iuhag dfg isdfg hb";
+			callbackAdd(Patchaction);
 			((SwooshPanel)Parent).SwooshBack();
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
 			CSCompiler csc = new CSCompiler(null);
-			MethodReference md = csc.InjectCode(textBox1.Text);
+			MethodDefinition md = csc.InjectCode(txtInjectCode.Text);
 
 		}
 
 		public void SetAssDef(AssemblyDefinition MyAssDef)
 		{
 			AssDef = MyAssDef;
+		}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

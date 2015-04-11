@@ -75,6 +75,9 @@ namespace ILPatcher
 					case PatchActionType.AoBRawScan:
 						Log.Write(Log.Level.Info, "AoBRawScan not implemented");
 						continue;
+					case PatchActionType.ILMethodCreator:
+						Log.Write(Log.Level.Info, "ILMethodCreator not implemented");
+						continue;
 					default:
 						continue;
 					}
