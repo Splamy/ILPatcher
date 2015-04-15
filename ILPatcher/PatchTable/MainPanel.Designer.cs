@@ -29,6 +29,12 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("actionxxx");
+			System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("actionxxy");
+			System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Patch1", new System.Windows.Forms.TreeNode[] {
+            treeNode1,
+            treeNode2});
+			System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Patch2");
 			this.btnCreatePatch = new System.Windows.Forms.Button();
 			this.clbPatchList = new System.Windows.Forms.CheckedListBox();
 			this.tabInfoControl = new System.Windows.Forms.TabControl();
@@ -38,6 +44,8 @@
 			this.rtbInfo = new System.Windows.Forms.TextBox();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this.lbxErrors = new MetroObjects.MListBox();
+			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this.treeView1 = new System.Windows.Forms.TreeView();
 			this.btnSavePatchList = new System.Windows.Forms.Button();
 			this.btnTestPatch = new System.Windows.Forms.Button();
 			this.btnLoadila = new System.Windows.Forms.Button();
@@ -47,10 +55,14 @@
 			this.btnExecutePatches = new System.Windows.Forms.Button();
 			this.mLoading = new MetroObjects.MLoadingCircle();
 			this.btnEditPatch = new System.Windows.Forms.Button();
+			this.tabPage5 = new System.Windows.Forms.TabPage();
+			this.mPatchListTest = new MetroObjects.MListBox();
 			this.tabInfoControl.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.tabPage3.SuspendLayout();
+			this.tabPage4.SuspendLayout();
+			this.tabPage5.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnCreatePatch
@@ -82,6 +94,8 @@
 			this.tabInfoControl.Controls.Add(this.tabPage1);
 			this.tabInfoControl.Controls.Add(this.tabPage2);
 			this.tabInfoControl.Controls.Add(this.tabPage3);
+			this.tabInfoControl.Controls.Add(this.tabPage4);
+			this.tabInfoControl.Controls.Add(this.tabPage5);
 			this.tabInfoControl.Location = new System.Drawing.Point(332, 70);
 			this.tabInfoControl.Margin = new System.Windows.Forms.Padding(5);
 			this.tabInfoControl.Name = "tabInfoControl";
@@ -152,6 +166,40 @@
 			this.lbxErrors.Size = new System.Drawing.Size(289, 336);
 			this.lbxErrors.TabIndex = 0;
 			this.lbxErrors.Text = "mListBox1";
+			// 
+			// tabPage4
+			// 
+			this.tabPage4.Controls.Add(this.treeView1);
+			this.tabPage4.Location = new System.Drawing.Point(4, 22);
+			this.tabPage4.Name = "tabPage4";
+			this.tabPage4.Size = new System.Drawing.Size(289, 336);
+			this.tabPage4.TabIndex = 3;
+			this.tabPage4.Text = "testTab";
+			this.tabPage4.UseVisualStyleBackColor = true;
+			// 
+			// treeView1
+			// 
+			this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.treeView1.CheckBoxes = true;
+			this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.treeView1.FullRowSelect = true;
+			this.treeView1.Location = new System.Drawing.Point(0, 0);
+			this.treeView1.Name = "treeView1";
+			treeNode1.Name = "Knoten1";
+			treeNode1.Text = "actionxxx";
+			treeNode2.Name = "Knoten2";
+			treeNode2.Text = "actionxxy";
+			treeNode3.Name = "Knoten0";
+			treeNode3.Text = "Patch1";
+			treeNode4.Name = "Knoten3";
+			treeNode4.Text = "Patch2";
+			this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            treeNode3,
+            treeNode4});
+			this.treeView1.Size = new System.Drawing.Size(289, 336);
+			this.treeView1.TabIndex = 2;
+			this.treeView1.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView1_BeforeCheck);
+			this.treeView1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView1_MouseUp);
 			// 
 			// btnSavePatchList
 			// 
@@ -275,6 +323,26 @@
 			this.btnEditPatch.UseVisualStyleBackColor = false;
 			this.btnEditPatch.Click += new System.EventHandler(this.btnEditPatch_Click);
 			// 
+			// tabPage5
+			// 
+			this.tabPage5.Controls.Add(this.mPatchListTest);
+			this.tabPage5.Location = new System.Drawing.Point(4, 22);
+			this.tabPage5.Name = "tabPage5";
+			this.tabPage5.Size = new System.Drawing.Size(289, 336);
+			this.tabPage5.TabIndex = 4;
+			this.tabPage5.Text = "testList";
+			this.tabPage5.UseVisualStyleBackColor = true;
+			// 
+			// mPatchListTest
+			// 
+			this.mPatchListTest.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.mPatchListTest.Location = new System.Drawing.Point(0, 0);
+			this.mPatchListTest.MinimumSize = new System.Drawing.Size(50, 50);
+			this.mPatchListTest.Name = "mPatchListTest";
+			this.mPatchListTest.Size = new System.Drawing.Size(289, 336);
+			this.mPatchListTest.TabIndex = 0;
+			this.mPatchListTest.Text = "mListBox1";
+			// 
 			// MainPanel
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -299,6 +367,8 @@
 			this.tabPage2.ResumeLayout(false);
 			this.tabPage2.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
+			this.tabPage4.ResumeLayout(false);
+			this.tabPage5.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -323,5 +393,9 @@
 		private MetroObjects.MLoadingCircle mLoading;
 		private System.Windows.Forms.Button btnEditPatch;
 		public MetroObjects.MListBox lbxErrors;
+		private System.Windows.Forms.TabPage tabPage4;
+		private System.Windows.Forms.TreeView treeView1;
+		private System.Windows.Forms.TabPage tabPage5;
+		private MetroObjects.MListBox mPatchListTest;
 	}
 }

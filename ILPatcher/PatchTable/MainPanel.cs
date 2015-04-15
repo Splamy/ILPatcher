@@ -313,6 +313,41 @@ namespace ILPatcher
 			lbxErrors.AddItem(eli);
 			lbxErrors.InvalidateChildren();
 		}
+
+		private void treeView1_BeforeCheck(object sender, TreeViewCancelEventArgs e)
+		{
+			if (e.Action != TreeViewAction.Unknown)
+			{
+				if (e.Node.Level > 0)
+				{
+					e.Cancel = true;
+					return;
+				}
+				if (e.Node.Nodes.Count > 0)
+				{
+					CheckAllChildNodes(e.Node, !e.Node.Checked);
+				}
+			}
+		}
+
+		private void CheckAllChildNodes(TreeNode treeNode, bool nodeChecked)
+		{
+			foreach (TreeNode node in treeNode.Nodes)
+			{
+				node.Checked = nodeChecked;
+				if (node.Nodes.Count > 0)
+				{
+					this.CheckAllChildNodes(node, nodeChecked);
+				}
+			}
+		}
+
+		private void treeView1_MouseUp(object sender, MouseEventArgs e)
+		{
+			var node = ((TreeView)sender).GetNodeAt(new Point(e.X, e.Y));
+			if (node != null && node.Level > 0 && node.Checked)
+				node.Checked = false;
+		}
 	}
 
 	public enum AssemblyStatus
