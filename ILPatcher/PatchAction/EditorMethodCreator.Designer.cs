@@ -29,7 +29,6 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditorMethodCreator));
 			this.btnPickMethod = new System.Windows.Forms.Button();
 			this.txtMethodFullName = new System.Windows.Forms.TextBox();
 			this.label4 = new System.Windows.Forms.Label();
@@ -119,9 +118,9 @@
 			this.button1.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.button1.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.button1.Location = new System.Drawing.Point(95, 289);
+			this.button1.Location = new System.Drawing.Point(6, 120);
 			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(100, 25);
+			this.button1.Size = new System.Drawing.Size(84, 25);
 			this.button1.TabIndex = 25;
 			this.button1.Text = "Compile";
 			this.button1.UseVisualStyleBackColor = false;
@@ -133,7 +132,7 @@
 			this.button2.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.button2.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.button2.Location = new System.Drawing.Point(368, 289);
+			this.button2.Location = new System.Drawing.Point(513, 289);
 			this.button2.Name = "button2";
 			this.button2.Size = new System.Drawing.Size(100, 25);
 			this.button2.TabIndex = 26;
@@ -165,15 +164,15 @@
 			this.txtInjectCode.Name = "txtInjectCode";
 			this.txtInjectCode.Paddings = new System.Windows.Forms.Padding(0);
 			this.txtInjectCode.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
-			this.txtInjectCode.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("txtInjectCode.ServiceColors")));
-			this.txtInjectCode.Size = new System.Drawing.Size(267, 230);
+			this.txtInjectCode.ServiceColors = null;
+			this.txtInjectCode.Size = new System.Drawing.Size(412, 360);
 			this.txtInjectCode.TabIndex = 27;
 			this.txtInjectCode.Text = "fastColoredTextBox1";
 			this.txtInjectCode.Zoom = 100;
 			// 
 			// mListBox1
 			// 
-			this.mListBox1.Location = new System.Drawing.Point(368, 53);
+			this.mListBox1.Location = new System.Drawing.Point(513, 53);
 			this.mListBox1.MinimumSize = new System.Drawing.Size(50, 50);
 			this.mListBox1.Name = "mListBox1";
 			this.mListBox1.Size = new System.Drawing.Size(227, 230);
@@ -222,8 +221,8 @@
 		private System.Windows.Forms.Button btnOK;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.Button button2;
-		private FastColoredTextBoxNS.FastColoredTextBox txtInjectCode;
 		private MetroObjects.MListBox mListBox1;
 		private MetroObjects.MLoadingCircle mLoadingCircle1;
+		public FastColoredTextBoxNS.FastColoredTextBox txtInjectCode;
 	}
 }

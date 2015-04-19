@@ -16,6 +16,11 @@ using Mono;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+using ICSharpCode.Decompiler;
+using ICSharpCode.Decompiler.Ast;
+using ICSharpCode.Decompiler.Ast.Transforms;
+using ICSharpCode.Decompiler.Disassembler;
+
 namespace ILPatcher
 {
 	public partial class MainPanel : UserControl
@@ -84,6 +89,26 @@ namespace ILPatcher
 
 		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
+			if (structureViever1.SelectedNode == null) return;
+			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
+
+			DecompilerContext decon = new DecompilerContext(AssemblyDef.MainModule);
+			decon.CancellationToken = new System.Threading.CancellationToken();
+			decon.CurrentType = MetDef.DeclaringType;
+			DecompilerSettings decoset = new DecompilerSettings();
+			decon.Settings = decoset;
+			AstBuilder ast = new AstBuilder(decon);
+
+			ast.AddMethod(MetDef);
+			PlainTextOutput pto = new PlainTextOutput();
+			ast.GenerateCode(pto);
+
+			EditorMethodCreator emc = new EditorMethodCreator(null);
+			emc.txtInjectCode.Text = pto.ToString();
+			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
+
+			return;
+
 			if (structureViever1.SelectedNode == null) return;
 			TypeDefinition TypDef = structureViever1.SelectedNode.Tag as TypeDefinition;
 			if (TypDef == null) return;

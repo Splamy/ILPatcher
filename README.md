@@ -20,4 +20,5 @@ Furthermore I wanted to create a fast, easy to use, powerful interface for easie
 ### The fantastic libraries I use
 - [Mono.Cecil](https://github.com/jbevain/cecil)
 - [FastColoredTextBox](https://github.com/PavelTorgashov/FastColoredTextBox)
-- [Reflexil](https://github.com/sailro/reflexil) (not yet but soon, probably)
+- [Reflexil](https://github.com/sailro/reflexil) (some snippets)
+- [ILSpy/ICSharpCode.Decompiler](https://github.com/icsharpcode/ILSpy)
