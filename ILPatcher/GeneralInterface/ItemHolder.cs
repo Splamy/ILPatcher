@@ -78,7 +78,7 @@ namespace ILPatcher
 			Invalidate();
 		}
 
-		protected override void OnPaint(PaintEventArgs e)
+		protected override void DrawBuffer(PaintEventArgs e)
 		{
 			if (_BackgrColor == null)
 				_BackgrColor = new SolidBrush(BackColor);
@@ -90,11 +90,10 @@ namespace ILPatcher
 			Graphics g = e.Graphics;
 
 			g.FillRectangle(drawOnHover ? _GripBrush : _BackBrush, 0, 0, Width, Height); // draw the nice border
-			RectangleF innerRect = new RectangleF(_Border, _Border, Width - (_Border * 2), Height - (_Border * 2));
-			g.FillRectangle(_BackgrColor, innerRect); // fill in the inner ractangle with bg color
+			g.FillRectangle(_BackgrColor, _Border, _Border, Width - (_Border * 2), Height - (_Border * 2)); // fill in the inner ractangle with bg color
 
 			if (di != null)
-				di.Draw(g, innerRect);
+				g.DrawImage(di.GetImage(), _Border, _Border);
 			else
 				g.DrawString("<<<empty>>>", Font, Brushes.Beige, _Border, _Border);
 		}

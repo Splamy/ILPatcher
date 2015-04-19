@@ -170,8 +170,8 @@ namespace ILPatcher
 
 		private void RedrawBoth()
 		{
-			instructionEditor.Invalidate();
-			mInstructBox.InvalidateChildren();
+			instructionEditor.InvalidateBuffer();
+			mInstructBox.InvalidateBuffer();
 		}
 
 		// DRAG N DROP *******************************************************
@@ -243,7 +243,7 @@ namespace ILPatcher
 				else
 					II.NewInstructionNum = pos++;
 			}
-			mInstructBox.InvalidateChildren();
+			mInstructBox.InvalidateBuffer();
 		}
 
 		// LOAD METHODS ******************************************************

@@ -311,7 +311,7 @@ namespace ILPatcher
 		private void VisualLog(ErrorLoggerItem eli)
 		{
 			lbxErrors.AddItem(eli);
-			lbxErrors.InvalidateChildren();
+			lbxErrors.InvalidateBuffer();
 		}
 
 		private void treeView1_BeforeCheck(object sender, TreeViewCancelEventArgs e)

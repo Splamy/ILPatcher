@@ -18,14 +18,17 @@ namespace ILPatcher
 			pa = _pa;
 		}
 
-		public override void Draw(Graphics g, System.Drawing.RectangleF rec)
+		protected override void DrawBuffer(Graphics g)
 		{
 			int split = 0;
 			switch (pa.PatchActionType)
 			{
 			case PatchActionType.ILMethodFixed:
-				split = (int)g.MeasureString(pa.ActionName, Font, Width).Height;
-				g.DrawString(pa.ActionName, Font, Brushes.Black, rec.Location);
+				bufferedheight = (int)g.MeasureString(pa.ActionName, Font, Size.Width).Height;
+
+				SetWidth(Size.Width);
+
+				g.DrawString(pa.ActionName, Font, Brushes.Black, 0, 0);
 				break;
 			case PatchActionType.ILMethodDynamic:
 				break;
@@ -35,36 +38,32 @@ namespace ILPatcher
 				break;
 			case PatchActionType.ILMethodCreator:
 				PatchActionMethodCreator pamc = (PatchActionMethodCreator)pa;
-				split = (int)g.MeasureString(pamc.ActionName, Font, Width).Height + 2;
-				g.DrawString(pamc.ActionName, Font, Brushes.Black,
-					new RectangleF(rec.Location.X + 10, rec.Location.Y + 1, Width, split));
+				int split1 = (int)g.MeasureString(pamc.ActionName, Font, Size.Width).Height + 2;
 				if (pamc.FillAction != null)
-					g.DrawString(pamc.FillAction.ActionName, Font, Brushes.Black,
-						new RectangleF(rec.Location.X + 10, rec.Location.Y + split, Width, Height));
-				else ;
-				g.FillRectangle(Brushes.DimGray, rec.Location.X + 4, rec.Location.Y + 7, 3, split);
-				g.DrawLine(Pens.Gray, 15, rec.Location.Y + split, rec.Right, rec.Location.Y + split);
+					bufferedheight = split1 + (int)g.MeasureString(pamc.FillAction.ActionName, Font, Size.Width).Height + 1;
+				else
+					bufferedheight = split1;
+
+				SetWidth(Size.Width);
+
+				g.FillRectangle(Brushes.DimGray,  4,  7, 3, split1);
+				g.DrawLine(Pens.Gray, 15, split1, Size.Width, split1);
 				g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-				g.FillEllipse(Brushes.DimGray, rec.Location.X + 2, rec.Location.Y + 4, 6, 6);
-				g.FillEllipse(Brushes.DimGray, rec.Location.X + 2, rec.Location.Y + 4 + split, 6, 6);
-				// important: do NOT add this to split up before
-				split += (int)g.MeasureString(pamc.FillAction.ActionName, Font, Width).Height + 1;
+				g.FillEllipse(Brushes.DimGray,  2,  4, 6, 6);
+				g.FillEllipse(Brushes.DimGray,  2,  4 + split1, 6, 6);
+				g.DrawString(pamc.ActionName, Font, Brushes.Black, new RectangleF(10, 1, Size.Width, Size.Height));
+				if (pamc.FillAction != null)
+					g.DrawString(pamc.FillAction.ActionName, Font, Brushes.Black, new RectangleF(10, split1, Size.Width, Size.Height));
 				break;
 			default:
 				break;
 			}
 			bufferedheight = split;
-
-			RefreshHeight(g, (int)rec.Width);
 		}
 
-		public override void RefreshHeight(Graphics g, int nWidth)
+		protected override int GetHeightFromWidth(int width)
 		{
-			if (this.Width != nWidth)
-			{
-				Width = nWidth;
-				Height = bufferedheight;
-			}
+			return bufferedheight;
 		}
 	}
 }

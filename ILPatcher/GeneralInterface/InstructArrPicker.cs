@@ -111,20 +111,14 @@ namespace ILPatcher
 				compoundstr = CecilFormatter.Format(instr, num);
 			}
 
-			public override void Draw(Graphics g, RectangleF rec)
+			protected override void DrawBuffer(Graphics g)
 			{
-				int split = (int)g.MeasureString(compoundstr, Font).Width;
-				RefreshHeight(g, (int)rec.Width);
-				g.DrawString(compoundstr, Font, Brushes.Black, 2, rec.Top + 1);
+				g.DrawString(compoundstr, Font, Brushes.Black, 2, 1);
 			}
 
-			public override void RefreshHeight(Graphics g, int nWitdth)
+			protected override int GetHeightFromWidth(int width)
 			{
-				if (this.Width != nWitdth)
-				{
-					Width = nWitdth;
-					Height = Font.Height + 1;
-				}
+				return Font.Height + 1;
 			}
 		}
 	}

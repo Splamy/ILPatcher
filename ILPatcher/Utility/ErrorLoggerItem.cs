@@ -17,6 +17,7 @@ namespace ILPatcher
 	{
 		private string error;
 		private Log.Level level;
+		private RectangleF layout;
 
 		public ErrorLoggerItem(Log.Level _level, string _error)
 		{
@@ -24,31 +25,26 @@ namespace ILPatcher
 			error = _error;
 		}
 
-		public override void Draw(System.Drawing.Graphics g, System.Drawing.RectangleF rec)
+		protected override void DrawBuffer(Graphics g)
 		{
-			RefreshHeight(g, (int)rec.Width);
-
+			RectangleF layout = new RectangleF(PointF.Empty, Size);
 			switch (level)
 			{
-			case Log.Level.Info: g.FillRectangle(Brushes.LightBlue, rec); break;
-			case Log.Level.Careful: g.FillRectangle(Brushes.Yellow, rec); break;
-			case Log.Level.Warning: g.FillRectangle(Brushes.Orange, rec); break;
-			case Log.Level.Error: g.FillRectangle(Brushes.Coral, rec); break;
-			default:
-				break;
+			case Log.Level.Info: g.FillRectangle(Brushes.LightBlue, layout); break;
+			case Log.Level.Careful: g.FillRectangle(Brushes.Yellow, layout); break;
+			case Log.Level.Warning: g.FillRectangle(Brushes.Orange, layout); break;
+			case Log.Level.Error: g.FillRectangle(Brushes.Coral, layout); break;
+			default: break;
 			}
 
-			g.DrawString(error, Font, Brushes.Black, rec);
+			g.DrawString(error, Font, Brushes.Black, layout);
 		}
 
-		public override void RefreshHeight(System.Drawing.Graphics g, int nWidth)
+		protected override int GetHeightFromWidth(int width)
 		{
-			if (this.Width != nWidth)
-			{
-				Width = nWidth;
-				g.MeasureString(error, Font, Width);
-				Height = (int)g.MeasureString(error, Font, Width).Height;
-			}
+			Graphics g = GetBufferGraphics();
+			g.MeasureString(error, Font, width);
+			return (int)g.MeasureString(error, Font, width).Height;
 		}
 	}
 }

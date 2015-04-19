@@ -77,44 +77,39 @@ namespace ILPatcher
 
 		public InstructionInfo() { }
 
-		public override void Draw(System.Drawing.Graphics g, System.Drawing.RectangleF rec)
+		protected override void DrawBuffer(Graphics g)
 		{
 			int split = (int)g.MeasureString("999>999", Font).Width;
-			RefreshHeight(g, (int)rec.Width);
 
 			if (Delete)
-				g.DrawString(OldInstructionNum + ">X", Font, Brushes.Black, rec.Left, rec.Top + 1);
+				g.DrawString(OldInstructionNum + ">X", Font, Brushes.Black, 0, 1);
 			else if (NewInstructionNum == -1)
-				g.DrawString("(" + dragFrom + ")", Font, Brushes.Black, rec.Left, rec.Top + 1);
+				g.DrawString("(" + dragFrom + ")", Font, Brushes.Black, 0, 1);
 			else if (IsOld && InstructionNumPatch)
-				g.DrawString(OldInstructionNum + ">" + NewInstructionNum, Font, Brushes.Black, rec.Left, rec.Top + 1);
+				g.DrawString(OldInstructionNum + ">" + NewInstructionNum, Font, Brushes.Black, 0,  1);
 			else if (IsNew)
-				g.DrawString("=" + NewInstructionNum.ToString(), Font, Brushes.Black, rec.Left, rec.Top + 1);
+				g.DrawString("=" + NewInstructionNum.ToString(), Font, Brushes.Black, 0,  1);
 			else
-				g.DrawString(NewInstructionNum.ToString(), Font, Brushes.Black, rec.Left, rec.Top + 1);
+				g.DrawString(NewInstructionNum.ToString(), Font, Brushes.Black, 0, 1);
 			if (Delete)
 			{
-				g.DrawLine(Pens.Red, rec.Left, rec.Top, split, rec.Bottom);
-				g.DrawLine(Pens.Red, rec.Left, rec.Bottom, split, rec.Top);
+				g.DrawLine(Pens.Red, 0, 0, split, Size.Height);
+				g.DrawLine(Pens.Red, 0, Size.Height, split, 0);
 			}
-			g.DrawLine(Pens.Black, split, rec.Top, split, rec.Bottom);
-			g.DrawString(NewInstruction.OpCode.Name, Font, InstructionOpCodePatch ? Brushes.Red : Brushes.Black, split + 2, rec.Top + 1);
-			g.DrawLine(Pens.Black, 100, rec.Top, 100, rec.Bottom);
+			g.DrawLine(Pens.Black, split, 0, split, Size.Height);
+			g.DrawString(NewInstruction.OpCode.Name, Font, InstructionOpCodePatch ? Brushes.Red : Brushes.Black, split + 2, 1);
+			g.DrawLine(Pens.Black, 100, 0, 100, Size.Height);
 			if (OperandMismatch)
-				g.FillRectangle(hbrMismatch, 102, rec.Top, rec.Right - 102, Height);
+				g.FillRectangle(hbrMismatch, 102, 0, Size.Width - 102, Size.Height);
 			if (NewInstruction.Operand == null)
-				g.DrawString("-", Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
-			else // TODO: operand type at the beginning only temp: NewInstruction.Operand.GetType().Name + " " +
-				g.DrawString(CecilFormatter.TryFormat(NewInstruction.Operand), Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, rec.Top + 1);
+				g.DrawString("-", Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102,  1);
+			else
+				g.DrawString(CecilFormatter.TryFormat(NewInstruction.Operand), Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, 1);
 		}
 
-		public override void RefreshHeight(System.Drawing.Graphics g, int nWidth)
+		protected override int GetHeightFromWidth(int width)
 		{
-			if (this.Width != nWidth)
-			{
-				Width = nWidth;
-				Height = Font.Height + 1;
-			}
+			return Font.Height + 1;
 		}
 
 		/// <summary>Creates a shallow copy of this InstructionInfo</summary>

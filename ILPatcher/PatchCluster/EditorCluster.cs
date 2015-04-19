@@ -70,7 +70,7 @@ namespace ILPatcher
 				foreach (PatchAction pa in loadpe.ActionList)
 					mClusterList.AddItem(new PatchActionItem(pa));
 			}
-			mClusterList.InvalidateChildren();
+			mClusterList.InvalidateBuffer();
 		}
 
 		private void EditorCluster_Resize(object sender, EventArgs e)
