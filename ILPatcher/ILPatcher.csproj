@@ -110,6 +110,9 @@
     <Compile Include="PatchAction\EditorMethodCreator.Designer.cs">
       <DependentUpon>EditorMethodCreator.cs</DependentUpon>
     </Compile>
+    <Compile Include="PatchAction\EditorPatchAction.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PatchAction\PatchActionMethodCreator.cs" />
     <Compile Include="PatchCluster\PatchActionItem.cs" />
     <Compile Include="Utility\CecilFormatter.cs" />
