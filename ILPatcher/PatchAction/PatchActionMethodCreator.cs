@@ -16,8 +16,8 @@ namespace ILPatcher
 
 		public PatchAction FillAction { get; set; }
 
-		private MethodDefinition NMetDef;
-		private TypeDefinition ContainingTpyDef;
+		private MethodDefinition blankMethodDefinition;
+		private TypeDefinition ContainingTpyeDefinition;
 
 		public override bool Execute()
 		{

@@ -23,7 +23,7 @@ using ICSharpCode.Decompiler.Disassembler;
 
 namespace ILPatcher
 {
-	public partial class MainPanel : UserControl
+	public partial class MainPanel : Control
 	{
 		public static AssemblyStatus status = AssemblyStatus.Uninitialized;
 		public static AssemblyDefinition AssemblyDef { get; private set; }
@@ -89,26 +89,12 @@ namespace ILPatcher
 
 		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
-			if (structureViever1.SelectedNode == null) return;
-			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
+			//TestMet1();
+			TestMet2();
+		}
 
-			DecompilerContext decon = new DecompilerContext(AssemblyDef.MainModule);
-			decon.CancellationToken = new System.Threading.CancellationToken();
-			decon.CurrentType = MetDef.DeclaringType;
-			DecompilerSettings decoset = new DecompilerSettings();
-			decon.Settings = decoset;
-			AstBuilder ast = new AstBuilder(decon);
-
-			ast.AddMethod(MetDef);
-			PlainTextOutput pto = new PlainTextOutput();
-			ast.GenerateCode(pto);
-
-			EditorMethodCreator emc = new EditorMethodCreator(null);
-			emc.txtInjectCode.Text = pto.ToString();
-			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
-
-			return;
-
+		private void TestMet1()
+		{
 			if (structureViever1.SelectedNode == null) return;
 			TypeDefinition TypDef = structureViever1.SelectedNode.Tag as TypeDefinition;
 			if (TypDef == null) return;
@@ -134,19 +120,6 @@ namespace ILPatcher
 
 			CecilHelper.CloneMethodBody(md, md2);
 
-			//foreach (Instruction i in md.Body.Instructions)
-			//	md2.Body.Instructions.Add(i);
-
-			/*if (structureViever1.SelectedNode == null) return;
-			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
-			if (MetDef == null) return;
-
-			//ILProcessor cilProcess = MetDef.Body.GetILProcessor();
-			//MessageBox.Show("Test",);
-			MethodInfo method = typeof(MessageBox).GetMethod("Show",
-			 new Type[] { typeof(string), typeof(string), typeof(MessageBoxButtons), typeof(MessageBoxIcon) });
-			MethodReference method2 = AssemblyDef.MainModule.Import(method);*/
-
 			using (SaveFileDialog saveFileDialog = new SaveFileDialog
 			{
 				Title = "Save to :",
@@ -160,6 +133,28 @@ namespace ILPatcher
 					MessageBox.Show("Message Successfuly Injected");
 				}
 			}
+		}
+
+		private void TestMet2()
+		{
+			if (structureViever1.SelectedNode == null) return;
+			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
+			if (MetDef == null) return;
+
+			DecompilerContext decon = new DecompilerContext(AssemblyDef.MainModule);
+			decon.CancellationToken = new System.Threading.CancellationToken();
+			decon.CurrentType = MetDef.DeclaringType;
+			DecompilerSettings decoset = new DecompilerSettings();
+			decon.Settings = decoset;
+			AstBuilder ast = new AstBuilder(decon);
+
+			ast.AddMethod(MetDef);
+			PlainTextOutput pto = new PlainTextOutput();
+			ast.GenerateCode(pto);
+
+			EditorMethodCreator emc = new EditorMethodCreator(x => { });
+			emc.txtInjectCode.Text = pto.ToString();
+			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
 		}
 
 		private void btnExecutePatches_Click(object sender, EventArgs e)

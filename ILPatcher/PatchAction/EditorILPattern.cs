@@ -14,26 +14,23 @@ using MetroObjects;
 
 namespace ILPatcher
 {
-	public partial class EditorILPattern : UserControl
+	public partial class EditorILPattern : EditorPatchAction
 	{
-		private MethodDefinition MetDef;
+		public override string PanelName { get { return "PatchAction: ILMethodFixed"; } }
 
+		private PatchActionILMethodFixed patchAction;
+		private MethodDefinition methodDefinition;
 		private Control[] OperandCList;
 		private PickOperandType currentPOT = PickOperandType.None;
-
-		public PatchActionILMethodFixed Patchaction { get; set; }
-
-		private Action<PatchAction> callbackAdd;
 
 		//openrand combo box add: wildcard, custom value(+default)
 		//predeclared variables
 		//(predeclared params)
 
-		public EditorILPattern(Action<PatchAction> _cbAdd)
+		public EditorILPattern(Action<PatchAction> pParentAddCallback)
+			: base(pParentAddCallback)
 		{
 			InitializeComponent();
-
-			callbackAdd = _cbAdd;
 
 			mInstructBox.MouseClick += mInstructBox_MouseClick;
 			chbDelete.OnChange += chbDelete_OnChange;
@@ -66,18 +63,18 @@ namespace ILPatcher
 
 		private void btnDone_Click(object sender, EventArgs e)
 		{
-			if (MetDef != null)
+			if (methodDefinition != null)
 			{
-				if (Patchaction == null)
+				if (patchAction == null)
 				{
-					Patchaction = new PatchActionILMethodFixed();
-					Patchaction.SetInitWorking(MetDef);
+					patchAction = new PatchActionILMethodFixed();
+					patchAction.SetInitWorking(methodDefinition);
 
-					Patchaction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+					patchAction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
 				}
 
-				Patchaction.ActionName = txtPatchActionName.Text;
-				callbackAdd(Patchaction);
+				patchAction.ActionName = txtPatchActionName.Text;
+				ParentAddCallback(patchAction);
 			}
 
 			((SwooshPanel)Parent).SwooshBack();
@@ -248,29 +245,30 @@ namespace ILPatcher
 
 		// LOAD METHODS ******************************************************
 
-		public void LoadPatchAction(PatchActionILMethodFixed loadpa)
+		public override void SetPatchAction(PatchAction pPatchAction)
 		{
 			mInstructBox.ClearItems();
 
-			Patchaction = loadpa;
-			MetDef = loadpa.MethodDef;
-			if (MetDef != null)
-				txtMethodFullName.Text = MetDef.FullName;
-			txtPatchActionName.Text = loadpa.ActionName;
+			patchAction = (PatchActionILMethodFixed)pPatchAction;
 
-			if (loadpa.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", loadpa.ActionName, " is not initialized correctly"); return; }
+			methodDefinition = patchAction.methodDefinition;
+			if (methodDefinition != null)
+				txtMethodFullName.Text = methodDefinition.FullName;
+			txtPatchActionName.Text = patchAction.ActionName;
 
-			mInstructBox.Items = Patchaction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
+			if (patchAction.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", patchAction.ActionName, " is not initialized correctly"); return; }
+
+			mInstructBox.Items = patchAction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
 		}
 
 		public void LoadMetDef(MethodDefinition MetDef)
 		{
 			mInstructBox.ClearItems();
 
-			Patchaction = null;
+			patchAction = null;
 
 			txtMethodFullName.Text = MetDef.FullName;
-			this.MetDef = MetDef;
+			this.methodDefinition = MetDef;
 			// copy all old instructions to the new, so we don't modify the original method
 			for (int i = 0; i < MetDef.Body.Instructions.Count; i++)
 			{
@@ -573,13 +571,13 @@ namespace ILPatcher
 			switch (currentPOT)
 			{
 			case PickOperandType.VariableReference:
-				CecilFormatter.SetMaxNumer(MetDef.Body.Variables.Count);
-				foreach (VariableDefinition vardef in MetDef.Body.Variables)
+				CecilFormatter.SetMaxNumer(methodDefinition.Body.Variables.Count);
+				foreach (VariableDefinition vardef in methodDefinition.Body.Variables)
 					cbxOperand.Items.Add(CecilFormatter.Format(vardef));
 				break;
 			case PickOperandType.ParameterReference:
-				CecilFormatter.SetMaxNumer(MetDef.Parameters.Count);
-				foreach (ParameterDefinition pardef in MetDef.Parameters)
+				CecilFormatter.SetMaxNumer(methodDefinition.Parameters.Count);
+				foreach (ParameterDefinition pardef in methodDefinition.Parameters)
 					cbxOperand.Items.Add(CecilFormatter.Format(pardef));
 				break;
 			case PickOperandType.InstructionReference:
@@ -600,10 +598,10 @@ namespace ILPatcher
 			switch (currentPOT)
 			{
 			case PickOperandType.VariableReference:
-				II.NewInstruction.Operand = MetDef.Body.Variables[cbxOperand.SelectedIndex];
+				II.NewInstruction.Operand = methodDefinition.Body.Variables[cbxOperand.SelectedIndex];
 				break;
 			case PickOperandType.ParameterReference:
-				II.NewInstruction.Operand = MetDef.Parameters[cbxOperand.SelectedIndex];
+				II.NewInstruction.Operand = methodDefinition.Parameters[cbxOperand.SelectedIndex];
 				break;
 			case PickOperandType.InstructionReference:
 				II.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[cbxOperand.SelectedIndex]).NewInstruction;
@@ -619,10 +617,10 @@ namespace ILPatcher
 		{
 			ILNode AddToolBoxNode = new ILNode(null, null, null, StructureView.none);
 			ILNode GenericExtension = AddToolBoxNode.Add("<Local GenericParameter>", "<Local GenericParameter>", null, StructureView.structure);
-			if (MetDef.HasGenericParameters)
-				foreach (GenericParameter gpar in MetDef.GenericParameters)
+			if (methodDefinition.HasGenericParameters)
+				foreach (GenericParameter gpar in methodDefinition.GenericParameters)
 					GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.classes);
-			TypeDefinition recdef = MetDef.DeclaringType;
+			TypeDefinition recdef = methodDefinition.DeclaringType;
 			while (recdef != null)
 			{
 				if (recdef.HasGenericParameters)

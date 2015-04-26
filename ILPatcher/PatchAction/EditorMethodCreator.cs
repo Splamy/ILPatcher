@@ -12,23 +12,18 @@ using Mono.Cecil;
 
 namespace ILPatcher
 {
-	public partial class EditorMethodCreator : UserControl
+	public partial class EditorMethodCreator : EditorPatchAction
 	{
-		public PatchActionMethodCreator Patchaction { get; set; }
-
-		private MethodDefinition EmptyMethod;
-
-		private Action<PatchAction> callbackAdd;
-
-		private AssemblyDefinition AssDef;
+		private PatchActionMethodCreator patchAction;
+		private MethodDefinition blankMethodDefinition;
+		private AssemblyDefinition assemblyDefinition;
 
 		//https://github.com/PavelTorgashov/FastColoredTextBox
 
-		public EditorMethodCreator(Action<PatchAction> _cbAdd)
+		public EditorMethodCreator(Action<PatchAction> pParentAddCallback)
+			: base(pParentAddCallback)
 		{
 			InitializeComponent();
-
-			callbackAdd = _cbAdd;
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
@@ -38,24 +33,23 @@ namespace ILPatcher
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			Patchaction = new PatchActionMethodCreator();
-			Patchaction.ActionName = "jknfg jasfjn;sadj ao sdf;j dfg ioafjldf giaglkasfgioj adfdfgjn sddfgj af h";
-			Patchaction.FillAction = new PatchActionILMethodFixed();
-			Patchaction.FillAction.ActionName = "o;ia o;aoia adfgio jad;g dfoi gkjdfhg ihfguh dkjas iuhag dfg isdfg hb";
-			callbackAdd(Patchaction);
+			patchAction = new PatchActionMethodCreator();
+			patchAction.ActionName = "jknfg jasfjn;sadj ao sdf;j dfg ioafjldf giaglkasfgioj adfdfgjn sddfgj af h";
+			patchAction.FillAction = new PatchActionILMethodFixed();
+			patchAction.FillAction.ActionName = "o;ia o;aoia adfgio jad;g dfoi gkjdfhg ihfguh dkjas iuhag dfg isdfg hb";
+			ParentAddCallback(patchAction);
 			((SwooshPanel)Parent).SwooshBack();
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			CSCompiler csc = new CSCompiler(null);
+			CSCompiler csc = new CSCompiler(assemblyDefinition);
 			MethodDefinition md = csc.InjectCode(txtInjectCode.Text);
-
 		}
 
-		public void SetAssDef(AssemblyDefinition MyAssDef)
+		public void SetAssDef(AssemblyDefinition myAssDef)
 		{
-			AssDef = MyAssDef;
+			assemblyDefinition = myAssDef;
 		}
 
 		private void button2_Click(object sender, EventArgs e)

@@ -90,12 +90,11 @@ namespace ILPatcher
 			if (mClusterList.SelectedIndex >= 0)
 			{
 				PatchAction pa = patchCluster.ActionList[mClusterList.SelectedIndex];
+				EditorPatchAction editorform;
 				switch (pa.PatchActionType)
 				{
 				case PatchActionType.ILMethodFixed:
-					EditorILPattern eilp = new EditorILPattern(Add);
-					eilp.LoadPatchAction((PatchActionILMethodFixed)pa);
-					((SwooshPanel)Parent).PushPanel(eilp, "PatchAction: ILMethodFixed");
+					editorform = new EditorILPattern(Add);
 					break;
 				case PatchActionType.ILMethodDynamic:
 					Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
@@ -109,6 +108,8 @@ namespace ILPatcher
 				default:
 					return;
 				}
+				editorform.SetPatchAction((PatchActionILMethodFixed)pa);
+				((SwooshPanel)Parent).PushPanel(editorform, editorform.PanelName);
 			}
 		}
 

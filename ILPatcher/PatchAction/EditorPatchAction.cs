@@ -6,10 +6,16 @@ using System.Text;
 
 namespace ILPatcher
 {
-	abstract class EditorPatchAction : Control
+	public abstract class EditorPatchAction : Control
 	{
-		public abstract void SetPatchAction(PatchAction pa);
+		public abstract string PanelName { get; }
+		protected readonly Action<PatchAction> ParentAddCallback;
 
-		protected Action<PatchAction> ParentAddCallback;
+		public abstract void SetPatchAction(PatchAction pPatchAction);
+
+		public EditorPatchAction(Action<PatchAction> pParentAddCallback)
+		{
+			ParentAddCallback = pParentAddCallback;
+		}
 	}
 }

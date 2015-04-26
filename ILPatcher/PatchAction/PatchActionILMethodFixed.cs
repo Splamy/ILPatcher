@@ -17,7 +17,7 @@ namespace ILPatcher
 	{
 		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodFixed; } protected set { } }
 
-		public MethodDefinition MethodDef;
+		public MethodDefinition methodDefinition;
 		private int OriginalInstructionCount;
 		public List<InstructionInfo> instructPatchList;
 
@@ -35,7 +35,7 @@ namespace ILPatcher
 				if (II.Delete) continue;
 				cpyBuffer[II.NewInstructionNum] = II.NewInstruction;
 			}
-			Mono.Collections.Generic.Collection<Instruction> nList = MethodDef.Body.Instructions;
+			Mono.Collections.Generic.Collection<Instruction> nList = methodDefinition.Body.Instructions;
 			nList.Clear();
 			for (int i = 0; i < cpyBuffer.Length; i++)
 				if (cpyBuffer[i] != null) nList.Add(cpyBuffer[i]);
@@ -47,7 +47,7 @@ namespace ILPatcher
 		/// <returns>Returns true if it succeeded, false otherwise</returns>
 		public override bool Save(XmlNode output)
 		{
-			if (MethodDef == null)
+			if (methodDefinition == null)
 			{
 				Log.Write(Log.Level.Careful, "The PatchAction(ILMethodFixed) ", ActionName, " is empty and won't be saved!");
 				return false;
@@ -61,7 +61,7 @@ namespace ILPatcher
 			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.IsOld);
 
 			XmlElement xListPatched = output.InsertCompressedElement(SST.PatchList);
-			xListPatched.CreateAttribute(SST.MethodPath, ILManager.Instance.Reference(MethodDef).ToBaseAlph());
+			xListPatched.CreateAttribute(SST.MethodPath, ILManager.Instance.Reference(methodDefinition).ToBaseAlph());
 			xListPatched.CreateAttribute(SST.InstructionCount, OriginalInstructionCount.ToString());
 
 			int instructionPos = 0;
@@ -139,11 +139,11 @@ namespace ILPatcher
 
 			string metpathunres = PatchList.GetAttribute(SST.MethodPath);
 			if (metpathunres == string.Empty) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); PatchStatus = PatchStatus.Broken; return false; }
-			MethodDef = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
-			if (MethodDef == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
+			methodDefinition = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
+			if (methodDefinition == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
 
 			OriginalInstructionCount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
-			if (MethodDef.Body.Instructions.Count != OriginalInstructionCount)
+			if (methodDefinition.Body.Instructions.Count != OriginalInstructionCount)
 			{
 				// new method body has changed -> patching the new assembly will not work
 				Log.Write(Log.Level.Error, "The PatchAction \"", ActionName, "\" cannot be applied to a changend method"); PatchStatus = PatchStatus.Broken; return false;
@@ -175,7 +175,7 @@ namespace ILPatcher
 					nII.OldInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
 					if (nII.OldInstructionNum < OriginalInstructionCount)
 					{
-						nII.OldInstruction = MethodDef.Body.Instructions[nII.OldInstructionNum];
+						nII.OldInstruction = methodDefinition.Body.Instructions[nII.OldInstructionNum];
 						if (checkopcdes && opcode != nII.OldInstruction.OpCode)
 						{
 							PatchStatus = PatchStatus.Broken;
@@ -412,7 +412,7 @@ namespace ILPatcher
 				{
 					int parIndexVal = int.Parse(parArrVal[0]);
 					//object parTypVal = ILManager.Instance.Resolve(parArrVal[1].ToBaseInt());
-					return ILManager.GenInstruction(opcode, MethodDef.Parameters[parIndexVal]);
+					return ILManager.GenInstruction(opcode, methodDefinition.Parameters[parIndexVal]);
 				}
 				else
 					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
@@ -425,7 +425,7 @@ namespace ILPatcher
 				{
 					int varIndexVal = int.Parse(varArrVal[0]);
 					//object varTypVal = ILManager.Instance.Resolve(varArrVal[1].ToBaseInt());
-					return ILManager.GenInstruction(opcode, MethodDef.Parameters[varIndexVal]);
+					return ILManager.GenInstruction(opcode, methodDefinition.Parameters[varIndexVal]);
 				}
 				else
 					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
@@ -475,7 +475,7 @@ namespace ILPatcher
 		{
 			int res = -1;
 			if (OldI)
-				res = MethodDef.Body.Instructions.IndexOf(i);
+				res = methodDefinition.Body.Instructions.IndexOf(i);
 			else
 			{
 				InstructionInfo fII = instructPatchList.First<InstructionInfo>(x => x.NewInstruction == i);
@@ -490,7 +490,7 @@ namespace ILPatcher
 		/// <param name="MetDef">The MethodDefinition for this Patch</param>
 		public void SetInitWorking(MethodDefinition MetDef)
 		{
-			MethodDef = MetDef;
+			methodDefinition = MetDef;
 			OriginalInstructionCount = MetDef.Body.Instructions.Count;
 			PatchStatus = PatchStatus.WoringPerfectly;
 		}
