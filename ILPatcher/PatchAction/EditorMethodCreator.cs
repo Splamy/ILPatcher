@@ -14,6 +14,8 @@ namespace ILPatcher
 {
 	public partial class EditorMethodCreator : EditorPatchAction
 	{
+		public override string PanelName { get { return "PatchAction: ILMethodFixed"; } }
+
 		private PatchActionMethodCreator patchAction;
 		private MethodDefinition blankMethodDefinition;
 		private AssemblyDefinition assemblyDefinition;
@@ -50,6 +52,12 @@ namespace ILPatcher
 		public void SetAssDef(AssemblyDefinition myAssDef)
 		{
 			assemblyDefinition = myAssDef;
+		}
+
+		public override void SetPatchAction(PatchAction pPatchAction)
+		{
+			PatchActionMethodCreator pamc = (PatchActionMethodCreator)pPatchAction;
+			patchAction = pamc;
 		}
 
 		private void button2_Click(object sender, EventArgs e)
