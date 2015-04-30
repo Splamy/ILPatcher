@@ -89,8 +89,9 @@ namespace ILPatcher
 
 		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
+			((SwooshPanel)Parent).PushPanel(new EditorMethodCreator(x => { }), "Debug Disassemble");
 			//TestMet1();
-			TestMet2();
+			//TestMet2();
 		}
 
 		private void TestMet1()
@@ -153,7 +154,7 @@ namespace ILPatcher
 			ast.GenerateCode(pto);
 
 			EditorMethodCreator emc = new EditorMethodCreator(x => { });
-			emc.txtInjectCode.Text = pto.ToString();
+			//emc.txtInjectCode.Text = pto.ToString();
 			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
 		}
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,14 +7,17 @@ using System.Text;
 
 namespace ILPatcher
 {
-	public abstract class EditorPatchAction : Control
+	public class EditorPatchAction : UserControl
 	{
-		public abstract string PanelName { get; }
+		public virtual string PanelName { get { return "Default Panelname"; } }
 		protected readonly Action<PatchAction> ParentAddCallback;
 
-		public abstract void SetPatchAction(PatchAction pPatchAction);
+		public virtual void SetPatchAction(PatchAction pPatchAction)
+		{ throw new NotImplementedException(); }
 
-		public EditorPatchAction(Action<PatchAction> pParentAddCallback)
+		private EditorPatchAction() { /*Reserverd for VSDesigner*/ }
+
+		protected EditorPatchAction(Action<PatchAction> pParentAddCallback)
 		{
 			ParentAddCallback = pParentAddCallback;
 		}

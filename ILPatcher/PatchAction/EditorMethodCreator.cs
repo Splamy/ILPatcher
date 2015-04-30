@@ -45,8 +45,8 @@ namespace ILPatcher
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			CSCompiler csc = new CSCompiler(assemblyDefinition);
-			MethodDefinition md = csc.InjectCode(txtInjectCode.Text);
+			//CSCompiler csc = new CSCompiler(assemblyDefinition);
+			//MethodDefinition md = csc.InjectCode(txtInjectCode.Text);
 		}
 
 		public void SetAssDef(AssemblyDefinition myAssDef)
