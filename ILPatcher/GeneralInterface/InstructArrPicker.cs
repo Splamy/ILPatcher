@@ -35,13 +35,13 @@ namespace ILPatcher
 			lbxSwitchInstruct.MouseDoubleClick += lbxSwitchInstruct_MouseDoubleClick;
 		}
 
-		void lbxAllInstruct_MouseDoubleClick(object sender, MouseEventArgs e)
+		private void lbxAllInstruct_MouseDoubleClick(object sender, MouseEventArgs e)
 		{
 			InstructionInfo II = ((InstructionInfo)lbxAllInstruct.SelectedElement);
 			lbxSwitchInstruct.AddItem(new InstructElement(II.NewInstruction, II.NewInstructionNum));
 		}
 
-		void lbxSwitchInstruct_MouseDoubleClick(object sender, MouseEventArgs e)
+		private void lbxSwitchInstruct_MouseDoubleClick(object sender, MouseEventArgs e)
 		{
 			lbxSwitchInstruct.RemoveItem(lbxSwitchInstruct.SelectedElement);
 		}

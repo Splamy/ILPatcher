@@ -43,8 +43,8 @@
 			this.button1 = new System.Windows.Forms.Button();
 			this.hoizontalTabControl1 = new ILPatcher.GeneralInterface.HoizontalTabControl();
 			this.tabParameter = new System.Windows.Forms.TabPage();
-			this.addRemoveControl1 = new ILPatcher.GeneralInterface.AddRemoveControl();
-			this.mListBox1 = new MetroObjects.MListBox();
+			this.lbxParameter = new MetroObjects.MListBox();
+			this.arcParameter = new ILPatcher.GeneralInterface.AddRemoveControl();
 			this.tabVariables = new System.Windows.Forms.TabPage();
 			this.tabAttributes = new System.Windows.Forms.TabPage();
 			this.hoizontalTabControl1.SuspendLayout();
@@ -220,8 +220,8 @@
 			// 
 			// tabParameter
 			// 
-			this.tabParameter.Controls.Add(this.mListBox1);
-			this.tabParameter.Controls.Add(this.addRemoveControl1);
+			this.tabParameter.Controls.Add(this.lbxParameter);
+			this.tabParameter.Controls.Add(this.arcParameter);
 			this.tabParameter.Location = new System.Drawing.Point(89, 4);
 			this.tabParameter.Name = "tabParameter";
 			this.tabParameter.Padding = new System.Windows.Forms.Padding(3);
@@ -230,24 +230,24 @@
 			this.tabParameter.Text = "Parameter";
 			this.tabParameter.UseVisualStyleBackColor = true;
 			// 
-			// addRemoveControl1
+			// lbxParameter
 			// 
-			this.addRemoveControl1.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.addRemoveControl1.Location = new System.Drawing.Point(3, 159);
-			this.addRemoveControl1.Name = "addRemoveControl1";
-			this.addRemoveControl1.Size = new System.Drawing.Size(491, 33);
-			this.addRemoveControl1.TabIndex = 29;
-			this.addRemoveControl1.Text = "addRemoveControl1";
+			this.lbxParameter.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.lbxParameter.Location = new System.Drawing.Point(3, 3);
+			this.lbxParameter.MinimumSize = new System.Drawing.Size(50, 50);
+			this.lbxParameter.Name = "lbxParameter";
+			this.lbxParameter.Size = new System.Drawing.Size(491, 156);
+			this.lbxParameter.TabIndex = 28;
+			this.lbxParameter.Text = "mListBox1";
 			// 
-			// mListBox1
+			// arcParameter
 			// 
-			this.mListBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.mListBox1.Location = new System.Drawing.Point(3, 3);
-			this.mListBox1.MinimumSize = new System.Drawing.Size(50, 50);
-			this.mListBox1.Name = "mListBox1";
-			this.mListBox1.Size = new System.Drawing.Size(491, 156);
-			this.mListBox1.TabIndex = 28;
-			this.mListBox1.Text = "mListBox1";
+			this.arcParameter.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this.arcParameter.Location = new System.Drawing.Point(3, 159);
+			this.arcParameter.Name = "arcParameter";
+			this.arcParameter.Size = new System.Drawing.Size(491, 33);
+			this.arcParameter.TabIndex = 29;
+			this.arcParameter.Text = "addRemoveControl1";
 			// 
 			// tabVariables
 			// 
@@ -300,7 +300,7 @@
 		private System.Windows.Forms.TextBox txtPatchActionName;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Button btnOK;
-		private MetroObjects.MListBox mListBox1;
+		private MetroObjects.MListBox lbxParameter;
 		private System.Windows.Forms.TextBox txtMethodName;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label3;
@@ -312,6 +312,6 @@
 		private System.Windows.Forms.TabPage tabParameter;
 		private System.Windows.Forms.TabPage tabVariables;
 		private System.Windows.Forms.TabPage tabAttributes;
-		private GeneralInterface.AddRemoveControl addRemoveControl1;
+		private GeneralInterface.AddRemoveControl arcParameter;
 	}
 }

@@ -1,4 +1,4 @@
-﻿namespace ILPatcher.GeneralInterface
+﻿namespace ILPatcher
 {
 	partial class CreateTypeForm
 	{
@@ -28,17 +28,16 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CreateTypeForm));
 			this.btnPickMethod = new System.Windows.Forms.Button();
-			this.txtMethodFullName = new System.Windows.Forms.TextBox();
+			this.txtTypeName = new System.Windows.Forms.TextBox();
 			this.label4 = new System.Windows.Forms.Label();
-			this.txtPatchActionName = new System.Windows.Forms.TextBox();
-			this.label1 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
-			this.chbDelete = new MetroObjects.MCheckBox();
-			this.mCheckBox1 = new MetroObjects.MCheckBox();
-			this.label3 = new System.Windows.Forms.Label();
-			this.mCheckBox2 = new MetroObjects.MCheckBox();
-			this.label5 = new System.Windows.Forms.Label();
+			this.btnOK = new System.Windows.Forms.Button();
+			this.txtTypeCompile = new FastColoredTextBoxNS.FastColoredTextBox();
+			this.label6 = new System.Windows.Forms.Label();
+			this.btnTypeCompiler = new System.Windows.Forms.Button();
+			((System.ComponentModel.ISupportInitialize)(this.txtTypeCompile)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnPickMethod
@@ -47,7 +46,7 @@
 			this.btnPickMethod.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
 			this.btnPickMethod.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.btnPickMethod.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.btnPickMethod.Location = new System.Drawing.Point(525, 6);
+			this.btnPickMethod.Location = new System.Drawing.Point(525, 36);
 			this.btnPickMethod.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.btnPickMethod.Name = "btnPickMethod";
 			this.btnPickMethod.Size = new System.Drawing.Size(70, 20);
@@ -56,19 +55,19 @@
 			this.btnPickMethod.UseVisualStyleBackColor = false;
 			this.btnPickMethod.Click += new System.EventHandler(this.btnPickMethod_Click);
 			// 
-			// txtMethodFullName
+			// txtTypeName
 			// 
-			this.txtMethodFullName.Location = new System.Drawing.Point(95, 6);
-			this.txtMethodFullName.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.txtMethodFullName.Name = "txtMethodFullName";
-			this.txtMethodFullName.ReadOnly = true;
-			this.txtMethodFullName.Size = new System.Drawing.Size(425, 20);
-			this.txtMethodFullName.TabIndex = 20;
+			this.txtTypeName.Location = new System.Drawing.Point(95, 36);
+			this.txtTypeName.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
+			this.txtTypeName.Name = "txtTypeName";
+			this.txtTypeName.ReadOnly = true;
+			this.txtTypeName.Size = new System.Drawing.Size(425, 20);
+			this.txtTypeName.TabIndex = 20;
 			// 
 			// label4
 			// 
 			this.label4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label4.Location = new System.Drawing.Point(5, 5);
+			this.label4.Location = new System.Drawing.Point(5, 35);
 			this.label4.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(85, 20);
@@ -76,106 +75,100 @@
 			this.label4.Text = "Type:";
 			this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
-			// txtPatchActionName
+			// btnOK
 			// 
-			this.txtPatchActionName.Location = new System.Drawing.Point(95, 30);
-			this.txtPatchActionName.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.txtPatchActionName.Name = "txtPatchActionName";
-			this.txtPatchActionName.Size = new System.Drawing.Size(500, 20);
-			this.txtPatchActionName.TabIndex = 24;
-			this.txtPatchActionName.Text = "DefaultName";
+			this.btnOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnOK.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
+			this.btnOK.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnOK.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+			this.btnOK.Location = new System.Drawing.Point(459, 59);
+			this.btnOK.Name = "btnOK";
+			this.btnOK.Size = new System.Drawing.Size(136, 25);
+			this.btnOK.TabIndex = 31;
+			this.btnOK.Text = "OK";
+			this.btnOK.UseVisualStyleBackColor = false;
+			this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
 			// 
-			// label1
+			// txtTypeCompile
 			// 
-			this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label1.Location = new System.Drawing.Point(5, 30);
-			this.label1.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(85, 20);
-			this.label1.TabIndex = 23;
-			this.label1.Text = "Name:";
-			this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.txtTypeCompile.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+			this.txtTypeCompile.AutoIndentCharsPatterns = "\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;]+);\n^\\s*(case|default)\\s*[^:]*(" +
+    "?<range>:)\\s*(?<range>[^;]+);\n";
+			this.txtTypeCompile.AutoScrollMinSize = new System.Drawing.Size(99, 14);
+			this.txtTypeCompile.BackBrush = null;
+			this.txtTypeCompile.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
+			this.txtTypeCompile.CharHeight = 14;
+			this.txtTypeCompile.CharWidth = 8;
+			this.txtTypeCompile.Cursor = System.Windows.Forms.Cursors.IBeam;
+			this.txtTypeCompile.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+			this.txtTypeCompile.IsReplaceMode = false;
+			this.txtTypeCompile.Language = FastColoredTextBoxNS.Language.CSharp;
+			this.txtTypeCompile.LeftBracket = '(';
+			this.txtTypeCompile.LeftBracket2 = '{';
+			this.txtTypeCompile.Location = new System.Drawing.Point(95, 5);
+			this.txtTypeCompile.Multiline = false;
+			this.txtTypeCompile.Name = "txtTypeCompile";
+			this.txtTypeCompile.Paddings = new System.Windows.Forms.Padding(0);
+			this.txtTypeCompile.RightBracket = ')';
+			this.txtTypeCompile.RightBracket2 = '}';
+			this.txtTypeCompile.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+			this.txtTypeCompile.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("txtTypeCompile.ServiceColors")));
+			this.txtTypeCompile.ShowScrollBars = false;
+			this.txtTypeCompile.Size = new System.Drawing.Size(425, 25);
+			this.txtTypeCompile.TabIndex = 32;
+			this.txtTypeCompile.Text = "public...";
+			this.txtTypeCompile.Zoom = 100;
 			// 
-			// label2
+			// label6
 			// 
-			this.label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label2.Location = new System.Drawing.Point(5, 55);
-			this.label2.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(85, 25);
-			this.label2.TabIndex = 25;
-			this.label2.Text = "IsArray:";
-			this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.label6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.label6.Location = new System.Drawing.Point(5, 5);
+			this.label6.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
+			this.label6.Name = "label6";
+			this.label6.Size = new System.Drawing.Size(85, 25);
+			this.label6.TabIndex = 33;
+			this.label6.Text = "TypeCompiler:";
+			this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
-			// chbDelete
+			// btnTypeCompiler
 			// 
-			this.chbDelete.Location = new System.Drawing.Point(95, 55);
-			this.chbDelete.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.chbDelete.MinimumSize = new System.Drawing.Size(10, 10);
-			this.chbDelete.Name = "chbDelete";
-			this.chbDelete.Size = new System.Drawing.Size(25, 25);
-			this.chbDelete.TabIndex = 26;
-			this.chbDelete.Text = "mCheckBox1";
-			// 
-			// mCheckBox1
-			// 
-			this.mCheckBox1.Location = new System.Drawing.Point(236, 55);
-			this.mCheckBox1.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.mCheckBox1.MinimumSize = new System.Drawing.Size(10, 10);
-			this.mCheckBox1.Name = "mCheckBox1";
-			this.mCheckBox1.Size = new System.Drawing.Size(25, 25);
-			this.mCheckBox1.TabIndex = 28;
-			this.mCheckBox1.Text = "mCheckBox1";
-			// 
-			// label3
-			// 
-			this.label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label3.Location = new System.Drawing.Point(146, 55);
-			this.label3.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(85, 25);
-			this.label3.TabIndex = 27;
-			this.label3.Text = "IsPointer:";
-			this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			// 
-			// mCheckBox2
-			// 
-			this.mCheckBox2.Location = new System.Drawing.Point(389, 55);
-			this.mCheckBox2.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.mCheckBox2.MinimumSize = new System.Drawing.Size(10, 10);
-			this.mCheckBox2.Name = "mCheckBox2";
-			this.mCheckBox2.Size = new System.Drawing.Size(25, 25);
-			this.mCheckBox2.TabIndex = 30;
-			this.mCheckBox2.Text = "mCheckBox2";
-			// 
-			// label5
-			// 
-			this.label5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label5.Location = new System.Drawing.Point(299, 55);
-			this.label5.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(85, 25);
-			this.label5.TabIndex = 29;
-			this.label5.Text = "IsReference:";
-			this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.btnTypeCompiler.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnTypeCompiler.FlatAppearance.BorderColor = System.Drawing.Color.Blue;
+			this.btnTypeCompiler.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			this.btnTypeCompiler.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+			this.btnTypeCompiler.Location = new System.Drawing.Point(525, 5);
+			this.btnTypeCompiler.Margin = new System.Windows.Forms.Padding(5, 5, 0, 0);
+			this.btnTypeCompiler.Name = "btnTypeCompiler";
+			this.btnTypeCompiler.Size = new System.Drawing.Size(70, 25);
+			this.btnTypeCompiler.TabIndex = 34;
+			this.btnTypeCompiler.Text = "Compile";
+			this.btnTypeCompiler.UseVisualStyleBackColor = false;
+			this.btnTypeCompiler.Click += new System.EventHandler(this.btnTypeCompiler_Click);
 			// 
 			// CreateTypeForm
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.mCheckBox2);
-			this.Controls.Add(this.label5);
-			this.Controls.Add(this.mCheckBox1);
-			this.Controls.Add(this.label3);
-			this.Controls.Add(this.chbDelete);
-			this.Controls.Add(this.label2);
-			this.Controls.Add(this.txtPatchActionName);
-			this.Controls.Add(this.label1);
+			this.ClientSize = new System.Drawing.Size(600, 90);
+			this.Controls.Add(this.btnTypeCompiler);
+			this.Controls.Add(this.label6);
+			this.Controls.Add(this.txtTypeCompile);
+			this.Controls.Add(this.btnOK);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.btnPickMethod);
-			this.Controls.Add(this.txtMethodFullName);
+			this.Controls.Add(this.txtTypeName);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
 			this.Name = "CreateTypeForm";
-			this.Size = new System.Drawing.Size(603, 393);
+			this.Text = "TypeSelector";
+			((System.ComponentModel.ISupportInitialize)(this.txtTypeCompile)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -184,15 +177,11 @@
 		#endregion
 
 		private System.Windows.Forms.Button btnPickMethod;
-		public System.Windows.Forms.TextBox txtMethodFullName;
+		public System.Windows.Forms.TextBox txtTypeName;
 		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.TextBox txtPatchActionName;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private MetroObjects.MCheckBox chbDelete;
-		private MetroObjects.MCheckBox mCheckBox1;
-		private System.Windows.Forms.Label label3;
-		private MetroObjects.MCheckBox mCheckBox2;
-		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.Button btnOK;
+		private FastColoredTextBoxNS.FastColoredTextBox txtTypeCompile;
+		private System.Windows.Forms.Label label6;
+		private System.Windows.Forms.Button btnTypeCompiler;
 	}
 }

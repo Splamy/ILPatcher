@@ -26,7 +26,7 @@ namespace ILPatcher
 	public partial class MainPanel : Control
 	{
 		public static AssemblyStatus status = AssemblyStatus.Uninitialized;
-		public static AssemblyDefinition AssemblyDef { get; private set; }
+		public static AssemblyDefinition MainAssemblyDefinition { get; private set; } // TODO: get rid of static
 		public static string AssemblyPath { get; private set; }
 		public TableManager tablemgr;
 		bool AwaitingAssemblySelect = false;
@@ -89,7 +89,7 @@ namespace ILPatcher
 
 		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
-			((SwooshPanel)Parent).PushPanel(new EditorMethodCreator(x => { }), "Debug Disassemble");
+			((SwooshPanel)Parent).PushPanel(new EditorMethodCreator(x => { }, MainAssemblyDefinition), "Debug Disassemble");
 			//TestMet1();
 			//TestMet2();
 		}
@@ -111,8 +111,9 @@ namespace ILPatcher
 								}
 							  }
 							}";
-			CSCompiler csc = new CSCompiler(AssemblyDef);
-			Mono.Cecil.MethodDefinition md = csc.InjectCode(test);
+			CSCompiler csc = new CSCompiler(MainAssemblyDefinition);
+			csc.Code = test;
+			Mono.Cecil.MethodDefinition md = csc.GetMethodDefinition(string.Empty, string.Empty);
 			if (md == null) return;
 			TypeDefinition tdret = (TypeDefinition)ILManager.Instance.FindTypeByName("-.System.Void");
 			if (tdret == null) return;
@@ -129,8 +130,8 @@ namespace ILPatcher
 			{
 				if (saveFileDialog.ShowDialog() == DialogResult.OK)
 				{
-					AssemblyDef.MainModule.Runtime = TargetRuntime.Net_4_0;
-					AssemblyDef.Write(saveFileDialog.FileName);
+					MainAssemblyDefinition.MainModule.Runtime = TargetRuntime.Net_4_0;
+					MainAssemblyDefinition.Write(saveFileDialog.FileName);
 					MessageBox.Show("Message Successfuly Injected");
 				}
 			}
@@ -142,7 +143,7 @@ namespace ILPatcher
 			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
 			if (MetDef == null) return;
 
-			DecompilerContext decon = new DecompilerContext(AssemblyDef.MainModule);
+			DecompilerContext decon = new DecompilerContext(MainAssemblyDefinition.MainModule);
 			decon.CancellationToken = new System.Threading.CancellationToken();
 			decon.CurrentType = MetDef.DeclaringType;
 			DecompilerSettings decoset = new DecompilerSettings();
@@ -153,7 +154,7 @@ namespace ILPatcher
 			PlainTextOutput pto = new PlainTextOutput();
 			ast.GenerateCode(pto);
 
-			EditorMethodCreator emc = new EditorMethodCreator(x => { });
+			EditorMethodCreator emc = new EditorMethodCreator(x => { }, MainAssemblyDefinition);
 			//emc.txtInjectCode.Text = pto.ToString();
 			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
 		}
@@ -169,7 +170,7 @@ namespace ILPatcher
 				for (int i = 0; i < tablemgr.ClusterList.Count; i++)
 					if (clbPatchList.GetItemChecked(i))
 						tablemgr.ClusterList[i].Execute();
-				AssemblyDef.Write(AssemblyPath);
+				MainAssemblyDefinition.Write(AssemblyPath);
 			}
 			catch (Exception ex) { MessageBox.Show(ex.Message); }
 		}
@@ -198,7 +199,7 @@ namespace ILPatcher
 				LoadAsmOrigin();
 				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
 				{
-					ILManager.Instance.InitTreeHalfAsync(AssemblyDef);
+					ILManager.Instance.InitTreeHalfAsync(MainAssemblyDefinition);
 					structureViever1.RebuildHalfAsync();
 				}
 				if (AwaitingAssemblySelect)
@@ -213,18 +214,18 @@ namespace ILPatcher
 		{
 			try
 			{
-				AssemblyDef = AssemblyDefinition.ReadAssembly(AssemblyPath);
+				MainAssemblyDefinition = AssemblyDefinition.ReadAssembly(AssemblyPath);
 				status = AssemblyStatus.RawAssemblyLoaded;
 
 				rtbInfo.Clear();
-				rtbInfo.AppendText("[Name]::" + AssemblyDef.MainModule.Name.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[CLR Runtime]::" + AssemblyDef.MainModule.Runtime.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Full Name]::" + AssemblyDef.MainModule.FullyQualifiedName.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Metadata Token]::" + AssemblyDef.MainModule.MetadataToken.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Architecture]::" + AssemblyDef.MainModule.Architecture.ToString() + Environment.NewLine);
-				if (AssemblyDef.MainModule.EntryPoint != null)
-					rtbInfo.AppendText("[EntryPoint]::" + AssemblyDef.MainModule.EntryPoint.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Mvid]::" + AssemblyDef.MainModule.Mvid.ToString() + Environment.NewLine);
+				rtbInfo.AppendText("[Name]::" + MainAssemblyDefinition.MainModule.Name.ToString() + Environment.NewLine);
+				rtbInfo.AppendText("[CLR Runtime]::" + MainAssemblyDefinition.MainModule.Runtime.ToString() + Environment.NewLine);
+				rtbInfo.AppendText("[Full Name]::" + MainAssemblyDefinition.MainModule.FullyQualifiedName.ToString() + Environment.NewLine);
+				rtbInfo.AppendText("[Metadata Token]::" + MainAssemblyDefinition.MainModule.MetadataToken.ToString() + Environment.NewLine);
+				rtbInfo.AppendText("[Architecture]::" + MainAssemblyDefinition.MainModule.Architecture.ToString() + Environment.NewLine);
+				if (MainAssemblyDefinition.MainModule.EntryPoint != null)
+					rtbInfo.AppendText("[EntryPoint]::" + MainAssemblyDefinition.MainModule.EntryPoint.ToString() + Environment.NewLine);
+				rtbInfo.AppendText("[Mvid]::" + MainAssemblyDefinition.MainModule.Mvid.ToString() + Environment.NewLine);
 				status = AssemblyStatus.AssemblyAndDataLoaded;
 			}
 			catch (Exception ex)
@@ -278,7 +279,7 @@ namespace ILPatcher
 
 		public void OpenCluster(PatchCluster patchcluster)
 		{
-			EditorCluster ee = new EditorCluster(Add);
+			EditorCluster ee = new EditorCluster(Add, MainAssemblyDefinition);
 			ee.LoadCluster(null);
 			((SwooshPanel)Parent).PushPanel(ee, "Patch Cluster");
 		}

@@ -562,17 +562,17 @@ namespace ILPatcher
 				}
 
 				ModuleDefinition ModDef = null;
-				if (MainPanel.AssemblyDef.MainModule.Name == module)
-					ModDef = MainPanel.AssemblyDef.MainModule;
+				if (MainPanel.MainAssemblyDefinition.MainModule.Name == module)
+					ModDef = MainPanel.MainAssemblyDefinition.MainModule;
 				else
 				{
 					try
 					{
 						// fix if ns not found
-						foreach (AssemblyNameReference anr in MainPanel.AssemblyDef.MainModule.AssemblyReferences)
+						foreach (AssemblyNameReference anr in MainPanel.MainAssemblyDefinition.MainModule.AssemblyReferences)
 							if (anr.Name == module)
 							{
-								AssemblyDefinition AssDef = MainPanel.AssemblyDef.MainModule.AssemblyResolver.Resolve(anr);
+								AssemblyDefinition AssDef = MainPanel.MainAssemblyDefinition.MainModule.AssemblyResolver.Resolve(anr);
 								ModDef = AssDef.MainModule;
 								break;
 							}

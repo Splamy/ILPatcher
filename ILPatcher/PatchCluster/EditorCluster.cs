@@ -8,10 +8,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Mono.Cecil;
+
 namespace ILPatcher
 {
 	public partial class EditorCluster : UserControl
 	{
+		private Action<PatchCluster> callbackAdd;
+		private AssemblyDefinition assemblyDefinition;
+
 		private PatchCluster patchcluster;
 		public PatchCluster patchCluster
 		{
@@ -25,13 +30,12 @@ namespace ILPatcher
 			set { patchcluster = value; }
 		}
 
-		Action<PatchCluster> callbackAdd;
-
-		public EditorCluster(Action<PatchCluster> _cbAdd)
+		public EditorCluster(Action<PatchCluster> pCallbackAdd, AssemblyDefinition pAssemblyDefinition)
 		{
 			InitializeComponent();
 
-			callbackAdd = _cbAdd;
+			callbackAdd = pCallbackAdd;
+			assemblyDefinition = pAssemblyDefinition;
 		}
 
 		private void btnILMethodFixed_Click(object sender, EventArgs e)
@@ -41,7 +45,7 @@ namespace ILPatcher
 
 		private void btnMethodCreator_Click(object sender, EventArgs e)
 		{
-			((SwooshPanel)Parent).PushPanel(new EditorMethodCreator(Add), "PatchAction: MethodCreator");
+			((SwooshPanel)Parent).PushPanel(new EditorMethodCreator(Add, assemblyDefinition), "PatchAction: MethodCreator");
 		}
 
 		private void btnOK_Click(object sender, EventArgs e)
@@ -105,6 +109,9 @@ namespace ILPatcher
 				case PatchActionType.AoBRawScan:
 					Log.Write(Log.Level.Info, "AoBRawScan not implemented");
 					return;
+				case PatchActionType.ILMethodCreator:
+					editorform = new EditorMethodCreator(Add, assemblyDefinition);
+					break;
 				default:
 					return;
 				}
@@ -117,7 +124,5 @@ namespace ILPatcher
 		{
 			LoadCluster(patchCluster);
 		}
-
-
 	}
 }

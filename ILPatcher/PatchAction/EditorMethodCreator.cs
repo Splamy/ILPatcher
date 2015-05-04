@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using MetroObjects;
 using Mono.Cecil;
 
 namespace ILPatcher
@@ -22,10 +23,21 @@ namespace ILPatcher
 
 		//https://github.com/PavelTorgashov/FastColoredTextBox
 
-		public EditorMethodCreator(Action<PatchAction> pParentAddCallback)
+		public EditorMethodCreator(Action<PatchAction> pParentAddCallback, AssemblyDefinition pAssemblyDefinition)
 			: base(pParentAddCallback)
 		{
 			InitializeComponent();
+
+			assemblyDefinition = pAssemblyDefinition;
+
+			arcParameter.OnAdd = () =>
+			{
+				CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, tr =>
+				{
+					lbxParameter.AddItem(new DefaultDragItem<TypeReference>(tr));
+				});
+				ctf.Show();
+			};
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
@@ -63,6 +75,27 @@ namespace ILPatcher
 		private void button2_Click(object sender, EventArgs e)
 		{
 
+		}
+	}
+
+	class DefaultDragItem<T> : DragItem where T : class
+	{
+		T Item { get; set; }
+
+		public DefaultDragItem(T pItem)
+		{
+			Item = pItem;
+		}
+
+		protected override void DrawBuffer(Graphics g)
+		{
+			g.DrawString(Item.ToString(), Font, Brushes.Black, new PointF(1, 1));
+		}
+
+		protected override int GetHeightFromWidth(int width)
+		{
+			Graphics g = this.GetBufferGraphics();
+			return (int)g.MeasureString(Item.ToString(), Font, width).Height;
 		}
 	}
 }

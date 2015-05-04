@@ -17,7 +17,6 @@ namespace ILPatcher
 	{
 		private string error;
 		private Log.Level level;
-		private RectangleF layout;
 
 		public ErrorLoggerItem(Log.Level _level, string _error)
 		{

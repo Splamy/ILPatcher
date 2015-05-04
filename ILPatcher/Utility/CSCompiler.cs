@@ -17,26 +17,54 @@ namespace ILPatcher
 {
 	public class CSCompiler
 	{
-		AssemblyDefinition AssDef = null;
+		AssemblyDefinition parentAssembly = null;
+		AssemblyDefinition compiledAssembly = null;
+		bool isCompiled = false;
 
-		public CSCompiler(AssemblyDefinition mainAssDef)
+		private string code;
+		public string Code
 		{
-			AssDef = mainAssDef;
-			//AssDef.MainModule.Import(new MethodReference(),))
+			get { return code; }
+			set
+			{
+				if (code != value)
+				{
+					isCompiled = false;
+					code = value;
+				}
+			}
 		}
 
-		public MethodDefinition InjectCode(string code)
+		public CSCompiler(AssemblyDefinition pParentAssembly)
 		{
+			parentAssembly = pParentAssembly;
+		}
+
+		private bool CodeCompile()
+		{
+			if (isCompiled) return true;
+
 			CompilerParameters cp = new CompilerParameters();
 
-			if (AssDef != null)
+			if (parentAssembly != null)
 			{
 				DefaultAssemblyResolver dar = new DefaultAssemblyResolver();
-				foreach (AssemblyNameReference anr in AssDef.MainModule.AssemblyReferences)
+
+				List<AssemblyDefinition> adList = new List<AssemblyDefinition>();
+				adList.Add(parentAssembly);
+				foreach (AssemblyNameReference anr in parentAssembly.MainModule.AssemblyReferences)
 				{
 					AssemblyDefinition adref = dar.Resolve(anr);
-					cp.ReferencedAssemblies.Add(adref.MainModule.FullyQualifiedName);
+					//string fullname = adref.MainModule.FullyQualifiedName;
+					if (!adList.Exists(adcomp => adcomp.MainModule.Name == adref.MainModule.Name &&
+									   adcomp.Name.PublicKeyToken.SequenceEqual(adref.Name.PublicKeyToken)))
+					{
+						adList.Add(adref);
+					}
+					//if (!cp.ReferencedAssemblies.Contains(fullname))
+					//.Add(fullname);
 				}
+				cp.ReferencedAssemblies.AddRange(adList.ConvertAll<string>(ad => ad.MainModule.FullyQualifiedName).ToArray());
 			}
 
 			cp.WarningLevel = 3;
@@ -46,7 +74,7 @@ namespace ILPatcher
 			cp.OutputAssembly = "tmpILData.dll";
 
 			CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
-			CompilerResults cr = provider.CompileAssemblyFromSource(cp, code);
+			CompilerResults cr = provider.CompileAssemblyFromSource(cp, Code);
 
 			if (cr.Errors.Count > 0)
 			{
@@ -56,40 +84,93 @@ namespace ILPatcher
 					errors.AppendFormat("Line {0},{1}\t: {2}\n", error.Line, error.Column, error.ErrorText);
 				}
 				Log.Write(Log.Level.Error, "Compiler Error: ", errors.ToString());
-				return null;
+				if (cr.Errors.HasErrors)
+					return false;
 			}
 
-			AssemblyDefinition assdefnew = AssemblyDefinition.ReadAssembly("tmpILData.dll");
-			if (assdefnew.MainModule.Types.Count != 2)
+			//FileStream fs
+			//ModuleDefinition moddef = ModuleDefinition.ReadModule("tmpILData.dll");
+			compiledAssembly = AssemblyDefinition.ReadAssembly("tmpILData.dll");
+			isCompiled = true;
+			return true;
+		}
+
+		public AssemblyDefinition GetAssemblyDefinition()
+		{
+			if (CodeCompile())
+			{
+				return compiledAssembly;
+			}
+			else
+			{
+				isCompiled = false;
+				compiledAssembly = null;
+				Log.Write(Log.Level.Error, "Generated code couldn't be read");
+				return null;
+			}
+		}
+
+		public TypeDefinition GetTypeDefinition(string typeName)
+		{
+			AssemblyDefinition ad = GetAssemblyDefinition();
+			if (ad == null) return null;
+
+			if (ad.MainModule.Types.Count != 2)
 			{
 				Log.Write(Log.Level.Error, "More then one or no Class defined");
 				return null;
 			}
-			foreach (TypeDefinition td in assdefnew.MainModule.Types)
+
+			foreach (TypeDefinition td in ad.MainModule.Types)
 			{
-				if (td.Name != "<Module>")
+				if ((td.Name != "<Module>" && typeName == string.Empty) || typeName == td.Name)
 				{
-					if (td.Methods.Count != 2)
-					{
-						Log.Write(Log.Level.Error, "More then one or no Method defined");
-						return null;
-					}
-					foreach (MethodDefinition md in td.Methods)
-					{
-						if (md.Name != ".ctor")
-						{
-							return md;
-						}
-					}
+					return td;
 				}
 			}
-			Log.Write(Log.Level.Error, "Generated code couldn't be read");
 			return null;
 		}
 
-		public struct MInject
+		public MethodDefinition GetMethodDefinition(string typeName, string methodName)
 		{
-			public string code;
+			TypeDefinition td = GetTypeDefinition(typeName);
+			if (td == null) return null;
+
+			if (td.Methods.Count != 2)
+			{
+				Log.Write(Log.Level.Error, "More then one or no Method defined");
+				return null;
+			}
+
+			foreach (MethodDefinition md in td.Methods)
+			{
+				if ((md.Name != ".ctor" && methodName == string.Empty) || methodName == md.Name)
+				{
+					return md;
+				}
+			}
+			return null;
+		}
+
+		public VariableDefinition GetVariableDefinition(string typeName, string methodName, string variableName)
+		{
+			MethodDefinition md = GetMethodDefinition(typeName, methodName);
+			if (md == null) return null;
+
+			if (md.Body.Variables.Count != 1)
+			{
+				Log.Write(Log.Level.Error, "More then one or no Variable defined");
+				return null;
+			}
+
+			foreach (VariableDefinition vd in md.Body.Variables)
+			{
+				if (variableName == string.Empty || variableName == vd.Name)
+				{
+					return vd;
+				}
+			}
+			return null;
 		}
 	}
 }
