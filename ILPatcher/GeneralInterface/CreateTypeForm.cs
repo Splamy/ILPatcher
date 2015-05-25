@@ -16,7 +16,7 @@ namespace ILPatcher
 	partial class CreateTypeForm : Form
 	{
 		private Action<TypeReference> callback;
-		TypeReference createTypeDefinition { get; set; }
+		public TypeReference createTypeDefinition { get; protected set; }
 		AssemblyDefinition assemblyDefinition;
 		CSCompiler cSCompiler;
 		string CapsuleVarNamespaces = @"using System.Windows.Forms;";
@@ -57,7 +57,7 @@ namespace ILPatcher
 			SetTypeReference(methodDefiniton.ReturnType);
 		}
 
-		private void SetTypeReference(TypeReference pTypeReference)
+		public void SetTypeReference(TypeReference pTypeReference)
 		{
 			createTypeDefinition = pTypeReference;
 			txtTypeName.Text = CecilFormatter.Format(createTypeDefinition);

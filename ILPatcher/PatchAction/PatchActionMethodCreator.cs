@@ -17,7 +17,7 @@ namespace ILPatcher
 		public PatchAction FillAction { get; set; }
 
 		private MethodDefinition blankMethodDefinition;
-		private TypeDefinition ContainingTpyeDefinition;
+		private TypeDefinition insertClass;
 
 		public override bool Execute()
 		{

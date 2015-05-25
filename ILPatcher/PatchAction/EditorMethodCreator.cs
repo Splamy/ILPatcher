@@ -15,10 +15,11 @@ namespace ILPatcher
 {
 	public partial class EditorMethodCreator : EditorPatchAction
 	{
-		public override string PanelName { get { return "PatchAction: ILMethodFixed"; } }
+		public override string PanelName { get { return "PatchAction: ILMethodCreator"; } }
 
 		private PatchActionMethodCreator patchAction;
 		private MethodDefinition blankMethodDefinition;
+		private TypeDefinition insertClass;
 		private AssemblyDefinition assemblyDefinition;
 
 		//https://github.com/PavelTorgashov/FastColoredTextBox
@@ -38,6 +39,16 @@ namespace ILPatcher
 				});
 				ctf.Show();
 			};
+			arcParameter.OnEdit = () =>
+			{
+				CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, tr =>
+				{
+					lbxParameter.AddItem(new DefaultDragItem<TypeReference>(tr));
+				});
+				ctf.SetTypeReference(((DefaultDragItem<TypeReference>)lbxParameter.SelectedElement).Item);
+				ctf.Show();
+			};
+			arcParameter.OnRemove = () => lbxParameter.RemoveSelected();
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
@@ -47,11 +58,15 @@ namespace ILPatcher
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			patchAction = new PatchActionMethodCreator();
-			patchAction.ActionName = "jknfg jasfjn;sadj ao sdf;j dfg ioafjldf giaglkasfgioj adfdfgjn sddfgj af h";
-			patchAction.FillAction = new PatchActionILMethodFixed();
-			patchAction.FillAction.ActionName = "o;ia o;aoia adfgio jad;g dfoi gkjdfhg ihfguh dkjas iuhag dfg isdfg hb";
-			ParentAddCallback(patchAction);
+			if (patchAction == null)
+			{
+				patchAction = new PatchActionMethodCreator();
+				patchAction.ActionName = string.Format("MethodCreator: <{0}> inserts {1} -> {2}",
+					txtPatchActionName.Text,
+					blankMethodDefinition == null ? "<>" : blankMethodDefinition.Name,
+					insertClass == null ? "<>" : insertClass.Name);
+				ParentAddCallback(patchAction);
+			}
 			((SwooshPanel)Parent).SwooshBack();
 		}
 
@@ -80,7 +95,7 @@ namespace ILPatcher
 
 	class DefaultDragItem<T> : DragItem where T : class
 	{
-		T Item { get; set; }
+		public T Item { get; set; }
 
 		public DefaultDragItem(T pItem)
 		{
