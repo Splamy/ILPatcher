@@ -23,7 +23,7 @@ using ICSharpCode.Decompiler.Disassembler;
 
 namespace ILPatcher
 {
-	public partial class MainPanel : Control
+	public partial class MainPanel : UserControl
 	{
 		public static AssemblyStatus status = AssemblyStatus.Uninitialized;
 		public static AssemblyDefinition MainAssemblyDefinition { get; private set; } // TODO: get rid of static
@@ -364,11 +364,38 @@ namespace ILPatcher
 			}
 		}
 
+		bool drag = false;
+		TreeNode dragObj = null;
+
 		private void treeView1_MouseUp(object sender, MouseEventArgs e)
 		{
+
 			var node = ((TreeView)sender).GetNodeAt(new Point(e.X, e.Y));
 			if (node != null && node.Level > 0 && node.Checked)
 				node.Checked = false;
+		}
+
+		private void treeView1_MouseDown(object sender, MouseEventArgs e)
+		{
+			TreeNode tn = treeView1.SelectedNode;
+			dragObj = tn;
+			drag = tn != null;
+		}
+
+		private void treeView1_MouseMove(object sender, MouseEventArgs e)
+		{
+			if (drag)
+				treeView1.DoDragDrop(dragObj, DragDropEffects.Move);
+		}
+
+		private void treeView1_DragDrop(object sender, DragEventArgs e)
+		{
+			Point point = treeView1.PointToClient(new Point(e.X, e.Y));
+			TreeNode tn = treeView1.GetNodeAt(point);
+			TreeNode tnnext = treeView1.GetNodeAt(point.X, point.Y + 5);
+
+			TreeNode tnData = (TreeNode)e.Data.GetData(typeof(TreeNode));
+
 		}
 	}
 

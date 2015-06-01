@@ -104,13 +104,14 @@
         '\''};
 			this.txtTypeCompile.AutoIndentCharsPatterns = "\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;]+);\n^\\s*(case|default)\\s*[^:]*(" +
     "?<range>:)\\s*(?<range>[^;]+);\n";
-			this.txtTypeCompile.AutoScrollMinSize = new System.Drawing.Size(99, 14);
+			this.txtTypeCompile.AutoScrollMinSize = new System.Drawing.Size(59, 14);
 			this.txtTypeCompile.BackBrush = null;
 			this.txtTypeCompile.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
 			this.txtTypeCompile.CharHeight = 14;
 			this.txtTypeCompile.CharWidth = 8;
 			this.txtTypeCompile.Cursor = System.Windows.Forms.Cursors.IBeam;
 			this.txtTypeCompile.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+			this.txtTypeCompile.Font = new System.Drawing.Font("Courier New", 9.75F);
 			this.txtTypeCompile.IsReplaceMode = false;
 			this.txtTypeCompile.Language = FastColoredTextBoxNS.Language.CSharp;
 			this.txtTypeCompile.LeftBracket = '(';
@@ -126,7 +127,7 @@
 			this.txtTypeCompile.ShowScrollBars = false;
 			this.txtTypeCompile.Size = new System.Drawing.Size(425, 25);
 			this.txtTypeCompile.TabIndex = 32;
-			this.txtTypeCompile.Text = "public...";
+			this.txtTypeCompile.Text = "void";
 			this.txtTypeCompile.Zoom = 100;
 			// 
 			// label6

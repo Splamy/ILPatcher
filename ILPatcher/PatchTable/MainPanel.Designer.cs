@@ -46,6 +46,8 @@
 			this.lbxErrors = new MetroObjects.MListBox();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.treeView1 = new System.Windows.Forms.TreeView();
+			this.tabPage5 = new System.Windows.Forms.TabPage();
+			this.mPatchListTest = new MetroObjects.MListBox();
 			this.btnSavePatchList = new System.Windows.Forms.Button();
 			this.btnTestPatch = new System.Windows.Forms.Button();
 			this.btnLoadila = new System.Windows.Forms.Button();
@@ -55,8 +57,6 @@
 			this.btnExecutePatches = new System.Windows.Forms.Button();
 			this.mLoading = new MetroObjects.MLoadingCircle();
 			this.btnEditPatch = new System.Windows.Forms.Button();
-			this.tabPage5 = new System.Windows.Forms.TabPage();
-			this.mPatchListTest = new MetroObjects.MListBox();
 			this.tabInfoControl.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -179,6 +179,7 @@
 			// 
 			// treeView1
 			// 
+			this.treeView1.AllowDrop = true;
 			this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.treeView1.CheckBoxes = true;
 			this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -199,7 +200,30 @@
 			this.treeView1.Size = new System.Drawing.Size(289, 336);
 			this.treeView1.TabIndex = 2;
 			this.treeView1.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView1_BeforeCheck);
+			this.treeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView1_DragDrop);
+			this.treeView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView1_MouseDown);
+			this.treeView1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.treeView1_MouseMove);
 			this.treeView1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView1_MouseUp);
+			// 
+			// tabPage5
+			// 
+			this.tabPage5.Controls.Add(this.mPatchListTest);
+			this.tabPage5.Location = new System.Drawing.Point(4, 22);
+			this.tabPage5.Name = "tabPage5";
+			this.tabPage5.Size = new System.Drawing.Size(289, 336);
+			this.tabPage5.TabIndex = 4;
+			this.tabPage5.Text = "testList";
+			this.tabPage5.UseVisualStyleBackColor = true;
+			// 
+			// mPatchListTest
+			// 
+			this.mPatchListTest.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.mPatchListTest.Location = new System.Drawing.Point(0, 0);
+			this.mPatchListTest.MinimumSize = new System.Drawing.Size(50, 50);
+			this.mPatchListTest.Name = "mPatchListTest";
+			this.mPatchListTest.Size = new System.Drawing.Size(289, 336);
+			this.mPatchListTest.TabIndex = 0;
+			this.mPatchListTest.Text = "mListBox1";
 			// 
 			// btnSavePatchList
 			// 
@@ -322,26 +346,6 @@
 			this.btnEditPatch.Text = "edit ILPatch";
 			this.btnEditPatch.UseVisualStyleBackColor = false;
 			this.btnEditPatch.Click += new System.EventHandler(this.btnEditPatch_Click);
-			// 
-			// tabPage5
-			// 
-			this.tabPage5.Controls.Add(this.mPatchListTest);
-			this.tabPage5.Location = new System.Drawing.Point(4, 22);
-			this.tabPage5.Name = "tabPage5";
-			this.tabPage5.Size = new System.Drawing.Size(289, 336);
-			this.tabPage5.TabIndex = 4;
-			this.tabPage5.Text = "testList";
-			this.tabPage5.UseVisualStyleBackColor = true;
-			// 
-			// mPatchListTest
-			// 
-			this.mPatchListTest.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.mPatchListTest.Location = new System.Drawing.Point(0, 0);
-			this.mPatchListTest.MinimumSize = new System.Drawing.Size(50, 50);
-			this.mPatchListTest.Name = "mPatchListTest";
-			this.mPatchListTest.Size = new System.Drawing.Size(289, 336);
-			this.mPatchListTest.TabIndex = 0;
-			this.mPatchListTest.Text = "mListBox1";
 			// 
 			// MainPanel
 			// 
