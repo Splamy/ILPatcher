@@ -9,29 +9,52 @@ namespace ILPatcher
 {
 	public class PatchCluster : ISaveToFile
 	{
-		public string ClusterName;
-		public List<PatchAction> ActionList;
+		public string ClusterName
+		{
+			get
+			{
+				return string.Format("{0} -> {1}",
+					FindAction != null ? FindAction.ActionName : "{}",
+					PatchAction != null ? PatchAction.ActionName : "{}");
+			}
+		}
+		public PatchAction FindAction { get; set; } // TODO change to FindAction-Type
+		public PatchAction PatchAction { get; set; }
 
 		public PatchCluster()
 		{
-			ActionList = new List<PatchAction>();
-			ClusterName = string.Empty;
+			FindAction = null;
+			PatchAction = null;
 		}
 
 		public void Execute()
 		{
-			ActionList.ForEach(pa =>
+			// TODO
+			// object foundarget(s) = TargetFinder.Find();
+			// foundtarget can be an array but the patchacation must know what to do with it.
+			// PatchAction.ExecuteOn(foundtarget);
+
+			/*ActionList.ForEach(pa =>
 			{
 				if (pa.PatchStatus == PatchStatus.WoringPerfectly && pa.Execute())
 					Log.Write(Log.Level.Info, "Patch <", pa.ActionName, "> executed successfully!");
 				else
 					Log.Write(Log.Level.Info, "Patch <", pa.ActionName, "> is broken and won't be executed");
-			});
+			});*/
 		}
 
 		public bool Save(XmlNode output)
 		{
-			XmlElement xPatchClusterNode = output.InsertCompressedElement(SST.PatchCluster);
+			//TODO:
+
+			// possible with same cluster
+			// <cluster>
+			// <finder> ... <\finder>
+			// <action> ... <\action>
+			// <\cluster>
+
+
+			/*XmlElement xPatchClusterNode = output.InsertCompressedElement(SST.PatchCluster);
 			xPatchClusterNode.CreateAttribute(SST.NAME, ClusterName);
 			foreach (PatchAction pa in ActionList)
 			{
@@ -40,13 +63,15 @@ namespace ILPatcher
 				xPatchActionNode.CreateAttribute(SST.PatchType, string.Empty);
 				xPatchActionNode.CreateAttribute(SST.NAME, string.Empty);
 				pa.Save(xPatchActionNode);
-			}
+			}*/
 			return true;
 		}
 
 		public bool Load(XmlNode input)
 		{
-			NameCompressor nc = NameCompressor.Instance;
+			//TODO see save
+
+			/*NameCompressor nc = NameCompressor.Instance;
 
 			foreach (XmlElement xnode in input.ChildNodes)
 			{
@@ -85,14 +110,18 @@ namespace ILPatcher
 					pa.Load(xnode);
 					ActionList.Add(pa);
 				}
-			}
+			}*/
 			return true;
 		}
 
-		public void Add(PatchAction pa)
+		public void SetPatchAction(PatchAction pa)
 		{
-			if (!ActionList.Contains(pa))
-				ActionList.Add(pa);
+			PatchAction = pa;
+		}
+
+		public void SetFindAction(PatchAction fa)
+		{
+			FindAction = fa;
 		}
 	}
 }

@@ -83,10 +83,8 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -96,7 +94,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GeneralInterface\CreateTypeForm.cs">
-      <SubType>UserControl</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="GeneralInterface\CreateTypeForm.Designer.cs">
       <DependentUpon>CreateTypeForm.cs</DependentUpon>
@@ -109,6 +107,12 @@
     </Compile>
     <Compile Include="GeneralInterface\InstructArrPicker.Designer.cs">
       <DependentUpon>InstructArrPicker.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PatchCluster\PatchBuilder.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PatchCluster\PatchBuilder.Designer.cs">
+      <DependentUpon>PatchBuilder.cs</DependentUpon>
     </Compile>
     <Compile Include="GeneralInterface\PatchQuestionWindow.cs">
       <SubType>Form</SubType>
@@ -158,7 +162,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PatchTable\MainPanel.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="PatchTable\MainPanel.Designer.cs">
       <DependentUpon>MainPanel.cs</DependentUpon>
@@ -186,9 +190,13 @@
     <Compile Include="Utility\XMLUtility.cs" />
     <EmbeddedResource Include="GeneralInterface\CreateTypeForm.resx">
       <DependentUpon>CreateTypeForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="GeneralInterface\InstructArrPicker.resx">
       <DependentUpon>InstructArrPicker.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PatchCluster\PatchBuilder.resx">
+      <DependentUpon>PatchBuilder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PatchCluster\EditorCluster.resx">
       <DependentUpon>EditorCluster.cs</DependentUpon>

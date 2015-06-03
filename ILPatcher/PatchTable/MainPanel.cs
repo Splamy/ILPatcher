@@ -29,7 +29,7 @@ namespace ILPatcher
 		public static AssemblyDefinition MainAssemblyDefinition { get; private set; } // TODO: get rid of static
 		public static string AssemblyPath { get; private set; }
 		public TableManager tablemgr;
-		bool AwaitingAssemblySelect = false;
+		bool awaitingAssemblySelect = false;
 		string ilpFiletmp;
 
 
@@ -57,7 +57,7 @@ namespace ILPatcher
 				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
 					LoadIlpFile(openIlp.FileName);
 				else
-					AwaitingAssemblySelect = true;
+					awaitingAssemblySelect = true;
 			}
 		}
 
@@ -202,7 +202,7 @@ namespace ILPatcher
 					ILManager.Instance.InitTreeHalfAsync(MainAssemblyDefinition);
 					structureViever1.RebuildHalfAsync();
 				}
-				if (AwaitingAssemblySelect)
+				if (awaitingAssemblySelect)
 				{
 					LoadIlpFile(ilpFiletmp);
 				}
@@ -392,10 +392,11 @@ namespace ILPatcher
 		{
 			Point point = treeView1.PointToClient(new Point(e.X, e.Y));
 			TreeNode tn = treeView1.GetNodeAt(point);
-			TreeNode tnnext = treeView1.GetNodeAt(point.X, point.Y + 5);
-
 			TreeNode tnData = (TreeNode)e.Data.GetData(typeof(TreeNode));
-
+			if(tn.Level == 0 && (int)tnData.Tag == 0)
+			{
+				
+			}
 		}
 	}
 
