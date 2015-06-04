@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MetroObjects;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
-using MetroObjects;
-using Mono;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-
-namespace ILPatcher
+namespace ILPatcher.Utility
 {
 	public class ErrorLoggerItem : DragItem
 	{

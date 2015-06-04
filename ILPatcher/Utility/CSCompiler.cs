@@ -1,19 +1,11 @@
-﻿using System;
+﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
-using System.Windows.Forms;
-using System.Reflection;
-using System.CodeDom.Compiler;
-
-using Mono;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-
-namespace ILPatcher
+namespace ILPatcher.Utility
 {
 	public class CSCompiler
 	{

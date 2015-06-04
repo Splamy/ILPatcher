@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Drawing;
-
-using Mono;
-using Mono.Cecil;
+﻿using ILPatcher.Data;
 using Mono.Cecil.Cil;
+using System;
+using System.Drawing;
+using System.Xml;
 
-namespace ILPatcher
+namespace ILPatcher.Utility
 {
 	public static class ExtensionMethods
 	{
+		private static NameCompressor nc = NameCompressor.Instance;
+		private const string abc = "abcdefghijklmnopqrstuvwxyz";
+
+		// Instruction **************************************************************
+
 		/// <summary>Creates a shallow copy of an Instruction</summary>
 		/// <param name="instr">The instruction to be cloned</param>
 		/// <returns>Returns the new Instruction if ILManager.GenInstruction was successful, otherwise null</returns>
@@ -22,7 +21,7 @@ namespace ILPatcher
 			return ILManager.GenInstruction(instr.OpCode, instr.Operand);
 		}
 
-		private static NameCompressor nc = NameCompressor.Instance;
+		// XmlElement ***************************************************************
 
 		/// <summary>Creates an attribute for a XmlElement and appends it</summary>
 		/// <param name="xelem">The XmlElement where the attribute should be added</param>
@@ -39,7 +38,7 @@ namespace ILPatcher
 		/// <param name="xelem">The XmlElement where the attribute should be added</param>
 		/// <param name="name">The ID of the element, which will be converted ToBaseAlph and used as the name for the attribute</param>
 		/// <param name="value">The value for the new attribute</param>
-		[ObsoleteAttribute("Dynamic attributes are dangerous!", false)] 
+		[ObsoleteAttribute("Dynamic attributes are dangerous!", false)]
 		public static void CreateAttribute(this XmlElement xelem, int name, string value)
 		{
 			XmlAttribute NewAttribute = xelem.OwnerDocument.CreateAttribute(name.ToBaseAlph());
@@ -80,14 +79,24 @@ namespace ILPatcher
 			}
 		}
 
-		/// <summary>Adds the X and Y values respectively and returns a new Point</summary>
-		/// <param name="p">The first Point</param>
-		/// <param name="add">The Point to be added</param>
-		/// <returns>Returns a new Point with the sum</returns>
-		public static Point Add(this Point p, Point add)
+		/// <summary>Creates a copy of the given XmlElement with all attributes and appends it. Subnodes won't be copied.
+		/// This method can be used to copy a XmlElement from a another XmlDocument.</summary>
+		/// <param name="xelem">The XmlElement where the copied XmlElement will be added</param>
+		/// <param name="child">The XmlElement to be copied</param>
+		public static void AppendClonedChild(this XmlElement xelem, XmlElement child)
 		{
-			return new Point(p.X + add.X, p.Y + add.Y);
+			XmlDocument xDoc = xelem.OwnerDocument;
+			XmlElement xnew = xDoc.CreateElement(child.Name);
+			foreach (XmlAttribute xatt in child.Attributes)
+			{
+				XmlAttribute NewAttribute = xDoc.CreateAttribute(xatt.Name);
+				NewAttribute.Value = xatt.Value;
+				xnew.Attributes.Append(NewAttribute);
+			}
+			xelem.AppendChild(xnew);
 		}
+
+		// XmlNode ******************************************************************
 
 		/// <summary>Creates a new XmlElement with the NameCompressor SST Entry as the name.
 		/// If name compression is enabled in the NameCompressor it will use the short name, otherwise the long one</summary>
@@ -134,24 +143,18 @@ namespace ILPatcher
 			return tmpnode;
 		}
 
-		/// <summary>Creates a copy of the given XmlElement with all attributes and appends it. Subnodes won't be copied.
-		/// This method can be used to copy a XmlElement from a another XmlDocument.</summary>
-		/// <param name="xelem">The XmlElement where the copied XmlElement will be added</param>
-		/// <param name="child">The XmlElement to be copied</param>
-		public static void AppendClonedChild(this XmlElement xelem, XmlElement child)
+		// Point ********************************************************************
+
+		/// <summary>Adds the Points memberwise and returns a new Point</summary>
+		/// <param name="p">The first Point</param>
+		/// <param name="add">The Point to be added</param>
+		/// <returns>Returns a new Point with the sum</returns>
+		public static Point Add(this Point p, Point add)
 		{
-			XmlDocument xDoc = xelem.OwnerDocument;
-			XmlElement xnew = xDoc.CreateElement(child.Name);
-			foreach (XmlAttribute xatt in child.Attributes)
-			{
-				XmlAttribute NewAttribute = xDoc.CreateAttribute(xatt.Name);
-				NewAttribute.Value = xatt.Value;
-				xnew.Attributes.Append(NewAttribute);
-			}
-			xelem.AppendChild(xnew);
+			return new Point(p.X + add.X, p.Y + add.Y);
 		}
 
-		private const string abc = "abcdefghijklmnopqrstuvwxyz";
+		// int & string *************************************************************
 
 		/// <summary>Converts a non-negative number into an alphabetical string.</summary>
 		/// <param name="n">The number to convert</param>

@@ -13,7 +13,7 @@ namespace ILPatcher
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(MainForm.Instance);
+			Application.Run(Interface.Main.MainForm.Instance);
 		}
 	}
 }

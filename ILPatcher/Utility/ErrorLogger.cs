@@ -1,30 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Xml;
+using System.Text;
 
-namespace ILPatcher
+namespace ILPatcher.Utility
 {
 	public class Log
 	{
-		private static Log instance;
-		private static Log Instance
-		{
-			get { if (instance == null) instance = new Log(); return instance; }
-			set { }
-		}
-
-		public static bool Active = true;
-		private static int level = 2;
+		public static bool Active { get; set; }
+		public static int StackLevel { get; set; }
 		public static Action<ErrorLoggerItem> callback { get; set; }
 
-		private string[] spaceup;
+		private static string[] spaceup;
 
-		public Log()
+		static Log()
+		{
+			StackLevel = 2;
+			Active = true;
+
+			CalcSpaceLength();
+		}
+
+		private static void CalcSpaceLength()
 		{
 			string[] earr = Enum.GetNames(typeof(Level));
 			int longestelem = 0;
@@ -53,8 +50,8 @@ namespace ILPatcher
 			string inputbuffer = strb.ToString();
 			strb.Clear();
 
-			strb.Append(Instance.spaceup[(int)lvl]);
-			for (int i = level; i >= 1; i--)
+			strb.Append(spaceup[(int)lvl]);
+			for (int i = StackLevel; i >= 1; i--)
 			{
 				StackFrame frame = new StackFrame(i);
 				var method = frame.GetMethod();

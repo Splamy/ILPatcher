@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ILPatcher
+namespace ILPatcher.Utility
 {
 	class AnyArray<T> where T : class
 	{

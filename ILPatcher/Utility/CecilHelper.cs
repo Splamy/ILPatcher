@@ -1,14 +1,10 @@
-﻿using System;
-using System.Text;
+﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Globalization;
 
-using Mono;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-
-namespace ILPatcher
+namespace ILPatcher.Utility
 {
 	/// <summary>
 	/// Taken from Reflexil, See https://github.com/sailro/reflexil
