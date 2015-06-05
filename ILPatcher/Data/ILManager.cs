@@ -43,14 +43,12 @@ namespace ILPatcher.Data
 				}
 				return _OpCodeLookup;
 			}
-			protected set { }
 		}
 
 		private static ILManager instance; // TODO remove static
 		public static ILManager Instance
 		{
 			get { if (instance == null) instance = new ILManager(); return instance; }
-			protected set { }
 		}
 
 		private static NameCompressor nc = NameCompressor.Instance;
@@ -69,7 +67,6 @@ namespace ILPatcher.Data
 		/// <param name="xNode">The parent node for the new reference nodes</param>
 		public void Save(XmlNode xNode)
 		{
-			NameCompressor nc = NameCompressor.Instance;
 			XmlElement xM = xNode.InsertCompressedElement(SST.MethodReference);
 			XmlElement xF = xNode.InsertCompressedElement(SST.FieldReference);
 			XmlElement xT = xNode.InsertCompressedElement(SST.TypeReference);
@@ -400,7 +397,6 @@ namespace ILPatcher.Data
 			if (oi.Status == ResolveStatus.Resolved) return oi.operand;
 			if (oi.Status != ResolveStatus.Unresolved) return null;
 
-			XmlElement xDataNode = oi.rawData;
 			MemberList[idNum].Status = ResolveStatus.UnkownError;
 
 			if (oi.oit == OperandInfoT.MethodReference)
@@ -425,7 +421,12 @@ namespace ILPatcher.Data
 
 			string name = xDataNode.GetAttribute(SST.NAME);
 			string type = xDataNode.GetAttribute(SST.TYPE);
-			if (name == string.Empty || type == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name or Parenttype"); return null; }
+			if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(type))
+			{
+				oi.Status = ResolveStatus.SaveFileError;
+				Log.Write(Log.Level.Error, xDataNode.Name, " - No Name or Parenttype");
+				return null;
+			}
 
 			bool isGeneric;
 			bool isGenericInstance;
@@ -498,7 +499,7 @@ namespace ILPatcher.Data
 			string Name = xDataNode.GetAttribute(SST.NAME);
 			string DeclaringType = xDataNode.GetAttribute(SST.MODULE);
 
-			if (FieldType == string.Empty || Name == string.Empty || DeclaringType == string.Empty)
+			if (string.IsNullOrEmpty(FieldType) || string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(DeclaringType))
 			{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No FieldType/Name/DeclaringType"); }
 
 			TypeReference TypDefFT = Resolve(FieldType.ToBaseInt()) as TypeReference;
@@ -534,7 +535,7 @@ namespace ILPatcher.Data
 			Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
 
 			string name = xDataNode.GetAttribute(SST.NAME);
-			if (name == string.Empty) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
+			if (string.IsNullOrEmpty(name)) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
 
 			string namesp = string.Empty;
 			// TODO enable namespace comparison, atm the algorithm will always take the first element.
@@ -549,15 +550,15 @@ namespace ILPatcher.Data
 			// 1] search in
 			#region search_in
 			string nestedin = xDataNode.GetAttribute(SST.NESTEDIN);
-			if (nestedin == string.Empty) // type is module subtype
+			if (string.IsNullOrEmpty(nestedin)) // type is module subtype
 			{
 				isNested = false;
 
 				string module = xDataNode.GetAttribute(SST.MODULE);
-				if (module == string.Empty) { oi.Status = ResolveStatus.SaveFileError; return null; }
+				if (string.IsNullOrEmpty(module)) { oi.Status = ResolveStatus.SaveFileError; return null; }
 
 				namesp = xDataNode.GetAttribute(SST.NAMESPACE);
-				if (namesp == string.Empty)
+				if (string.IsNullOrEmpty(namesp))
 				{
 					noNamespaceGiven = true;
 					Log.Write(Log.Level.Careful, "No Namespace defined! Will use first matching Item(!)");
@@ -737,7 +738,7 @@ namespace ILPatcher.Data
 					ILNode tnAssemblyContainer;
 					if (!nsDict.ContainsKey(nsstr))
 					{
-						string displaystr = nsstr == string.Empty ? "<Default Namespace>" : nsstr;
+						string displaystr = string.IsNullOrEmpty(nsstr) ? "<Default Namespace>" : nsstr;
 						tnAssemblyContainer = ilParent.Add(displaystr, displaystr, new NamespaceHolder(displaystr), StructureView.namesp);
 						nsDict.Add(nsstr, tnAssemblyContainer);
 					}
@@ -1006,7 +1007,7 @@ namespace ILPatcher.Data
 		public object operand;
 		public OperandInfoT oit;
 		public XmlElement rawData;
-		public bool resolved { get { return operand != null && Status == ResolveStatus.Resolved; } protected set { } }
+		public bool resolved { get { return operand != null && Status == ResolveStatus.Resolved; } }
 		public ResolveStatus Status;
 		public override string ToString()
 		{
@@ -1055,12 +1056,12 @@ namespace ILPatcher.Data
 		public object Value { private set; get; }
 		public StructureView Flags { private set; get; }
 
-		public ILNode(string name, string fullname, object value, StructureView flags)
+		public ILNode(string name, string fullname, object value, StructureView viewFlag)
 		{
 			Value = value;
 			Name = name;
 			FullName = fullname;
-			Flags = flags;
+			Flags = viewFlag;
 		}
 
 		public ILNode this[int i]
@@ -1096,7 +1097,7 @@ namespace ILPatcher.Data
 		{
 			_children.Sort((x, y) =>
 			{
-				sbyte strucdiff = x.Flags - y.Flags;
+				var strucdiff = x.Flags - y.Flags;
 				return strucdiff != 0 ? strucdiff : x.Name.CompareTo(y.Name);
 			});
 			_children.ForEach(x => x.Sort());

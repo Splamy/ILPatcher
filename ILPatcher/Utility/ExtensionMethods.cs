@@ -149,9 +149,9 @@ namespace ILPatcher.Utility
 		/// <param name="p">The first Point</param>
 		/// <param name="add">The Point to be added</param>
 		/// <returns>Returns a new Point with the sum</returns>
-		public static Point Add(this Point p, Point add)
+		public static Point Add(this Point p, Point other)
 		{
-			return new Point(p.X + add.X, p.Y + add.Y);
+			return new Point(p.X + other.X, p.Y + other.Y);
 		}
 
 		// int & string *************************************************************

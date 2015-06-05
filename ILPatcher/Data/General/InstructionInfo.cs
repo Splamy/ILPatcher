@@ -17,7 +17,6 @@ namespace ILPatcher.Data.General
 					_hbrMismatch = new SolidBrush(Color.Orange); //HatchBrush(HatchStyle.Percent10, Color.Yellow, Color.Transparent);
 				return _hbrMismatch;
 			}
-			set { }
 		}
 
 		public Instruction OldInstruction;
@@ -54,18 +53,17 @@ namespace ILPatcher.Data.General
 				if (OldInstruction.Operand == null && NewInstruction.Operand != null) return true;
 				return !OldInstruction.Operand.Equals(NewInstruction.Operand);
 			}
-			protected set { }
 		}
-		public bool InstructionOpCodePatch { get { return OldInstructionNum != -1 && OldInstruction.OpCode != NewInstruction.OpCode; } protected set { } }
-		public bool InstructionNumPatch { get { return OldInstructionNum != -1 && OldInstructionNum != NewInstructionNum; } protected set { } }
-		public bool IsNew { get { return OldInstructionNum == -1; } protected set { } }
-		public bool IsOld { get { return OldInstructionNum != -1; } protected set { } }
+		public bool InstructionOpCodePatch { get { return OldInstructionNum != -1 && OldInstruction.OpCode != NewInstruction.OpCode; } }
+		public bool InstructionNumPatch { get { return OldInstructionNum != -1 && OldInstructionNum != NewInstructionNum; } }
+		public bool IsNew { get { return OldInstructionNum == -1; } }
+		public bool IsOld { get { return OldInstructionNum != -1; } }
 
 		//LoadInfo
 		public bool OpCodeMismatch = false;
 		public bool PrimitiveMismatch = false;
 		public bool ReferenceMismatch = false;
-		public bool OperandMismatch { get { return PrimitiveMismatch || ReferenceMismatch; } protected set { } }
+		public bool OperandMismatch { get { return PrimitiveMismatch || ReferenceMismatch; } }
 
 		public InstructionInfo() { }
 
@@ -78,9 +76,9 @@ namespace ILPatcher.Data.General
 			else if (NewInstructionNum == -1)
 				g.DrawString("(" + dragFrom + ")", Font, Brushes.Black, 0, 1);
 			else if (IsOld && InstructionNumPatch)
-				g.DrawString(OldInstructionNum + ">" + NewInstructionNum, Font, Brushes.Black, 0,  1);
+				g.DrawString(OldInstructionNum + ">" + NewInstructionNum, Font, Brushes.Black, 0, 1);
 			else if (IsNew)
-				g.DrawString("=" + NewInstructionNum.ToString(), Font, Brushes.Black, 0,  1);
+				g.DrawString("=" + NewInstructionNum.ToString(), Font, Brushes.Black, 0, 1);
 			else
 				g.DrawString(NewInstructionNum.ToString(), Font, Brushes.Black, 0, 1);
 			if (Delete)
@@ -94,7 +92,7 @@ namespace ILPatcher.Data.General
 			if (OperandMismatch)
 				g.FillRectangle(hbrMismatch, 102, 0, Size.Width - 102, Size.Height);
 			if (NewInstruction.Operand == null)
-				g.DrawString("-", Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102,  1);
+				g.DrawString("-", Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, 1);
 			else
 				g.DrawString(CecilFormatter.TryFormat(NewInstruction.Operand), Font, InstructionOperandPatch ? Brushes.Red : Brushes.Black, 102, 1);
 		}

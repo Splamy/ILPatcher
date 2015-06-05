@@ -12,9 +12,9 @@ namespace ILPatcher.Interface.General
 		private Button btnRemove;
 		private Button btnEdit;
 
-		public Action OnAdd;
-		public Action OnRemove;
-		public Action OnEdit;
+		public Action OnAdd { get; set; }
+		public Action OnRemove { get; set; }
+		public Action OnEdit { get; set; }
 
 		private const int btnWidth = 80;
 		private const int space = 5;

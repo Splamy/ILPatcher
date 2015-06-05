@@ -1,6 +1,6 @@
 ﻿namespace ILPatcher.Data.Finder
 {
-	class TargetFinderName
+	class TargetFinderByName
 	{
 
 	}

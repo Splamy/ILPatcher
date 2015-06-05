@@ -6,6 +6,7 @@ namespace ILPatcher.Data.General
 {
 	public class PatchCluster : ISaveToFile
 	{
+		public string Label { get; set; }
 		public string Name { get; set; }
 		public string Description
 		{
@@ -23,6 +24,8 @@ namespace ILPatcher.Data.General
 		{
 			FindAction = null;
 			PatchAction = null;
+			Label = null;
+			Name = string.Empty;
 		}
 
 		public void Execute()

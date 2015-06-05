@@ -385,11 +385,11 @@
 		private MetroObjects.MCheckBox chbDelete;
 		private System.Windows.Forms.Label lblDelete;
 		private System.Windows.Forms.Button btnNewOpCode;
-		public System.Windows.Forms.TextBox txtMethodFullName;
 		private System.Windows.Forms.Panel panTMFPicker;
 		private System.Windows.Forms.Label lblTMFPicker;
 		private System.Windows.Forms.Button btnTMFPicker;
 		private System.Windows.Forms.ToolStripMenuItem tsmRemove;
 		private System.Windows.Forms.ToolStripMenuItem tsmUnDelete;
+		private System.Windows.Forms.TextBox txtMethodFullName;
 	}
 }

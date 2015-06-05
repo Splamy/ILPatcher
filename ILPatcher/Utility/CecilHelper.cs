@@ -13,23 +13,29 @@ namespace ILPatcher.Utility
 	{
 		private const System.Reflection.BindingFlags privateflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
 
-		public static TypeDefinition FindMatchingType(ICollection<TypeDefinition> types, string fulltypename)
+		public static TypeDefinition FindMatchingType(ICollection<TypeDefinition> types, string fullTypeName)
 		{
-			foreach (var ttype in types)
-			{
-				if (fulltypename == ttype.FullName)
-					return ttype;
+			if (types == null)
+				throw new ArgumentNullException("types");
 
-				var ittype = FindMatchingType(ttype.NestedTypes, fulltypename);
+			foreach (var type in types)
+			{
+				if (fullTypeName == type.FullName)
+					return type;
+
+				var ittype = FindMatchingType(type.NestedTypes, fullTypeName);
 				if (ittype != null)
 					return ittype;
 			}
 			return null;
 		}
 
-		public static TypeDefinition FindMatchingType(ModuleDefinition mdef, string fulltypename)
+		public static TypeDefinition FindMatchingType(ModuleDefinition moduleDefinition, string fullTypeName)
 		{
-			return FindMatchingType(mdef.Types, fulltypename);
+			if (moduleDefinition == null)
+				throw new ArgumentNullException("moduleDefinition");
+
+			return FindMatchingType(moduleDefinition.Types, fullTypeName);
 		}
 
 		/// <summary>
@@ -38,9 +44,15 @@ namespace ILPatcher.Utility
 		/// <param name="tdef">Type definition</param>
 		/// <param name="fref">Field reference</param>
 		/// <returns>Field definition (or null if not found)</returns>
-		public static FieldDefinition FindMatchingField(TypeDefinition tdef, FieldReference fref)
+		public static FieldDefinition FindMatchingField(TypeDefinition typeDefinition, FieldReference fieldReference)
 		{
-			return tdef.Fields.FirstOrDefault(fdef => (fdef.Name == fref.Name) && (fdef.FieldType.FullName == fref.FieldType.FullName));
+			if (typeDefinition == null)
+				throw new ArgumentNullException("typeDefinition");
+			if (fieldReference == null)
+				throw new ArgumentNullException("fieldReference");
+
+			return typeDefinition.Fields.FirstOrDefault(fdef => (fdef.Name == fieldReference.Name)
+													&& (fdef.FieldType.FullName == fieldReference.FieldType.FullName));
 		}
 
 		/// <summary>
@@ -49,12 +61,16 @@ namespace ILPatcher.Utility
 		/// <param name="anref1">an assembly name reference</param>
 		/// <param name="anref2">an assembly name reference to compare</param>
 		/// <returns>true if matches</returns>
-		public static bool ReferenceMatches(AssemblyNameReference anref1, AssemblyNameReference anref2)
+		public static bool ReferenceMatches(AssemblyNameReference assemblyNameReferenceA, AssemblyNameReference assemblyNameReferenceB)
 		{
-			// Skip Key
-			return ((anref1.Name == anref2.Name) &&
-					(String.Compare(anref1.Version.ToString(2), anref2.Version.ToString(2), StringComparison.Ordinal) == 0) &&
-					(anref1.Culture == anref2.Culture));
+			if (assemblyNameReferenceA == null)
+				throw new ArgumentNullException("assemblyNameReferenceA");
+			if (assemblyNameReferenceB == null)
+				throw new ArgumentNullException("assemblyNameReferenceB");
+
+			return ((assemblyNameReferenceA.Name == assemblyNameReferenceB.Name) &&
+					(string.Compare(assemblyNameReferenceA.Version.ToString(2), assemblyNameReferenceB.Version.ToString(2), StringComparison.Ordinal) == 0) &&
+					(assemblyNameReferenceA.Culture == assemblyNameReferenceB.Culture));
 		}
 
 		/// <summary>
@@ -83,9 +99,14 @@ namespace ILPatcher.Utility
 		/// <param name="tdef">Type definition</param>
 		/// <param name="mref">Method reference</param>
 		/// <returns>Method definition (or null if not found)</returns>
-		public static MethodDefinition FindMatchingMethod(TypeDefinition tdef, MethodReference mref)
+		public static MethodDefinition FindMatchingMethod(TypeDefinition typeDefinition, MethodReference methodReference)
 		{
-			return tdef.Methods.FirstOrDefault(mdef => MethodMatches(mdef, mref));
+			if (typeDefinition == null)
+				throw new ArgumentNullException("typeDefinition");
+			if (methodReference == null)
+				throw new ArgumentNullException("methodReference");
+
+			return typeDefinition.Methods.FirstOrDefault(mdef => MethodMatches(mdef, methodReference));
 		}
 
 		internal static Instruction GetInstruction(MethodBody oldBody, MethodBody newBody, Instruction i)
@@ -253,6 +274,11 @@ namespace ILPatcher.Utility
 		/// <param name="target">Target method definition</param>
 		public static void CloneMethodBody(MethodDefinition source, MethodDefinition target)
 		{
+			if (source == null)
+				throw new ArgumentNullException("source");
+			if (target == null)
+				throw new ArgumentNullException("target");
+
 			var newBody = CloneMethodBody(source.Body, source, target);
 			target.Body = newBody;
 		}

@@ -4,7 +4,7 @@ using System.Xml;
 
 namespace ILPatcher.Utility
 {
-	class XMLUtility
+	static class XMLUtility
 	{
 		public static void SaveToFile(XmlDocument doc, string FileName)
 		{
@@ -16,10 +16,9 @@ namespace ILPatcher.Utility
 			settings.Encoding = Encoding.UTF8;
 			using (FileStream fs = new FileStream(FileName, FileMode.Create))
 			{
-				using (XmlWriter writer = XmlWriter.Create(fs, settings))
-				{
-					doc.Save(writer);
-				}
+				XmlWriter xWriter = XmlWriter.Create(fs, settings);
+				doc.Save(xWriter);
+				xWriter.Close();
 			}
 		}
 
@@ -27,12 +26,11 @@ namespace ILPatcher.Utility
 		{
 			using (FileStream fs = new FileStream(FileName, FileMode.Open))
 			{
-				using (XmlReader xReader = XmlReader.Create(fs))
-				{
-					XmlDocument xDoc = new XmlDocument();
-					xDoc.Load(xReader);
-					return xDoc;
-				}
+				XmlReader xReader = XmlReader.Create(fs);
+				XmlDocument xDoc = new XmlDocument();
+				xDoc.Load(xReader);
+				xReader.Close();
+				return xDoc;
 			}
 		}
 	}

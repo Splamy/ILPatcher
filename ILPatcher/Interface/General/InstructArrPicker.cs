@@ -101,7 +101,7 @@ namespace ILPatcher.Interface.General
 			public InstructElement(Instruction i, int num)
 			{
 				instr = i;
-				instrnum = num;
+				instrnum = num; // check use
 				compoundstr = CecilFormatter.Format(instr, num);
 			}
 

@@ -159,7 +159,7 @@ namespace ILPatcher.Interface.General
 			}
 		}
 
-		private class LayerLevel
+		private class LayerLevel : IDisposable
 		{
 			public Control ctrl;
 			public CustomButton btn;

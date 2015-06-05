@@ -32,11 +32,11 @@ namespace ILPatcher.Interface.General
 		private Brush _BackgrColor;
 
 		private bool drawOnHover;
-		private DragItem di;
+		private DragItem dragItem;
 		public DragItem DragItem
 		{
-			get { return di; }
-			set { di = value; Invalidate(); }
+			get { return dragItem; }
+			set { dragItem = value; Invalidate(); }
 		}
 
 		private bool _AllowDrag = true;
@@ -62,7 +62,7 @@ namespace ILPatcher.Interface.General
 			drawOnHover = false;
 			if (!AllowDrop) return false;
 
-			di = lbe[0];
+			dragItem = lbe[0];
 			if (OnItemDropSuccess != null)
 				OnItemDropSuccess(lbe);
 			Invalidate();
@@ -89,15 +89,15 @@ namespace ILPatcher.Interface.General
 			g.FillRectangle(drawOnHover ? _GripBrush : _BackBrush, 0, 0, Width, Height); // draw the nice border
 			g.FillRectangle(_BackgrColor, _Border, _Border, Width - (_Border * 2), Height - (_Border * 2)); // fill in the inner ractangle with bg color
 
-			if (di != null)
-				g.DrawImage(di.GetImage(), _Border, _Border);
+			if (dragItem != null)
+				g.DrawImage(dragItem.GetImage(), _Border, _Border);
 			else
 				g.DrawString("<<<empty>>>", Font, Brushes.Beige, _Border, _Border);
 		}
 
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
-			if (AllowDrag && di != null)
+			if (AllowDrag && dragItem != null)
 			{
 				Drag = true;
 				TookElement = false;
@@ -115,8 +115,8 @@ namespace ILPatcher.Interface.General
 			Point location = FindForm().PointToClient(Parent.PointToScreen(Location));
 			location.X = location.X + e.X - Width / 2;
 			location.Y = location.Y + e.Y - Height / 2;
-			DragItemHolder lbed = new DragItemHolder(new[] { di }, this, location);
-			di = null;
+			DragItemHolder lbed = new DragItemHolder(new[] { dragItem }, this, location);
+			dragItem = null;
 			Invalidate();
 		}
 

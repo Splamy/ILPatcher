@@ -1,0 +1,395 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ILPatcher.Data.Actions.PatchAction" Collapsed="true">
+    <Position X="5.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIAAAAAAAAQAAAAAAAIAAAAAAAgAAAAEAAAAAAA=</HashCode>
+      <FileName>Data\Actions\PatchAction.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.1" />
+  </Class>
+  <Class Name="ILPatcher.Data.Actions.PatchActionILMethodFixed" Collapsed="true">
+    <Position X="3.5" Y="13.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIABAAAAAAYCCAAAAAIAAAAAAAAAQQAACAAAAAA=</HashCode>
+      <FileName>Data\Actions\PatchActionILMethodFixed.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.Actions.PatchActionMethodCreator" Collapsed="true">
+    <Position X="6.5" Y="13.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAIAgIAAAAAAAAQAAAAACAIAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Actions\PatchActionMethodCreator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.Finder.TargetFinder" Collapsed="true">
+    <Position X="23" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Finder\TargetFinder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.Finder.PatchTarget" Collapsed="true">
+    <Position X="21.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAACAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Finder\TargetFinder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.Finder.TargetFinderByName" Collapsed="true">
+    <Position X="16" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Finder\TargetFinderByName.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.General.InstructionInfo" Collapsed="true">
+    <Position X="11" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BggEBAAQBAEAAAAIAABABGCAAAUAAAAAAEAAAQAIABA=</HashCode>
+      <FileName>Data\General\InstructionInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.General.PatchCluster" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="19.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACgIAAEAAgAAQAAAAAAAQAAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Data\General\PatchCluster.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ILPatcher.Data.General.TableManager" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="21.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAgIBAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>Data\General\TableManager.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ILPatcher.Data.ILManager" Collapsed="true">
+    <Position X="17.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAGghICQAwCAgIBACAAAAABAAgBCAAAAQAQQAABgAwE=</HashCode>
+      <FileName>Data\ILManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.OperandInfo" Collapsed="true">
+    <Position X="17.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAACAEAABAAAAEAAAAAAAAAAAAAAAAAAgAAAAAAAA=</HashCode>
+      <FileName>Data\ILManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Data.ILNode" Collapsed="true">
+    <Position X="19.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIQBAAAAAAAAIAECAAURAQAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Data\ILManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Actions.EditorILPattern" Collapsed="true">
+    <Position X="5.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAuAEAAH4KEAIFAAmSChABICgQAFJEBxIAQAoQlkDIg=</HashCode>
+      <FileName>Interface\Actions\EditorILPattern.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Actions.EditorMethodCreator" Collapsed="true">
+    <Position X="7.75" Y="7.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>ACEAAgIAQCEgABAAiACACIACAAANAmBAEGAAAAAABAA=</HashCode>
+      <FileName>Interface\Actions\EditorMethodCreator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Actions.DefaultDragItem&lt;T&gt;" Collapsed="true">
+    <Position X="13.25" Y="10.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AgAEAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\Actions\EditorMethodCreator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Actions.EditorPatchAction" Collapsed="true">
+    <Position X="6.5" Y="6.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\Actions\EditorPatchAction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Finder.EditorTargetFinder" Collapsed="true">
+    <Position X="10.25" Y="6.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\Finder\EditorTargetFinder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.AddRemoveControl" Collapsed="true">
+    <Position X="3" Y="11" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAECAgAAAQQAGAAIACAAAAgQAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\General\AddRemoveControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.CreateTypeForm" Collapsed="true">
+    <Position X="10.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AADAAgAgASAAABEIKgCAgIACAAAAAEBAAAAAAAABAAA=</HashCode>
+      <FileName>Interface\General\CreateTypeForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.HoizontalTabControl" Collapsed="true">
+    <Position X="16" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\General\HoizontalTabControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.InstructArrPicker" Collapsed="true">
+    <Position X="1" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAABACACAAIAApAICEgAACAAAQAAAAQQAAAAAAAAA=</HashCode>
+      <FileName>Interface\General\InstructArrPicker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.InspectorHolder" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AhCAAAIABCIAgBACAAAAQAAAABBACFAAIAAEAAEDIAA=</HashCode>
+      <FileName>Interface\General\ItemHolder.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ILPatcher.Interface.General.MultiPicker" Collapsed="true">
+    <Position X="8.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAIBAAACAAAAAhAICEgAUCAAABAAAAQQAAAAgAAAA=</HashCode>
+      <FileName>Interface\General\MultiPicker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.StructureViewer" Collapsed="true">
+    <Position X="19.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABgAAAAQAACAAABAAABAAQAAAAAAAAgCAAAAgMBAA=</HashCode>
+      <FileName>Interface\General\StructureViewer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.NamespaceHolder" Collapsed="true">
+    <Position X="16" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\General\StructureViewer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.SwooshPanel" Collapsed="true">
+    <Position X="5.5" Y="11" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAQAAFAAAQDAQCAAAAAAAAEIAAABAAAAAAAA=</HashCode>
+      <FileName>Interface\General\SwooshPanel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.General.PatchQuestionWindow" Collapsed="true">
+    <Position X="3.25" Y="2" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAASABAACAAAhEAAACAAEACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\Main\PatchQuestionWindow.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Main.MainForm" Collapsed="true">
+    <Position X="6" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAACEAAACAAAAAAABQAAAAAAAAAA=</HashCode>
+      <FileName>Interface\Main\MainForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Main.MainPanel" Collapsed="true">
+    <Position X="1" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IgaQI0BAACAAQBICEQCQAoimMAAAFDgGQkQKgAARAJQ=</HashCode>
+      <FileName>Interface\Main\MainPanel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Interface.Main.PatchBuilder" Collapsed="true">
+    <Position X="3.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAACgAAICEAABAQAACAAAACAAAYAAAIAGAABAAAAAA=</HashCode>
+      <FileName>Interface\Main\PatchBuilder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Program" Collapsed="true">
+    <Position X="23" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Properties.Resources" Collapsed="true">
+    <Position X="16" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAQAAJBEAIAAQAAIIgAAAAACQAAoIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Properties.Settings" Collapsed="true">
+    <Position X="17.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.AnyArray&lt;T&gt;" Collapsed="true">
+    <Position X="16" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAACAgAAAhAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Utility\AnyArray.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.CecilFormatter" Collapsed="true">
+    <Position X="17.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAIAAAAAAAAAABAgAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>Utility\CecilFormatter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.CecilHelper" Collapsed="true">
+    <Position X="19.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAASAABAACAAgAACAAAAAAAAgAAAACCAAIgA=</HashCode>
+      <FileName>Utility\CecilHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.CSCompiler" Collapsed="true">
+    <Position X="21.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAQAAAAAAIAAAQABAAgAAAAIAAAAAAAgAEAAAAAAAA=</HashCode>
+      <FileName>Utility\CSCompiler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.Log" Collapsed="true">
+    <Position X="21.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAFAAAAAIAAAAAAAAAAAAAAAAAAAAQAgAAAAAAEAAAA=</HashCode>
+      <FileName>Utility\ErrorLogger.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.ErrorLoggerItem" Collapsed="true">
+    <Position X="8.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAEAAAAAAAAAAAAAAEAAAAAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Utility\ErrorLoggerItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.ExtensionMethods" Collapsed="true">
+    <Position X="23" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAKAAIAAACCAAAAACAAAAAAAAACAEAIAAAAAAAQACBA=</HashCode>
+      <FileName>Utility\ExtensionMethods.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.NameCompressor" Collapsed="true">
+    <Position X="23" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAACAABAAAgAABAAAAAQAAAAQAAgAA=</HashCode>
+      <FileName>Utility\NameCompressor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ILPatcher.Utility.XMLUtility" Collapsed="true">
+    <Position X="17.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Utility\XMLUtility.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="System.Windows.Forms.UserControl" Collapsed="true">
+    <Position X="5.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="MetroObjects.MetroClass" Collapsed="true">
+    <Position X="0.75" Y="11" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="System.Windows.Forms.Form" Collapsed="true">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="MetroObjects.DragItem" Collapsed="true">
+    <Position X="11" Y="9.5" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="System.Windows.Forms.Control" Collapsed="true">
+    <Position X="3" Y="9.5" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ILPatcher.Interface.General.EditorPanel&lt;T&gt;" Collapsed="true">
+    <Position X="8" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAQAAAAAAAAAAAAAAAIACAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\General\EditorPanel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="ILPatcher.Data.ISaveToFile" Collapsed="true">
+    <Position X="16" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\ISaveToFile.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="ILPatcher.Data.Actions.PatchActionType" Collapsed="true">
+    <Position X="21.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAAAAIAAAAAAAAAAAAAAAABAAAAYA=</HashCode>
+      <FileName>Data\Actions\PatchAction.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ILPatcher.Data.Actions.PatchStatus" Collapsed="true">
+    <Position X="23" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAEAAAAAAAAAAAAAABAIAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Actions\PatchAction.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ILPatcher.Data.ResolveStatus" Collapsed="true">
+    <Position X="16" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAoAAAAAAAAAAAAACAAAAAAAAEAgAAAAAA=</HashCode>
+      <FileName>Data\ILManager.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ILPatcher.Data.OperandInfoT" Collapsed="true">
+    <Position X="19.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgEAAAIIAAAAAAAQBAAAAEAEoAAAAIgAAAAAAEBAAE=</HashCode>
+      <FileName>Data\ILManager.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ILPatcher.Interface.General.StructureView" Collapsed="true">
+    <Position X="19.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQCAAAAAAAAAEAABAAAAAAAAAAAABAAAAAAAQACAAIA=</HashCode>
+      <FileName>Interface\General\StructureViewer.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ILPatcher.Interface.General.ImageMap" Collapsed="true">
+    <Position X="17.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAQAAJAAAIAAAAAIIgAAAAACQAAoAA=</HashCode>
+      <FileName>Interface\General\StructureViewer.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ILPatcher.Interface.Main.AssemblyStatus" Collapsed="true">
+    <Position X="16" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAACAAAAAAAAAAAAAAAACAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Interface\Main\MainPanel.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ILPatcher.Utility.SST" Collapsed="true">
+    <Position X="17.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>wCAAAUAIIACZIgBAIAAAAAECAMEIAAgQAAgUBAABAUw=</HashCode>
+      <FileName>Utility\NameCompressor.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

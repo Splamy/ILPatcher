@@ -9,8 +9,12 @@ namespace ILPatcher.Utility
 		private static NameCompressor instance;
 		public static NameCompressor Instance
 		{
-			get { if (instance == null)instance = new NameCompressor(); return instance; }
-			protected set { }
+			get
+			{
+				if (instance == null)
+					instance = new NameCompressor();
+				return instance;
+			}
 		}
 		private Tuple<string, string>[] lowtable;
 		public static bool Compress = true;
@@ -90,7 +94,6 @@ namespace ILPatcher.Utility
 		public string this[SST val]
 		{
 			get { if (Compress) return GetValComp(val); else return GetValUnComp(val); }
-			protected set { }
 		}
 
 		public string GetValComp(SST val)
@@ -131,7 +134,7 @@ namespace ILPatcher.Utility
 
 		PatchList,
 		InstructionCount,
-		
+
 		Instruction,
 		InstructionPatch,
 		InstructionNum,

@@ -1,22 +1,17 @@
 ﻿using ILPatcher.Data.Actions;
 using System;
 using System.Windows.Forms;
+using ILPatcher.Interface.General;
 
 namespace ILPatcher.Interface.Actions
 {
-	public class EditorPatchAction : UserControl
+	public class EditorPatchAction : EditorPanel<PatchAction>
 	{
-		public virtual string PanelName { get { return "Default Panelname"; } }
-		protected readonly Action<PatchAction> ParentAddCallback;
+		public override string PanelName { get { return "Default PatchAction"; } }
 
-		public virtual void SetPatchAction(PatchAction pPatchAction)
-		{ throw new NotImplementedException(); }
-
-		private EditorPatchAction() { /*Reserverd for VSDesigner*/ }
-
+		protected EditorPatchAction() { /*Reserverd for VSDesigner*/ }
 		protected EditorPatchAction(Action<PatchAction> pParentAddCallback)
-		{
-			ParentAddCallback = pParentAddCallback;
-		}
+			: base(pParentAddCallback)
+		{ }
 	}
 }

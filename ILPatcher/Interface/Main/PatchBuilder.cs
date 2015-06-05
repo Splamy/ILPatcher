@@ -51,7 +51,12 @@ namespace ILPatcher.Interface.Main
 			PatchAction patchAction = null;
 			PatchActionType patchActionType;
 			if (PatchCluster == null || PatchCluster.PatchAction == null)
-				Enum.TryParse<PatchActionType>(comboBox2.Text, out patchActionType);
+			{
+				if (!Enum.TryParse<PatchActionType>(comboBox2.Text, out patchActionType))
+				{
+					throw new InvalidOperationException("PatchActionType not found");
+				}
+			}
 			else
 			{
 				patchAction = PatchCluster.PatchAction;
@@ -80,7 +85,9 @@ namespace ILPatcher.Interface.Main
 				return;
 			}
 
-			editorform.SetPatchAction(patchAction);
+			if (patchAction != null)
+				editorform.SetPatchData(patchAction);
+			else ;
 			((SwooshPanel)Parent).PushPanel(editorform, "PatchAction: " + editorform.PanelName);
 		}
 

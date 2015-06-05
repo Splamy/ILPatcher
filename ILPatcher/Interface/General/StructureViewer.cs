@@ -132,7 +132,7 @@ namespace ILPatcher.Interface.General
 				}
 		}
 
-		private int GetImage(object MemRef)
+		private static int GetImage(object MemRef)
 		{
 			if (MemRef == null)
 				return (int)ImageMap.Assembly; // TMP
@@ -173,7 +173,7 @@ namespace ILPatcher.Interface.General
 
 	public class NamespaceHolder
 	{
-		public string Namespace;
+		public string Namespace { get; private set; }
 
 		public NamespaceHolder(string _nns)
 		{
@@ -182,7 +182,7 @@ namespace ILPatcher.Interface.General
 	}
 
 	[Flags]
-	public enum StructureView : sbyte
+	public enum StructureView : int
 	{
 		none = 0,
 		structure = 1 << 0,

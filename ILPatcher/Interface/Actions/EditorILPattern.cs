@@ -26,8 +26,8 @@ namespace ILPatcher.Interface.Actions
 		//predeclared variables
 		//(predeclared params)
 
-		public EditorILPattern(Action<PatchAction> pParentAddCallback)
-			: base(pParentAddCallback)
+		public EditorILPattern(Action<PatchAction> parentAddCallback)
+			: base(parentAddCallback)
 		{
 			InitializeComponent();
 
@@ -244,9 +244,9 @@ namespace ILPatcher.Interface.Actions
 
 		// LOAD METHODS ******************************************************
 
-		public override void SetPatchAction(PatchAction pPatchAction)
+		public override void SetPatchData(PatchAction pPatchAction)
 		{
-			mInstructBox.ClearItems();
+			mInstructBox.ClearItems(); // TODO check if necessart sincea new Editor gets created each time
 
 			patchAction = (PatchActionILMethodFixed)pPatchAction;
 
@@ -260,19 +260,22 @@ namespace ILPatcher.Interface.Actions
 			mInstructBox.Items = patchAction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
 		}
 
-		public void LoadMetDef(MethodDefinition MetDef)
+		public void LoadMetDef(MethodDefinition methodDefinition)
 		{
+			if (methodDefinition == null)
+				throw new ArgumentNullException("methodDefinition");
+
 			mInstructBox.ClearItems();
 
 			patchAction = null;
 
-			txtMethodFullName.Text = MetDef.FullName;
-			this.methodDefinition = MetDef;
+			txtMethodFullName.Text = methodDefinition.FullName;
+			this.methodDefinition = methodDefinition;
 			// copy all old instructions to the new, so we don't modify the original method
-			for (int i = 0; i < MetDef.Body.Instructions.Count; i++)
+			for (int i = 0; i < methodDefinition.Body.Instructions.Count; i++)
 			{
 				InstructionInfo nII = new InstructionInfo();
-				nII.OldInstruction = MetDef.Body.Instructions[i];
+				nII.OldInstruction = methodDefinition.Body.Instructions[i];
 				nII.NewInstruction = nII.OldInstruction.Clone();
 				nII.OldInstructionNum = i;
 				nII.NewInstructionNum = i;
@@ -286,14 +289,14 @@ namespace ILPatcher.Interface.Actions
 				if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineBrTarget ||
 					nII.OldInstruction.OpCode.OperandType == OperandType.ShortInlineBrTarget)
 				{
-					nII.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[MetDef.Body.Instructions.IndexOf((Instruction)nII.OldInstruction.Operand)]).NewInstruction;
+					nII.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[methodDefinition.Body.Instructions.IndexOf((Instruction)nII.OldInstruction.Operand)]).NewInstruction;
 				}
 				else if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineSwitch)
 				{
 					Instruction[] tmpold = (Instruction[])nII.OldInstruction.Operand;
 					Instruction[] tmpnew = new Instruction[tmpold.Length];
 					for (int j = 0; j < tmpold.Length; j++)
-						tmpnew[j] = ((InstructionInfo)mInstructBox.Items[MetDef.Body.Instructions.IndexOf(tmpold[j])]).NewInstruction;
+						tmpnew[j] = ((InstructionInfo)mInstructBox.Items[methodDefinition.Body.Instructions.IndexOf(tmpold[j])]).NewInstruction;
 					nII.NewInstruction.Operand = tmpnew;
 				}
 			}
@@ -565,7 +568,6 @@ namespace ILPatcher.Interface.Actions
 		private void InitCbxOperand()
 		{
 			cbxOperand.Items.Clear();
-			StringBuilder strb = new StringBuilder();
 
 			switch (currentPOT)
 			{

@@ -10,7 +10,7 @@ using System.Xml;
 
 namespace ILPatcher.Data.Actions
 {
-	public class PatchActionILMethodFixed : PatchAction, ISaveToFile
+	public class PatchActionILMethodFixed : PatchAction
 	{
 		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodFixed; } protected set { } }
 
@@ -135,7 +135,7 @@ namespace ILPatcher.Data.Actions
 			if (PatchList == null) { Log.Write(Log.Level.Error, "No PatchList Child found"); PatchStatus = PatchStatus.Broken; return false; }
 
 			string metpathunres = PatchList.GetAttribute(SST.MethodPath);
-			if (metpathunres == string.Empty) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); PatchStatus = PatchStatus.Broken; return false; }
+			if (string.IsNullOrEmpty(metpathunres)) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); PatchStatus = PatchStatus.Broken; return false; }
 			methodDefinition = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
 			if (methodDefinition == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
 
@@ -153,7 +153,6 @@ namespace ILPatcher.Data.Actions
 			bool checkprimitives = true; // checks if primitive types are identical
 
 			List<PostInitData> postinitbrs = new List<PostInitData>();
-			XmlElement xDummy = PatchList.CreateCompressedElement(SST.NAME);
 
 			#region Load all InstructionInfo
 			foreach (XmlElement xelem in PatchList.ChildNodes)
@@ -206,14 +205,14 @@ namespace ILPatcher.Data.Actions
 						XmlElement xpatchelem = xelem.ChildNodes[0] as XmlElement;
 
 						string instnum = xpatchelem.GetAttribute(SST.InstructionNum);
-						if (instnum == string.Empty) // check InstructionNum Patch
+						if (string.IsNullOrEmpty(instnum)) // check InstructionNum Patch
 							nII.NewInstructionNum = nII.OldInstructionNum;
 						else
 							nII.NewInstructionNum = int.Parse(instnum);
 
 						OpCode patchopc;
 						string patchopcode = xpatchelem.GetAttribute(SST.OpCode);
-						if (patchopcode == string.Empty) // check Opcode patch
+						if (string.IsNullOrEmpty(patchopcode)) // check Opcode patch
 							patchopc = opcode;
 						else
 							patchopc = ILManager.OpCodeLookup[patchopcode];
@@ -295,7 +294,6 @@ namespace ILPatcher.Data.Actions
 		{
 			OpCode oc = i.OpCode;
 			object operand = i.Operand;
-			NameCompressor nc = NameCompressor.Instance;
 			StringBuilder strb;
 
 			switch (oc.OperandType)
@@ -371,8 +369,6 @@ namespace ILPatcher.Data.Actions
 		/// <returns>Returns the new Instruction if succeeded, null otherwise</returns>
 		private Instruction Node2Instruction(XmlElement xOperandNode, OpCode opcode, int nInstructionNum, List<PostInitData> postinitbrs)
 		{
-			NameCompressor nc = NameCompressor.Instance;
-
 			switch (opcode.OperandType)
 			{
 			case OperandType.InlineNone:
@@ -396,7 +392,7 @@ namespace ILPatcher.Data.Actions
 			case OperandType.InlineTok:
 			case OperandType.InlineType:
 				string opVal = xOperandNode.GetAttribute(SST.Resolve);
-				if (opVal != string.Empty)
+				if (!string.IsNullOrEmpty(opVal))
 					return ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(opVal.ToBaseInt()));
 				else
 					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
@@ -431,7 +427,7 @@ namespace ILPatcher.Data.Actions
 			case OperandType.InlineBrTarget:
 			case OperandType.ShortInlineBrTarget:
 				string briVal = xOperandNode.GetAttribute(SST.BrTargetIndex);
-				if (briVal != string.Empty)
+				if (!string.IsNullOrEmpty(briVal))
 				{
 					PostInitData pid = new PostInitData();
 					pid.InstructionNum = nInstructionNum;
@@ -444,7 +440,7 @@ namespace ILPatcher.Data.Actions
 
 			case OperandType.InlineSwitch:
 				string braVal = xOperandNode.GetAttribute(SST.BrTargetArray);
-				if (braVal != string.Empty)
+				if (!string.IsNullOrEmpty(braVal))
 				{
 					PostInitData pid = new PostInitData();
 					pid.InstructionNum = nInstructionNum;

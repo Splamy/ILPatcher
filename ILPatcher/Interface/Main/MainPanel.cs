@@ -6,8 +6,10 @@ using ILPatcher.Interface.General;
 using ILPatcher.Utility;
 using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -38,43 +40,51 @@ namespace ILPatcher.Interface.Main
 
 		private void btnLoadILPatch_Click(object sender, EventArgs e)
 		{
-			OpenFileDialog openIlp = new OpenFileDialog();
-			openIlp.Filter = "ILPatch File | *.ilp";
-			if (openIlp.ShowDialog() == DialogResult.OK)
+			using (OpenFileDialog openIlp = new OpenFileDialog())
 			{
-				ilpFiletmp = openIlp.FileName;
-				txtilpFile.Text = ilpFiletmp;
-				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
-					LoadIlpFile(openIlp.FileName);
-				else
-					awaitingAssemblySelect = true;
+				openIlp.Filter = "ILPatch File | *.ilp";
+				if (openIlp.ShowDialog() == DialogResult.OK)
+				{
+					ilpFiletmp = openIlp.FileName;
+					txtilpFile.Text = ilpFiletmp;
+					if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
+						LoadIlpFile(openIlp.FileName);
+					else
+						awaitingAssemblySelect = true;
+				}
 			}
 		}
 
-
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			SaveFileDialog sfd = new SaveFileDialog();
-			sfd.AddExtension = true;
-			sfd.OverwritePrompt = true;
-			sfd.CheckPathExists = true;
-			sfd.Filter = "ILPatcher File | *.ilp";
-			if (sfd.ShowDialog() != DialogResult.OK) return;
-			NameCompressor.Compress = false;
-			XmlDocument xDoc = new XmlDocument();
-			tablemgr.Save(xDoc);
-			XMLUtility.SaveToFile(xDoc, sfd.FileName);
+			using (SaveFileDialog sfd = new SaveFileDialog())
+			{
+				sfd.AddExtension = true;
+				sfd.OverwritePrompt = true;
+				sfd.CheckPathExists = true;
+				sfd.Filter = "ILPatcher File | *.ilp";
+				if (sfd.ShowDialog() != DialogResult.OK) return;
+				NameCompressor.Compress = false;
+				XmlDocument xDoc = new XmlDocument();
+				tablemgr.Save(xDoc);
+				XMLUtility.SaveToFile(xDoc, sfd.FileName);
+			}
 		}
 
 		private void btnNewPatch_Click(object sender, EventArgs e)
 		{
-			OpenCluster(null);
+			EditCluster(null);
 		}
 
 		private void btnEditPatch_Click(object sender, EventArgs e)
 		{
-			if (clbPatchList.SelectedIndex >= 0)
-				OpenCluster(tablemgr.ClusterList[clbPatchList.SelectedIndex]);
+			TreeNode treeNode = treeView1.SelectedNode;
+			if (treeNode == null)
+				return;
+			PatchCluster patchCluster = treeNode.Tag as PatchCluster;
+			if (patchCluster == null)
+				return;
+			EditCluster(patchCluster);
 		}
 
 		private void btnTestpatch_Click(object sender, EventArgs e)
@@ -169,34 +179,38 @@ namespace ILPatcher.Interface.Main
 		private void openAssembly()
 		{
 			status = AssemblyStatus.Uninitialized;
-			OpenFileDialog openAsm = new OpenFileDialog();
-			openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
-			if (openAsm.ShowDialog() == DialogResult.OK)
+			using (OpenFileDialog openAsm = new OpenFileDialog())
 			{
-				AssemblyPath = openAsm.FileName;
-				txtilaFile.Text = AssemblyPath;
-				string backupPath = AssemblyPath + "_ilpbackup";
-				if (File.Exists(backupPath))
+				openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
+				if (openAsm.ShowDialog() == DialogResult.OK)
 				{
-					PatchQuestionWindow pqw = new PatchQuestionWindow();
-					DialogResult dr = pqw.ShowDialog(this);
-					if (dr == DialogResult.Cancel) return;
-					else if (dr == DialogResult.Yes) File.Copy(backupPath, AssemblyPath, true); // check for rights
-				}
-				ILManager.Instance.ClearAll();
+					AssemblyPath = openAsm.FileName;
+					txtilaFile.Text = AssemblyPath;
+					string backupPath = AssemblyPath + "_ilpbackup";
+					if (File.Exists(backupPath))
+					{
+						using (PatchQuestionWindow pqw = new PatchQuestionWindow())
+						{
+							DialogResult dr = pqw.ShowDialog(this);
+							if (dr == DialogResult.Cancel) return;
+							else if (dr == DialogResult.Yes) File.Copy(backupPath, AssemblyPath, true); // check for rights
+						}
+					}
+					ILManager.Instance.ClearAll();
 
-				mLoading.ON = true;
-				LoadAsmOrigin();
-				if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
-				{
-					ILManager.Instance.InitTreeHalfAsync(MainAssemblyDefinition);
-					structureViever1.RebuildHalfAsync();
+					mLoading.ON = true;
+					LoadAsmOrigin();
+					if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
+					{
+						ILManager.Instance.InitTreeHalfAsync(MainAssemblyDefinition);
+						structureViever1.RebuildHalfAsync();
+					}
+					if (awaitingAssemblySelect)
+					{
+						LoadIlpFile(ilpFiletmp);
+					}
+					mLoading.ON = false;
 				}
-				if (awaitingAssemblySelect)
-				{
-					LoadIlpFile(ilpFiletmp);
-				}
-				mLoading.ON = false;
 			}
 		}
 
@@ -264,10 +278,12 @@ namespace ILPatcher.Interface.Main
 			if (tablemgr == null)
 				tablemgr = new TableManager();
 			tablemgr.Add(pe);
-			RebuildTable();
+			TreeNode matchNode = treeView1.Nodes.OfType<TreeNode>().FirstOrDefault(node => node.Tag == pe);
+			if (matchNode == null)
+				treeView1.Nodes.Add(GenClusterNode(pe));
 		}
 
-		public void OpenCluster(PatchCluster patchcluster)
+		public void EditCluster(PatchCluster patchcluster)
 		{
 			PatchBuilder patchBuilder = new PatchBuilder(Add, MainAssemblyDefinition);
 			patchBuilder.LoadCluster(patchcluster);
@@ -276,12 +292,27 @@ namespace ILPatcher.Interface.Main
 
 		private void RebuildTable()
 		{
-			bool[] checkState = new bool[clbPatchList.Items.Count];
-			for (int i = 0; i < clbPatchList.Items.Count; i++)
-				checkState[i] = clbPatchList.GetItemChecked(i);
-			clbPatchList.Items.Clear();
-			for (int i = 0; i < tablemgr.ClusterList.Count; i++)
-				clbPatchList.Items.Add(tablemgr.ClusterList[i].Name, i < checkState.Length ? checkState[i] : false);
+			var labels = new Dictionary<string, TreeNode>();
+			foreach (var patchCluster in tablemgr.ClusterList)
+			{
+				TreeNode treeNode = GenClusterNode(patchCluster);
+
+				if (patchCluster.Label == null)
+					treeView1.Nodes.Add(treeNode);
+				if (!labels.ContainsKey(patchCluster.Label))
+				{
+					TreeNode labelNode = new TreeNode(patchCluster.Label);
+					labels.Add(patchCluster.Label, labelNode);
+				}
+				labels[patchCluster.Label].Nodes.Add(treeNode);
+			}
+		}
+
+		private static TreeNode GenClusterNode(PatchCluster patchCluster)
+		{
+			TreeNode treeNode = new TreeNode(patchCluster.Name);
+			treeNode.Tag = patchCluster;
+			return treeNode;
 		}
 
 		private void MainPanel_Resize(object sender, EventArgs e)

@@ -4,11 +4,11 @@ using System.Text;
 
 namespace ILPatcher.Utility
 {
-	class CecilFormatter
+	internal static class CecilFormatter
 	{
 		private static string zeroformat = string.Empty;
 
-		public static string TryFormat(object objref, bool tryOperandFormat = true)
+		public static string TryFormat(object objref)
 		{
 			if (objref == null)
 				return string.Empty;
@@ -29,7 +29,7 @@ namespace ILPatcher.Utility
 			StringBuilder strb = new StringBuilder();
 			strb.Append("Var");
 			strb.Append(varref.Index);
-			if (varref.Name != string.Empty)
+			if (string.IsNullOrEmpty(varref.Name))
 			{
 				strb.Append(" (");
 				strb.Append(varref.Name);
@@ -55,7 +55,7 @@ namespace ILPatcher.Utility
 			if (pos != -1)
 			{
 				strb.Append("# ");
-				if (zeroformat == string.Empty)
+				if (string.IsNullOrEmpty(zeroformat))
 					strb.Append(pos);
 				else
 					strb.Append(pos.ToString(zeroformat));

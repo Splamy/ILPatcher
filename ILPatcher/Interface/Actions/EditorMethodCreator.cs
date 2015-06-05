@@ -24,23 +24,22 @@ namespace ILPatcher.Interface.Actions
 			InitializeComponent();
 
 			assemblyDefinition = pAssemblyDefinition;
+			Action<TypeReference> addMethod = tr => { lbxParameter.AddItem(new DefaultDragItem<TypeReference>(tr)); };
 
 			arcParameter.OnAdd = () =>
 			{
-				CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, tr =>
+				using (CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, addMethod))
 				{
-					lbxParameter.AddItem(new DefaultDragItem<TypeReference>(tr));
-				});
-				ctf.Show();
+					ctf.Show();
+				}
 			};
 			arcParameter.OnEdit = () =>
 			{
-				CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, tr =>
+				using (CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, addMethod))
 				{
-					lbxParameter.AddItem(new DefaultDragItem<TypeReference>(tr));
-				});
-				ctf.SetTypeReference(((DefaultDragItem<TypeReference>)lbxParameter.SelectedElement).Item);
-				ctf.Show();
+					ctf.SetTypeReference(((DefaultDragItem<TypeReference>)lbxParameter.SelectedElement).Item);
+					ctf.Show();
+				}
 			};
 			arcParameter.OnRemove = () => lbxParameter.RemoveSelected();
 		}
@@ -70,12 +69,7 @@ namespace ILPatcher.Interface.Actions
 			//MethodDefinition md = csc.InjectCode(txtInjectCode.Text);
 		}
 
-		public void SetAssDef(AssemblyDefinition myAssDef)
-		{
-			assemblyDefinition = myAssDef;
-		}
-
-		public override void SetPatchAction(PatchAction pPatchAction)
+		public override void SetPatchData(PatchAction pPatchAction)
 		{
 			PatchActionMethodCreator pamc = (PatchActionMethodCreator)pPatchAction;
 			patchAction = pamc;

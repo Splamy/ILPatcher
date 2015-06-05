@@ -37,6 +37,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -90,6 +91,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Interface\Finder\EditorTargetFinder.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Interface\General\AddRemoveControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -98,6 +103,9 @@
     </Compile>
     <Compile Include="Interface\General\CreateTypeForm.Designer.cs">
       <DependentUpon>CreateTypeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Interface\General\EditorPanel.cs">
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Interface\General\HoizontalTabControl.cs">
       <SubType>Component</SubType>
@@ -131,7 +139,7 @@
     </Compile>
     <Compile Include="Data\Actions\PatchActionMethodCreator.cs" />
     <Compile Include="Data\Finder\TargetFinder.cs" />
-    <Compile Include="Data\Finder\TargetFinderName.cs" />
+    <Compile Include="Data\Finder\TargetFinderByName.cs" />
     <Compile Include="Utility\CecilFormatter.cs" />
     <Compile Include="Utility\AnyArray.cs" />
     <Compile Include="Utility\CecilHelper.cs" />
@@ -222,6 +230,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -289,9 +298,7 @@
   <ItemGroup>
     <None Include="Resources\Property.gif" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Interface\Finder\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

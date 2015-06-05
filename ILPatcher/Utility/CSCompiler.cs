@@ -9,9 +9,28 @@ namespace ILPatcher.Utility
 {
 	public class CSCompiler
 	{
-		AssemblyDefinition parentAssembly = null;
-		AssemblyDefinition compiledAssembly = null;
-		bool isCompiled = false;
+		private AssemblyDefinition parentAssembly = null;
+		private bool isCompiled = false;
+
+		private AssemblyDefinition compiledAssembly = null;
+		public AssemblyDefinition CompiledAssembly
+		{
+			get
+			{
+				if (CodeCompile())
+				{
+					return compiledAssembly;
+				}
+				else
+				{
+					isCompiled = false;
+					compiledAssembly = null;
+					Log.Write(Log.Level.Error, "Generated code couldn't be read");
+					return null;
+				}
+			}
+			protected set { compiledAssembly = value; }
+		}
 
 		private string code;
 		public string Code
@@ -27,9 +46,9 @@ namespace ILPatcher.Utility
 			}
 		}
 
-		public CSCompiler(AssemblyDefinition pParentAssembly)
+		public CSCompiler(AssemblyDefinition parentAssemblyDefinition)
 		{
-			parentAssembly = pParentAssembly;
+			parentAssembly = parentAssemblyDefinition;
 		}
 
 		private bool CodeCompile()
@@ -65,46 +84,33 @@ namespace ILPatcher.Utility
 			cp.GenerateInMemory = false;
 			cp.OutputAssembly = "tmpILData.dll";
 
-			CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
-			CompilerResults cr = provider.CompileAssemblyFromSource(cp, Code);
-
-			if (cr.Errors.Count > 0)
+			using (CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp"))
 			{
-				StringBuilder errors = new StringBuilder("Compiler Errors :\r\n");
-				foreach (CompilerError error in cr.Errors)
+				CompilerResults cr = provider.CompileAssemblyFromSource(cp, Code);
+
+				if (cr.Errors.Count > 0)
 				{
-					errors.AppendFormat("Line {0},{1}\t: {2}\n", error.Line, error.Column, error.ErrorText);
+					StringBuilder errors = new StringBuilder("Compiler Errors :\r\n");
+					foreach (CompilerError error in cr.Errors)
+					{
+						errors.AppendFormat("Line {0},{1}\t: {2}\n", error.Line, error.Column, error.ErrorText);
+					}
+					Log.Write(Log.Level.Error, "Compiler Error: ", errors.ToString());
+					if (cr.Errors.HasErrors)
+						return false;
 				}
-				Log.Write(Log.Level.Error, "Compiler Error: ", errors.ToString());
-				if (cr.Errors.HasErrors)
-					return false;
-			}
 
-			//FileStream fs
-			//ModuleDefinition moddef = ModuleDefinition.ReadModule("tmpILData.dll");
-			compiledAssembly = AssemblyDefinition.ReadAssembly("tmpILData.dll");
-			isCompiled = true;
+				//FileStream fs
+				//ModuleDefinition moddef = ModuleDefinition.ReadModule("tmpILData.dll");
+				compiledAssembly = AssemblyDefinition.ReadAssembly("tmpILData.dll");
+				isCompiled = true;
+			}
 			return true;
-		}
-
-		public AssemblyDefinition GetAssemblyDefinition()
-		{
-			if (CodeCompile())
-			{
-				return compiledAssembly;
-			}
-			else
-			{
-				isCompiled = false;
-				compiledAssembly = null;
-				Log.Write(Log.Level.Error, "Generated code couldn't be read");
-				return null;
-			}
 		}
 
 		public TypeDefinition GetTypeDefinition(string typeName)
 		{
-			AssemblyDefinition ad = GetAssemblyDefinition();
+			AssemblyDefinition ad = CompiledAssembly;
 			if (ad == null) return null;
 
 			if (ad.MainModule.Types.Count != 2)
@@ -115,7 +121,7 @@ namespace ILPatcher.Utility
 
 			foreach (TypeDefinition td in ad.MainModule.Types)
 			{
-				if ((td.Name != "<Module>" && typeName == string.Empty) || typeName == td.Name)
+				if ((td.Name != "<Module>" && string.IsNullOrEmpty(typeName)) || typeName == td.Name)
 				{
 					return td;
 				}
@@ -136,7 +142,7 @@ namespace ILPatcher.Utility
 
 			foreach (MethodDefinition md in td.Methods)
 			{
-				if ((md.Name != ".ctor" && methodName == string.Empty) || methodName == md.Name)
+				if ((md.Name != ".ctor" && string.IsNullOrEmpty(methodName)) || methodName == md.Name)
 				{
 					return md;
 				}
@@ -157,7 +163,7 @@ namespace ILPatcher.Utility
 
 			foreach (VariableDefinition vd in md.Body.Variables)
 			{
-				if (variableName == string.Empty || variableName == vd.Name)
+				if (string.IsNullOrEmpty(variableName) || variableName == vd.Name)
 				{
 					return vd;
 				}

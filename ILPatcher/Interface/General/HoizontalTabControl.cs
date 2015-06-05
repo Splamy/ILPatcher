@@ -38,10 +38,12 @@ namespace ILPatcher.Interface.General
 			g.FillRectangle(SystemBrushes.Control, e.Bounds);
 
 			// Draw string. Center the text.
-			StringFormat _stringFlags = new StringFormat();
-			_stringFlags.Alignment = StringAlignment.Center;
-			_stringFlags.LineAlignment = StringAlignment.Center;
-			g.DrawString(_tabPage.Text, Font, _textBrush, _tabBounds, new StringFormat(_stringFlags));
+			using (StringFormat _stringFlags = new StringFormat())
+			{
+				_stringFlags.Alignment = StringAlignment.Center;
+				_stringFlags.LineAlignment = StringAlignment.Center;
+				g.DrawString(_tabPage.Text, Font, _textBrush, _tabBounds, _stringFlags);
+			}
 		}
 
 	}

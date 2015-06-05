@@ -1,13 +1,14 @@
 ﻿using ILPatcher.Utility;
 using System.Collections.Generic;
 using System.Xml;
+using System;
 
 namespace ILPatcher.Data.General
 {
 	public class TableManager : ISaveToFile
 	{
-		public string filename;
-		public List<PatchCluster> ClusterList;
+		public string filename { get; set; }
+		public List<PatchCluster> ClusterList { get; private set; }
 
 		public TableManager()
 		{
@@ -21,7 +22,8 @@ namespace ILPatcher.Data.General
 
 		public bool Save(XmlNode output)
 		{
-			NameCompressor nc = NameCompressor.Instance;
+			if (output == null)
+				throw new ArgumentNullException("output");
 
 			XmlElement xPatchTableNode = output.InsertCompressedElement(SST.PatchTable);
 			foreach (PatchCluster pe in ClusterList)
@@ -33,6 +35,9 @@ namespace ILPatcher.Data.General
 
 		public bool Load(XmlNode input)
 		{
+			if (input == null)
+				throw new ArgumentNullException("input");
+
 			NameCompressor nc = NameCompressor.Instance;
 
 			ILManager.Instance.Clear();

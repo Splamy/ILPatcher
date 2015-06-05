@@ -266,7 +266,7 @@
 			this.btnLoadila.Name = "btnLoadila";
 			this.btnLoadila.Size = new System.Drawing.Size(130, 25);
 			this.btnLoadila.TabIndex = 12;
-			this.btnLoadila.Text = "open IL Assembly";
+			this.btnLoadila.Text = "open .NET Assembly";
 			this.btnLoadila.UseVisualStyleBackColor = false;
 			this.btnLoadila.Click += new System.EventHandler(this.btnOpenILFile_Click);
 			// 

@@ -64,7 +64,6 @@ namespace ILPatcher.Utility
 				else
 					strb.Append(": ");
 			}
-			string stackbuffer = strb.ToString();
 			strb.Append(inputbuffer);
 			strb.Append("\r\n");
 			if (callback != null) callback(new ErrorLoggerItem(lvl, inputbuffer));
