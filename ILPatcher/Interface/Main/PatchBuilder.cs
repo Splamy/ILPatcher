@@ -11,25 +11,27 @@ namespace ILPatcher.Interface.Main
 {
 	public partial class PatchBuilder : UserControl
 	{
-		public PatchEntry PatchCluster { get; private set; }
-		private Action<PatchEntry> callbackAdd;
+		public PatchEntry PatchEntry { get; private set; }
+		private bool editMode;
+		private DataStruct dataStruct;
 		private AssemblyDefinition assemblyDefinition;
 
-		// TODO do patchfinder
+		// TODO: do patchfinder
 
-		public PatchBuilder(Action<PatchEntry> pCallbackAdd, AssemblyDefinition pAssemblyDefinition)
+		public PatchBuilder(DataStruct pDataStruct)
 		{
 			InitializeComponent();
 
-			callbackAdd = pCallbackAdd;
-			assemblyDefinition = pAssemblyDefinition;
+			editMode = false;
 
+			dataStruct = pDataStruct;
 			LoadDropdownList();
 		}
 
-		public void LoadCluster(PatchEntry patchCluster)
+		public void LoadEntry(PatchEntry pPatchEntry)
 		{
-			PatchCluster = patchCluster;
+			editMode = true;
+			PatchEntry = pPatchEntry;
 		}
 
 		private void LoadDropdownList()
@@ -50,7 +52,7 @@ namespace ILPatcher.Interface.Main
 		{
 			PatchAction patchAction = null;
 			PatchActionType patchActionType;
-			if (PatchCluster == null || PatchCluster.PatchAction == null)
+			if (PatchEntry == null || PatchEntry.PatchAction == null)
 			{
 				if (!Enum.TryParse<PatchActionType>(comboBox2.Text, out patchActionType))
 				{
@@ -59,8 +61,13 @@ namespace ILPatcher.Interface.Main
 			}
 			else
 			{
-				patchAction = PatchCluster.PatchAction;
+				patchAction = PatchEntry.PatchAction;
 				patchActionType = patchAction.PatchActionType;
+			}
+
+			if (patchAction == null)
+			{
+				return;
 			}
 
 			EditorPatchAction editorform;
@@ -85,23 +92,21 @@ namespace ILPatcher.Interface.Main
 				return;
 			}
 
-			if (patchAction != null)
-				editorform.SetPatchData(patchAction);
-			else ;
+			editorform.SetPatchData(patchAction);
 			((SwooshPanel)Parent).PushPanel(editorform, "PatchAction: " + editorform.PanelName);
 		}
 
 		private void SetPatchAction(PatchAction patchAction)
 		{
-			if (PatchCluster == null)
-				PatchCluster = new PatchEntry();
-			PatchCluster.PatchAction = patchAction;
+			if (PatchEntry == null)
+				PatchEntry = new PatchEntry(dataStruct);
+			PatchEntry.PatchAction = patchAction;
 		}
 
 		private void button2_Click(object sender, EventArgs e)
 		{
-			if (PatchCluster != null)
-				callbackAdd(PatchCluster);
+			if (editMode && PatchEntry != null)
+				dataStruct.PatchEntryList.Add(PatchEntry);
 			((SwooshPanel)Parent).SwooshBack();
 		}
 	}

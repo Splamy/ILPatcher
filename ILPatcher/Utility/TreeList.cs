@@ -10,9 +10,8 @@ namespace ILPatcher.Utility
 	public class TreeList<T> : TreeListNode<T>, IEnumerable<T>
 	{
 		public TreeList()
-			: base(null)
+			: base(default(T), null)
 		{
-			data = default(T);
 		}
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
@@ -38,15 +37,21 @@ namespace ILPatcher.Utility
 		protected TreeListNode<T> next;
 		protected TreeListNode<T> previous;
 
-		public TreeListNode(TreeListNode<T> parent)
+		public TreeListNode(T data, TreeListNode<T> parent)
 		{
+			this.data = data;
 			this.parent = parent;
 			children = new List<TreeListNode<T>>();
 		}
 
+		public void Add(T item)
+		{
+			(this as ICollection<TreeListNode<T>>).Add(new TreeListNode<T>(item, this));
+		}
+
 		#region IEnumerator
 
-		IEnumerator<T> IEnumerable<T>.GetEnumerator()
+		public IEnumerator<T> GetEnumerator()
 		{
 			return new TreeListEnumerator(this, false);
 		}
@@ -126,7 +131,7 @@ namespace ILPatcher.Utility
 
 		#region IList
 
-		void ICollection<TreeListNode<T>>.Add(TreeListNode<T> item)
+		public void Add(TreeListNode<T> item)
 		{
 			var end = children.Last();
 			end.next = item;
@@ -134,26 +139,26 @@ namespace ILPatcher.Utility
 			children.Add(item);
 		}
 
-		void ICollection<TreeListNode<T>>.Clear()
+		public void Clear()
 		{
 			children.Clear();
 		}
 
-		bool ICollection<TreeListNode<T>>.Contains(TreeListNode<T> item)
+		public bool Contains(TreeListNode<T> item)
 		{
 			return children.Contains(item);
 		}
 
-		void ICollection<TreeListNode<T>>.CopyTo(TreeListNode<T>[] array, int arrayIndex)
+		public void CopyTo(TreeListNode<T>[] array, int arrayIndex)
 		{
 			throw new NotSupportedException();
 		}
 
-		int ICollection<TreeListNode<T>>.Count { get { return children.Count; } }
+		public int Count { get { return children.Count; } }
 
-		bool ICollection<TreeListNode<T>>.IsReadOnly { get { return false; } }
+		public bool IsReadOnly { get { return false; } }
 
-		bool ICollection<TreeListNode<T>>.Remove(TreeListNode<T> item)
+		public bool Remove(TreeListNode<T> item)
 		{
 			if (item == null)
 				throw new ArgumentNullException("item");

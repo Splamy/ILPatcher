@@ -4,19 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using Mono.Cecil;
+
 using ILPatcher.Data.Actions;
 using ILPatcher.Data.Finder;
 using ILPatcher.Utility;
+
 using System.Xml;
 
 namespace ILPatcher.Data
 {
 	public class DataStruct : ISaveToFile // TODO: Find a better name ^^
 	{
+		public AssemblyDefinition AssemblyDefinition { get; protected set; }
+		public string AssemblyLocation { get; protected set; }
+		public AssemblyStatus AssemblyStatus { get; protected set; }
+
+		public string ILPLocation { get; protected set; }
+
 		public readonly List<PatchAction> PatchActionList;
 		public readonly List<TargetFinder> TargetFinderList;
 		public readonly TreeList<PatchEntry> PatchEntryList;
-		public readonly ISaveToFile ReferenceTable;
+		public readonly ILManager ReferenceTable;
+
+		public delegate void FileLoadedDelegate(object sender);
+		public event FileLoadedDelegate OnILPFileLoadedDelegate;
 
 		public DataStruct()
 		{
@@ -24,6 +36,8 @@ namespace ILPatcher.Data
 			TargetFinderList = new List<TargetFinder>();
 			PatchEntryList = new TreeList<PatchEntry>();
 			ReferenceTable = ILManager.Instance;
+
+			ClearASM();
 		}
 
 		public bool Save(XmlNode output)
@@ -89,10 +103,68 @@ namespace ILPatcher.Data
 
 			return allOk;
 		}
-	
-		public void Clear()
+
+		public void OpenASM(string assemblyPath)
 		{
-			// TODO: Implement
+			ClearASM();
+			AssemblyLocation = assemblyPath;
+
+			try
+			{
+				AssemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath);
+				AssemblyStatus = AssemblyStatus.RawAssemblyLoaded;
+			}
+			catch
+			{
+				AssemblyStatus = AssemblyStatus.LoadFailed;
+			}
 		}
+
+		public void OpenILP(string ilpPath)
+		{
+			ClearILP();
+			ILPLocation = ilpPath;
+
+			XmlDocument xDoc = XMLUtility.ReadFromFile(ilpPath);
+			XmlNode BaseNode = null;
+			bool Match = false;
+			NameCompressor nc = NameCompressor.Instance;
+			foreach (XmlNode xnode in xDoc.ChildNodes)
+			{
+				if (xnode.Name == nc.GetValComp(SST.ILPTable)) { Match = true; NameCompressor.Compress = true; }
+				else if (xnode.Name == nc.GetValUnComp(SST.ILPTable)) { Match = true; NameCompressor.Compress = false; }
+				if (Match) { BaseNode = xnode; break; }
+			}
+			if (Match)
+			{
+				Load(BaseNode);
+			}
+			else
+			{
+				Log.Write(Log.Level.Error, "No PatchTable found!");
+			}
+		}
+
+		public void ClearILP()
+		{
+			PatchActionList.Clear();
+			TargetFinderList.Clear();
+			PatchEntryList.Clear();
+			ILManager.Instance.Clear();
+		}
+
+		public void ClearASM()
+		{
+			AssemblyDefinition = null;
+			AssemblyLocation = string.Empty;
+			AssemblyStatus = AssemblyStatus.Uninitialized;
+		}
+	}
+
+	public enum AssemblyStatus
+	{
+		Uninitialized,
+		RawAssemblyLoaded,
+		LoadFailed,
 	}
 }

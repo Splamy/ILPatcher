@@ -16,9 +16,9 @@ namespace ILPatcher.Interface.Main
 {
 	public partial class MainPanel : UserControl
 	{
-		public static AssemblyStatus status = AssemblyStatus.Uninitialized;
-		public static AssemblyDefinition MainAssemblyDefinition { get; private set; } // TODO: get rid of static
-		public static string AssemblyPath { get; private set; }
+		//public static AssemblyStatus status = AssemblyStatus.Uninitialized;
+		//public static AssemblyDefinition MainAssemblyDefinition { get; private set; } // TODO: get rid of static
+		//public static string AssemblyPath { get; private set; }
 		public DataStruct dataStruct;
 		bool awaitingAssemblySelect = false;
 		string ilpFiletmp;
@@ -29,7 +29,9 @@ namespace ILPatcher.Interface.Main
 			InitializeComponent();
 
 			Log.callback = VisualLog;
+
 			dataStruct = new DataStruct();
+			dataStruct.OnILPFileLoadedDelegate += RebuildTable;
 		}
 
 		private void btnOpenILFile_Click(object sender, EventArgs e)
@@ -46,8 +48,10 @@ namespace ILPatcher.Interface.Main
 				{
 					ilpFiletmp = openIlp.FileName;
 					txtilpFile.Text = ilpFiletmp;
-					if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
-						LoadIlpFile(openIlp.FileName);
+					if (dataStruct.AssemblyStatus == AssemblyStatus.RawAssemblyLoaded)
+					{
+						dataStruct.OpenILP(openIlp.FileName);
+					}
 					else
 						awaitingAssemblySelect = true;
 				}
@@ -88,10 +92,9 @@ namespace ILPatcher.Interface.Main
 
 		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
-			((SwooshPanel)Parent).PushPanel(new ILPatcher.Interface.Actions.EditorMethodCreator(x => { }, MainAssemblyDefinition), "Debug Disassemble");
+			((SwooshPanel)Parent).PushPanel(new ILPatcher.Interface.Actions.EditorMethodCreator(x => { }, dataStruct.AssemblyDefinition), "Debug Disassemble"); // HACK: Change to dataStruct param
 			//TestMet1();
 			//TestMet2();
-
 		}
 
 		private void TestMet1()
@@ -111,7 +114,7 @@ namespace ILPatcher.Interface.Main
 								}
 							  }
 							}";
-			CSCompiler csc = new CSCompiler(MainAssemblyDefinition);
+			CSCompiler csc = new CSCompiler(dataStruct.AssemblyDefinition);
 			csc.Code = test;
 			Mono.Cecil.MethodDefinition md = csc.GetMethodDefinition(string.Empty, string.Empty);
 			if (md == null) return;
@@ -130,8 +133,8 @@ namespace ILPatcher.Interface.Main
 			{
 				if (saveFileDialog.ShowDialog() == DialogResult.OK)
 				{
-					MainAssemblyDefinition.MainModule.Runtime = TargetRuntime.Net_4_0;
-					MainAssemblyDefinition.Write(saveFileDialog.FileName);
+					dataStruct.AssemblyDefinition.MainModule.Runtime = TargetRuntime.Net_4_0;
+					dataStruct.AssemblyDefinition.Write(saveFileDialog.FileName);
 					MessageBox.Show("Message Successfuly Injected");
 				}
 			}
@@ -143,7 +146,7 @@ namespace ILPatcher.Interface.Main
 			MethodDefinition MetDef = structureViever1.SelectedNode.Tag as MethodDefinition;
 			if (MetDef == null) return;
 
-			DecompilerContext decon = new DecompilerContext(MainAssemblyDefinition.MainModule);
+			DecompilerContext decon = new DecompilerContext(dataStruct.AssemblyDefinition.MainModule);
 			decon.CancellationToken = new System.Threading.CancellationToken();
 			decon.CurrentType = MetDef.DeclaringType;
 			DecompilerSettings decoset = new DecompilerSettings();
@@ -154,7 +157,7 @@ namespace ILPatcher.Interface.Main
 			PlainTextOutput pto = new PlainTextOutput();
 			ast.GenerateCode(pto);
 
-			var emc = new ILPatcher.Interface.Actions.EditorMethodCreator(x => { }, MainAssemblyDefinition);
+			var emc = new ILPatcher.Interface.Actions.EditorMethodCreator(x => { }, dataStruct.AssemblyDefinition);
 			//emc.txtInjectCode.Text = pto.ToString();
 			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
 		}
@@ -170,7 +173,7 @@ namespace ILPatcher.Interface.Main
 				for (int i = 0; i < dataStruct.ClusterList.Count; i++)
 					if (clbPatchList.GetItemChecked(i))
 						dataStruct.ClusterList[i].Execute();
-				MainAssemblyDefinition.Write(AssemblyPath);
+				dataStruct.AssemblyDefinition.Write(AssemblyPath);
 			}
 			catch (Exception ex) { MessageBox.Show(ex.Message); }
 		}
@@ -178,120 +181,58 @@ namespace ILPatcher.Interface.Main
 
 		private void openAssembly()
 		{
-			status = AssemblyStatus.Uninitialized;
 			using (OpenFileDialog openAsm = new OpenFileDialog())
 			{
 				openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
 				if (openAsm.ShowDialog() == DialogResult.OK)
 				{
-					AssemblyPath = openAsm.FileName;
-					txtilaFile.Text = AssemblyPath;
-					string backupPath = AssemblyPath + "_ilpbackup";
+					string assemblyPath = openAsm.FileName;
+					string backupPath = assemblyPath + "_ilpbackup";
 					if (File.Exists(backupPath))
 					{
 						using (PatchQuestionWindow pqw = new PatchQuestionWindow())
 						{
 							DialogResult dr = pqw.ShowDialog(this);
 							if (dr == DialogResult.Cancel) return;
-							else if (dr == DialogResult.Yes) File.Copy(backupPath, AssemblyPath, true); // check for rights
+							else if (dr == DialogResult.Yes) File.Copy(backupPath, assemblyPath, true); // TODO: check for rights
 						}
 					}
-					ILManager.Instance.ClearAll();
-
 					mLoading.ON = true;
-					LoadAsmOrigin();
-					if (status == AssemblyStatus.RawAssemblyLoaded || status == AssemblyStatus.AssemblyAndDataLoaded)
+
+					dataStruct.OpenASM(assemblyPath);
+					if (dataStruct.AssemblyStatus == AssemblyStatus.RawAssemblyLoaded)
 					{
-						ILManager.Instance.InitTreeHalfAsync(MainAssemblyDefinition);
+						txtilaFile.Text = assemblyPath;
+						ILManager.Instance.InitTreeHalfAsync(dataStruct.AssemblyDefinition);
 						structureViever1.RebuildHalfAsync();
 					}
+					else if (dataStruct.AssemblyStatus == AssemblyStatus.LoadFailed)
+					{
+						MessageBox.Show("Couldn't read assembly, it is either unmanaged or obfuscated");
+						return;
+					}
+
 					if (awaitingAssemblySelect)
 					{
-						LoadIlpFile(ilpFiletmp);
+						dataStruct.OpenILP(ilpFiletmp);
 					}
 					mLoading.ON = false;
 				}
 			}
 		}
 
-		private void LoadAsmOrigin()
-		{
-			try
-			{
-				MainAssemblyDefinition = AssemblyDefinition.ReadAssembly(AssemblyPath);
-				status = AssemblyStatus.RawAssemblyLoaded;
-
-				rtbInfo.Clear();
-				rtbInfo.AppendText("[Name]::" + MainAssemblyDefinition.MainModule.Name.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[CLR Runtime]::" + MainAssemblyDefinition.MainModule.Runtime.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Full Name]::" + MainAssemblyDefinition.MainModule.FullyQualifiedName.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Metadata Token]::" + MainAssemblyDefinition.MainModule.MetadataToken.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Architecture]::" + MainAssemblyDefinition.MainModule.Architecture.ToString() + Environment.NewLine);
-				if (MainAssemblyDefinition.MainModule.EntryPoint != null)
-					rtbInfo.AppendText("[EntryPoint]::" + MainAssemblyDefinition.MainModule.EntryPoint.ToString() + Environment.NewLine);
-				rtbInfo.AppendText("[Mvid]::" + MainAssemblyDefinition.MainModule.Mvid.ToString() + Environment.NewLine);
-				status = AssemblyStatus.AssemblyAndDataLoaded;
-			}
-			catch (Exception ex)
-			{
-				if (status == AssemblyStatus.Uninitialized)
-				{
-					status = AssemblyStatus.LoadFailed;
-					MessageBox.Show("Couldn't read assembly, it is either unmanaged or obfuscated");
-				}
-				else if (status == AssemblyStatus.RawAssemblyLoaded)
-				{
-					status = AssemblyStatus.LoadFailed;
-					MessageBox.Show("The Assembly was loaded, yet some errors occoured. Patching might work... ;)\n" +
-						ex.Message);
-				}
-			}
-		}
-
-		public void LoadIlpFile(string filename)
-		{
-			//mLoading.ON = true;
-			XmlDocument xDoc = XMLUtility.ReadFromFile(filename); // TODO Rework too
-			dataStruct.Clear();
-			XmlNode BaseNode = null;
-			bool Match = false;
-			NameCompressor nc = NameCompressor.Instance;
-			foreach (XmlNode xnode in xDoc.ChildNodes)
-			{
-				if (xnode.Name == nc.GetValComp(SST.ILPTable)) { Match = true; NameCompressor.Compress = true; }
-				else if (xnode.Name == nc.GetValUnComp(SST.ILPTable)) { Match = true; NameCompressor.Compress = false; }
-				if (Match) { BaseNode = xnode; break; }
-			}
-			if (Match)
-			{
-				dataStruct.Load(BaseNode);
-				RebuildTable();
-			}
-			else
-				Log.Write(Log.Level.Error, "No PatchTable found!");
-			//mLoading.ON = false;
-		}
-
-		public void Add(PatchEntry pe)
-		{
-			// TODO: Rework
-			dataStruct.Add(pe);
-			TreeNode matchNode = treeView1.Nodes.OfType<TreeNode>().FirstOrDefault(node => node.Tag == pe);
-			if (matchNode == null)
-				treeView1.Nodes.Add(GenClusterNode(pe));
-		}
-
 		public void EditCluster(PatchEntry patchcluster)
 		{
-			PatchBuilder patchBuilder = new PatchBuilder(Add, MainAssemblyDefinition);
-			patchBuilder.LoadCluster(patchcluster);
+			PatchBuilder patchBuilder = new PatchBuilder(dataStruct);
+			patchBuilder.LoadEntry(patchcluster);
 			((SwooshPanel)Parent).PushPanel(patchBuilder, "PatchBuilder");
 		}
 
-		private void RebuildTable()
+		private void RebuildTable(object sender)
 		{
+			DataStruct senderDataStruct = (DataStruct)sender;
 			var labels = new Dictionary<string, TreeNode>();
-			foreach (var patchCluster in dataStruct.ClusterList)
+			foreach (var patchCluster in senderDataStruct.ClusterList)
 			{
 				TreeNode treeNode = GenClusterNode(patchCluster);
 
@@ -306,11 +247,9 @@ namespace ILPatcher.Interface.Main
 			}
 		}
 
-		private static TreeNode GenClusterNode(PatchEntry patchCluster)
+		private void RebuildTableRecursive(TreeNode node, TreeListNode<PatchEntry> peNode)
 		{
-			TreeNode treeNode = new TreeNode(patchCluster.Name);
-			treeNode.Tag = patchCluster;
-			return treeNode;
+
 		}
 
 		private void MainPanel_Resize(object sender, EventArgs e)
@@ -417,13 +356,5 @@ namespace ILPatcher.Interface.Main
 
 			}
 		}
-	}
-
-	public enum AssemblyStatus
-	{
-		Uninitialized,
-		RawAssemblyLoaded,
-		AssemblyAndDataLoaded,
-		LoadFailed,
 	}
 }

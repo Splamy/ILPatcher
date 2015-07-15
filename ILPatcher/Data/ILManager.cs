@@ -18,7 +18,7 @@ using System.Xml;
 
 namespace ILPatcher.Data
 {
-	class ILManager : ISaveToFile
+	public class ILManager : ISaveToFile
 	{
 		private AnyArray<OperandInfo> MemberList;
 
@@ -1004,14 +1004,8 @@ namespace ILPatcher.Data
 			return null;
 		}
 
-		/// <summary>Clears the current reference table</summary>
-		public void Clear()
-		{
-			MemberList.Length = 0;
-		}
-
 		/// <summary>Clears the current reference table and the loaded ILNode Assemblys</summary>
-		public void ClearAll() // check if necessary
+		public void Clear()
 		{
 			MemberList.Length = 0;
 			ModuleList.Clear();
