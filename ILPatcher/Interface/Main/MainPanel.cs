@@ -1,7 +1,6 @@
 ﻿using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
 using ILPatcher.Data;
-using ILPatcher.Data.General;
 using ILPatcher.Interface.General;
 using ILPatcher.Utility;
 using Mono.Cecil;
@@ -20,7 +19,7 @@ namespace ILPatcher.Interface.Main
 		public static AssemblyStatus status = AssemblyStatus.Uninitialized;
 		public static AssemblyDefinition MainAssemblyDefinition { get; private set; } // TODO: get rid of static
 		public static string AssemblyPath { get; private set; }
-		public TableManager tablemgr;
+		public DataStruct dataStruct;
 		bool awaitingAssemblySelect = false;
 		string ilpFiletmp;
 
@@ -30,7 +29,7 @@ namespace ILPatcher.Interface.Main
 			InitializeComponent();
 
 			Log.callback = VisualLog;
-			tablemgr = new TableManager();
+			dataStruct = new DataStruct();
 		}
 
 		private void btnOpenILFile_Click(object sender, EventArgs e)
@@ -66,7 +65,7 @@ namespace ILPatcher.Interface.Main
 				if (sfd.ShowDialog() != DialogResult.OK) return;
 				NameCompressor.Compress = false;
 				XmlDocument xDoc = new XmlDocument();
-				tablemgr.Save(xDoc);
+				dataStruct.Save(xDoc);
 				XMLUtility.SaveToFile(xDoc, sfd.FileName);
 			}
 		}
@@ -81,7 +80,7 @@ namespace ILPatcher.Interface.Main
 			TreeNode treeNode = treeView1.SelectedNode;
 			if (treeNode == null)
 				return;
-			PatchCluster patchCluster = treeNode.Tag as PatchCluster;
+			PatchEntry patchCluster = treeNode.Tag as PatchEntry;
 			if (patchCluster == null)
 				return;
 			EditCluster(patchCluster);
@@ -92,6 +91,7 @@ namespace ILPatcher.Interface.Main
 			((SwooshPanel)Parent).PushPanel(new ILPatcher.Interface.Actions.EditorMethodCreator(x => { }, MainAssemblyDefinition), "Debug Disassemble");
 			//TestMet1();
 			//TestMet2();
+
 		}
 
 		private void TestMet1()
@@ -167,9 +167,9 @@ namespace ILPatcher.Interface.Main
 				if (!File.Exists(backupPath))
 					File.Copy(AssemblyPath, backupPath);
 				tabInfoControl.SelectedIndex = 2;
-				for (int i = 0; i < tablemgr.ClusterList.Count; i++)
+				for (int i = 0; i < dataStruct.ClusterList.Count; i++)
 					if (clbPatchList.GetItemChecked(i))
-						tablemgr.ClusterList[i].Execute();
+						dataStruct.ClusterList[i].Execute();
 				MainAssemblyDefinition.Write(AssemblyPath);
 			}
 			catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -251,21 +251,20 @@ namespace ILPatcher.Interface.Main
 		public void LoadIlpFile(string filename)
 		{
 			//mLoading.ON = true;
-			XmlDocument xDoc = XMLUtility.ReadFromFile(filename);
-			if (tablemgr == null) // TODO tableMgr clear
-				tablemgr = new TableManager();
+			XmlDocument xDoc = XMLUtility.ReadFromFile(filename); // TODO Rework too
+			dataStruct.Clear();
 			XmlNode BaseNode = null;
 			bool Match = false;
 			NameCompressor nc = NameCompressor.Instance;
 			foreach (XmlNode xnode in xDoc.ChildNodes)
 			{
-				if (xnode.Name == nc.GetValComp(SST.PatchTable)) { Match = true; NameCompressor.Compress = true; }
-				else if (xnode.Name == nc.GetValUnComp(SST.PatchTable)) { Match = true; NameCompressor.Compress = false; }
+				if (xnode.Name == nc.GetValComp(SST.ILPTable)) { Match = true; NameCompressor.Compress = true; }
+				else if (xnode.Name == nc.GetValUnComp(SST.ILPTable)) { Match = true; NameCompressor.Compress = false; }
 				if (Match) { BaseNode = xnode; break; }
 			}
 			if (Match)
 			{
-				tablemgr.Load(BaseNode);
+				dataStruct.Load(BaseNode);
 				RebuildTable();
 			}
 			else
@@ -273,17 +272,16 @@ namespace ILPatcher.Interface.Main
 			//mLoading.ON = false;
 		}
 
-		public void Add(PatchCluster pe)
+		public void Add(PatchEntry pe)
 		{
-			if (tablemgr == null)
-				tablemgr = new TableManager();
-			tablemgr.Add(pe);
+			// TODO: Rework
+			dataStruct.Add(pe);
 			TreeNode matchNode = treeView1.Nodes.OfType<TreeNode>().FirstOrDefault(node => node.Tag == pe);
 			if (matchNode == null)
 				treeView1.Nodes.Add(GenClusterNode(pe));
 		}
 
-		public void EditCluster(PatchCluster patchcluster)
+		public void EditCluster(PatchEntry patchcluster)
 		{
 			PatchBuilder patchBuilder = new PatchBuilder(Add, MainAssemblyDefinition);
 			patchBuilder.LoadCluster(patchcluster);
@@ -293,7 +291,7 @@ namespace ILPatcher.Interface.Main
 		private void RebuildTable()
 		{
 			var labels = new Dictionary<string, TreeNode>();
-			foreach (var patchCluster in tablemgr.ClusterList)
+			foreach (var patchCluster in dataStruct.ClusterList)
 			{
 				TreeNode treeNode = GenClusterNode(patchCluster);
 
@@ -308,7 +306,7 @@ namespace ILPatcher.Interface.Main
 			}
 		}
 
-		private static TreeNode GenClusterNode(PatchCluster patchCluster)
+		private static TreeNode GenClusterNode(PatchEntry patchCluster)
 		{
 			TreeNode treeNode = new TreeNode(patchCluster.Name);
 			treeNode.Tag = patchCluster;

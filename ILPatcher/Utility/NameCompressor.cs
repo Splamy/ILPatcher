@@ -24,7 +24,8 @@ namespace ILPatcher.Utility
 		{
 			HashSet<string> LongName = new HashSet<string>();
 			HashSet<string> CompressName = new HashSet<string>();
-			for (int i = 0; i < (int)SST.SSTLISTEND; i++)
+			int valcnt = Enum.GetValues(typeof(SST)).Length;
+			for (int i = 0; i < valcnt; i++)
 			{
 				Tuple<string, string> tpl = lowtable[i];
 				if (tpl == null)
@@ -40,55 +41,67 @@ namespace ILPatcher.Utility
 					Log.Write(Log.Level.Warning, "CompressName Element Doubled: ", tpl.Item2);
 				else
 					CompressName.Add(tpl.Item2);
-				if (((SST)i).ToString() != tpl.Item1)
-					Log.Write(Log.Level.Warning, "SST ID does not match name: ", ((SST)i).ToString());
 			}
 		}
 
 		private NameCompressor()
 		{
-			lowtable = new Tuple<string, string>[(int)SST.SSTLISTEND];
+			lowtable = new Tuple<string, string>[Enum.GetValues(typeof(SST)).Length];
 
-			lowtable[(int)SST.PatchTable] = new Tuple<string, string>("PatchTable", "PAT");
-			lowtable[(int)SST.PatchCluster] = new Tuple<string, string>("PatchCluster", "PC");
+			InitializeValue(SST.ID, "ID");
+			InitializeValue(SST.ILPTable, "ILP");
+			InitializeValue(SST.Version, "V");
 
-			lowtable[(int)SST.PatchAction] = new Tuple<string, string>("PatchAction", "PA");
-			lowtable[(int)SST.PatchType] = new Tuple<string, string>("PatchType", "PT");
-			lowtable[(int)SST.PatchStatus] = new Tuple<string, string>("PatchStatus", "PS");
+			InitializeValue(SST.PatchActionTable, "PAT");
+			InitializeValue(SST.TargetFinderTable, "TFT");
+			InitializeValue(SST.PatchEntryTable, "PET");
+			InitializeValue(SST.ReferenceTable, "RFT");
 
-			lowtable[(int)SST.MethodPath] = new Tuple<string, string>("MethodPath", "MP");
+			InitializeValue(SST.PatchAction, "PA");
+			InitializeValue(SST.TargetFinder, "TF");
+			InitializeValue(SST.PatchEntry, "PE");
+			InitializeValue(SST.MethodReference, "MR");
+			InitializeValue(SST.FieldReference, "FR");
+			InitializeValue(SST.TypeReference, "TR");
 
-			lowtable[(int)SST.PatchList] = new Tuple<string, string>("PatchList", "PL");
-			lowtable[(int)SST.InstructionCount] = new Tuple<string, string>("InstructionCount", "IC");
+			InitializeValue(SST.PatchType, "PT");
+			InitializeValue(SST.PatchStatus, "PS");
 
-			lowtable[(int)SST.Instruction] = new Tuple<string, string>("Instruction", "I");
-			lowtable[(int)SST.InstructionPatch] = new Tuple<string, string>("InstructionPatch", "IP");
-			lowtable[(int)SST.InstructionNum] = new Tuple<string, string>("InstructionNum", "N");
-			lowtable[(int)SST.OpCode] = new Tuple<string, string>("OpCode", "O");
-			lowtable[(int)SST.Delete] = new Tuple<string, string>("Delete", "D");
-			lowtable[(int)SST.PrimitiveValue] = new Tuple<string, string>("PrimitiveValue", "PV");
+			InitializeValue(SST.MethodPath, "MP");
 
-			lowtable[(int)SST.Resolve] = new Tuple<string, string>("Resolve", "RS");
-			lowtable[(int)SST.ResolveExtended] = new Tuple<string, string>("ResolveExtended", "RE");
-			lowtable[(int)SST.MethodReference] = new Tuple<string, string>("MethodReference", "MR");
-			lowtable[(int)SST.FieldReference] = new Tuple<string, string>("FieldReference", "FR");
-			lowtable[(int)SST.TypeReference] = new Tuple<string, string>("TypeReference", "TR");
-			lowtable[(int)SST.CallSite] = new Tuple<string, string>("CallSite", "CS");
-			lowtable[(int)SST.BrTargetIndex] = new Tuple<string, string>("BrTargetIndex", "BI");
-			lowtable[(int)SST.BrTargetArray] = new Tuple<string, string>("BrTargetArray", "BA");
+			InitializeValue(SST.PatchList, "PL");
+			InitializeValue(SST.InstructionCount, "IC");
 
-			lowtable[(int)SST.RETURN] = new Tuple<string, string>("RETURN", "R");
-			lowtable[(int)SST.MODULE] = new Tuple<string, string>("MODULE", "M");
-			lowtable[(int)SST.NAMESPACE] = new Tuple<string, string>("NAMESPACE", "NS");
-			lowtable[(int)SST.TYPE] = new Tuple<string, string>("TYPE", "T");
-			lowtable[(int)SST.NAME] = new Tuple<string, string>("NAME", "NA");
-			lowtable[(int)SST.NESTEDIN] = new Tuple<string, string>("NESTEDIN", "NI");
-			lowtable[(int)SST.ARRAY] = new Tuple<string, string>("ARRAY", "AR");
-			lowtable[(int)SST.PARAMETER] = new Tuple<string, string>("PARAMETER", "PR");
-			lowtable[(int)SST.GENERICS] = new Tuple<string, string>("GENERICS", "GN");
+			InitializeValue(SST.Instruction, "I");
+			InitializeValue(SST.InstructionPatch, "IP");
+			InitializeValue(SST.InstructionNum, "N");
+			InitializeValue(SST.OpCode, "O");
+			InitializeValue(SST.Delete, "D");
+			InitializeValue(SST.PrimitiveValue, "PV");
 
-			lowtable[(int)SST.True] = new Tuple<string, string>("True", "t");
-			lowtable[(int)SST.False] = new Tuple<string, string>("False", "f");
+			InitializeValue(SST.Resolve, "RS");
+			InitializeValue(SST.ResolveExtended, "RE");
+			InitializeValue(SST.CallSite, "CS");
+			InitializeValue(SST.BrTargetIndex, "BI");
+			InitializeValue(SST.BrTargetArray, "BA");
+
+			InitializeValue(SST.Return, "R");
+			InitializeValue(SST.Module, "M");
+			InitializeValue(SST.Namespace, "NS");
+			InitializeValue(SST.Type, "T");
+			InitializeValue(SST.Name, "NA");
+			InitializeValue(SST.NestedIn, "NI");
+			InitializeValue(SST.Array, "AR");
+			InitializeValue(SST.Parameter, "PR");
+			InitializeValue(SST.Generics, "GN");
+
+			InitializeValue(SST.True, "t");
+			InitializeValue(SST.False, "f");
+		}
+
+		private void InitializeValue(SST entry, string lowname)
+		{
+			lowtable[(int)entry] = new Tuple<string, string>(entry.ToString(), lowname);
 		}
 
 		public string this[SST val]
@@ -123,10 +136,22 @@ namespace ILPatcher.Utility
 
 	public enum SST : int
 	{
-		PatchTable,
-		PatchCluster,
+		ID,
+		ILPTable,
+		Version,
+
+		PatchActionTable,
+		TargetFinderTable,
+		PatchEntryTable,
+		ReferenceTable,
 
 		PatchAction,
+		TargetFinder,
+		PatchEntry,
+		MethodReference,
+		FieldReference,
+		TypeReference,
+
 		PatchType,
 		PatchStatus,
 
@@ -144,26 +169,21 @@ namespace ILPatcher.Utility
 
 		Resolve,
 		ResolveExtended,
-		MethodReference,
-		FieldReference,
-		TypeReference,
 		CallSite,
 		BrTargetIndex,
 		BrTargetArray,
 
-		RETURN,
-		MODULE,
-		NAMESPACE,
-		TYPE,
-		NAME,
-		NESTEDIN,
-		ARRAY,
-		PARAMETER,
-		GENERICS,
+		Return,
+		Module,
+		Namespace,
+		Type,
+		Name,
+		NestedIn,
+		Array,
+		Parameter,
+		Generics,
 
 		True,
 		False,
-
-		SSTLISTEND,
 	}
 }

@@ -1,4 +1,4 @@
-﻿using ILPatcher.Data.General;
+﻿using ILPatcher.Data;
 using ILPatcher.Utility;
 using MetroObjects;
 using Mono.Cecil.Cil;

@@ -5,6 +5,7 @@ using ILPatcher.Interface.General; // extract ILNode
 // this isn't nice...
 using ILPatcher.Interface.Main; // remove when static removed
 using ILPatcher.Utility;
+using ILPatcher.Data;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
@@ -17,7 +18,7 @@ using System.Xml;
 
 namespace ILPatcher.Data
 {
-	class ILManager
+	class ILManager : ISaveToFile
 	{
 		private AnyArray<OperandInfo> MemberList;
 
@@ -65,12 +66,14 @@ namespace ILPatcher.Data
 		/// <summary>Saves the current reference list of this ILM into a xml parent node.
 		/// If an entry is not resolved it will copy the raw data read back again.</summary>
 		/// <param name="xNode">The parent node for the new reference nodes</param>
-		public void Save(XmlNode xNode)
+		public bool Save(XmlNode xNode)
 		{
 			XmlElement xM = xNode.InsertCompressedElement(SST.MethodReference);
 			XmlElement xF = xNode.InsertCompressedElement(SST.FieldReference);
 			XmlElement xT = xNode.InsertCompressedElement(SST.TypeReference);
 			XmlElement xCS = xNode.InsertCompressedElement(SST.CallSite);
+
+			bool allOk = true;
 
 			for (int i = 0; i < MemberList.Length; i++)
 			{
@@ -84,7 +87,10 @@ namespace ILPatcher.Data
 					if (oi.resolved)
 						Reference(((ParameterReference)oi.operand).ParameterType);
 					else
+					{
 						Log.Write(Log.Level.Error, "ParameterDef/Ref cannot be raw saved");
+						allOk = false;
+					}
 					break;
 				case OperandInfoT.MethodDefinition:
 				case OperandInfoT.MethodReference:
@@ -117,7 +123,10 @@ namespace ILPatcher.Data
 					if (oi.resolved)
 						Reference(((VariableReference)oi.operand).VariableType);
 					else
+					{
 						Log.Write(Log.Level.Info, "VariableDef/Ref cannot be raw saved");
+						allOk = false;
+					}
 					break;
 				case OperandInfoT.ArrayType:
 					if (oi.resolved)
@@ -129,17 +138,21 @@ namespace ILPatcher.Data
 					if (oi.resolved)
 					{
 						XmlElement xElem = xCS.InsertCompressedElement(i);
-						xElem.CreateAttribute(SST.NAME, ((CallSite)MemberList[i].operand).FullName);
+						xElem.CreateAttribute(SST.Name, ((CallSite)MemberList[i].operand).FullName);
 						Log.Write(Log.Level.Error, "Unhandled CallSite: ", oi.ToString());
+						allOk = false;
 					}
 					else
 						xCS.AppendClonedChild(oi.rawData);
 					break;
 				default:
 					Log.Write(Log.Level.Error, "Not saved Member Entry: ", oi.oit.ToString());
+					allOk = false;
 					break;
 				}
 			}
+
+			return allOk;
 		}
 
 		/// <summary>Inserts the xml formatted reference for a MethodReference into a xml parent</summary>
@@ -151,8 +164,8 @@ namespace ILPatcher.Data
 			XmlElement xElem = xGroup.InsertCompressedElement(val);
 			StringBuilder strb = new StringBuilder();
 
-			xElem.CreateAttribute(SST.TYPE, Reference(mr.DeclaringType).ToBaseAlph());
-			xElem.CreateAttribute(SST.NAME, mr.Name);
+			xElem.CreateAttribute(SST.Type, Reference(mr.DeclaringType).ToBaseAlph());
+			xElem.CreateAttribute(SST.Name, mr.Name);
 
 			#region GENERICS
 			if (mr.IsGenericInstance)
@@ -173,7 +186,7 @@ namespace ILPatcher.Data
 						{
 							strb.Append(Reference(git.GenericArguments[i]).ToBaseAlph());
 						}
-					xElem.CreateAttribute(SST.GENERICS, strb.ToString());
+					xElem.CreateAttribute(SST.Generics, strb.ToString());
 				}
 			}
 			else if (mr.HasGenericParameters)
@@ -186,7 +199,7 @@ namespace ILPatcher.Data
 					//strb.Append(Reference(mr.GenericParameters[i].Type).ToBaseAlph()); // type is of GenericParameterType enum
 					strb.Append(' ');
 				}
-				xElem.CreateAttribute(SST.GENERICS, strb.ToString());
+				xElem.CreateAttribute(SST.Generics, strb.ToString());
 			}
 			#endregion
 
@@ -199,7 +212,7 @@ namespace ILPatcher.Data
 			}
 			else
 				strb.Append(Reference(mr.ReturnType).ToBaseAlph());
-			xElem.CreateAttribute(SST.RETURN, strb.ToString());
+			xElem.CreateAttribute(SST.Return, strb.ToString());
 			#endregion
 
 			#region PARAMETER
@@ -219,7 +232,7 @@ namespace ILPatcher.Data
 					}
 					strb.Append(' ');
 				}
-				xElem.CreateAttribute(SST.PARAMETER, strb.ToString());
+				xElem.CreateAttribute(SST.Parameter, strb.ToString());
 			}
 			#endregion
 		}
@@ -231,9 +244,9 @@ namespace ILPatcher.Data
 		private void GenFChild(XmlElement xGroup, FieldReference fr, int val)
 		{
 			XmlElement xElem = xGroup.InsertCompressedElement(val);
-			xElem.CreateAttribute(SST.TYPE, Reference(fr.FieldType).ToBaseAlph());
-			xElem.CreateAttribute(SST.NAME, fr.Name);
-			xElem.CreateAttribute(SST.MODULE, Reference(fr.DeclaringType).ToBaseAlph());
+			xElem.CreateAttribute(SST.Type, Reference(fr.FieldType).ToBaseAlph());
+			xElem.CreateAttribute(SST.Name, fr.Name);
+			xElem.CreateAttribute(SST.Module, Reference(fr.DeclaringType).ToBaseAlph());
 		}
 
 		/// <summary>Inserts the xml formatted reference for a TypeReference into a xml parent</summary>
@@ -243,7 +256,7 @@ namespace ILPatcher.Data
 		private void GenTChild(XmlElement xGroup, TypeReference tr, int val)
 		{
 			XmlElement xElem = xGroup.InsertCompressedElement(val);
-			xElem.CreateAttribute(SST.NAME, tr.Name);
+			xElem.CreateAttribute(SST.Name, tr.Name);
 
 			StringBuilder strb = new StringBuilder();
 			if (tr.IsGenericInstance)
@@ -272,7 +285,7 @@ namespace ILPatcher.Data
 						}
 						strb.Append(' ');
 					}
-					xElem.CreateAttribute(SST.GENERICS, strb.ToString());
+					xElem.CreateAttribute(SST.Generics, strb.ToString());
 				}
 			}
 			else if (tr.HasGenericParameters)
@@ -284,16 +297,16 @@ namespace ILPatcher.Data
 					strb.Append(tr.GenericParameters[i].Name);
 					strb.Append(' ');
 				}
-				xElem.CreateAttribute(SST.GENERICS, strb.ToString());
+				xElem.CreateAttribute(SST.Generics, strb.ToString());
 			}
 
 			if (tr.IsNested)
-				xElem.CreateAttribute(SST.NESTEDIN, Reference(tr.DeclaringType).ToBaseAlph());
+				xElem.CreateAttribute(SST.NestedIn, Reference(tr.DeclaringType).ToBaseAlph());
 			else
 			{
-				xElem.CreateAttribute(SST.MODULE, tr.Scope.Name);
+				xElem.CreateAttribute(SST.Module, tr.Scope.Name);
 				if (!tr.IsGenericParameter)
-					xElem.CreateAttribute(SST.NAMESPACE, tr.Namespace);
+					xElem.CreateAttribute(SST.Namespace, tr.Namespace);
 				else
 					Log.Write(Log.Level.Error, "A GenericParameter(Type) has been passed. It will be dismissed.");
 			}
@@ -306,11 +319,11 @@ namespace ILPatcher.Data
 		private void GenAChild(XmlElement xGroup, ArrayType at, int val)
 		{
 			XmlElement xElem = xGroup.InsertCompressedElement(val);
-			xElem.CreateAttribute(SST.TYPE, Reference(at.ElementType).ToBaseAlph());
+			xElem.CreateAttribute(SST.Type, Reference(at.ElementType).ToBaseAlph());
 			if (at.IsVector)
-				xElem.CreateAttribute(SST.ARRAY, "0");
+				xElem.CreateAttribute(SST.Array, "0");
 			else
-				xElem.CreateAttribute(SST.ARRAY, at.Dimensions.Count.ToString());
+				xElem.CreateAttribute(SST.Array, at.Dimensions.Count.ToString());
 		}
 
 		/// <summary>Looks for the given object in the ILM list and returns its ID,
@@ -357,14 +370,15 @@ namespace ILPatcher.Data
 		/// <summary>Loads the reference table from a node and itserts the unresolved
 		/// references into the ILM list. Those can then be resoved on demand</summary>
 		/// <param name="xNode">The reference table containing node</param>
-		public void Load(XmlNode xNode)
+		public bool Load(XmlNode xNode)
 		{
 			Clear();
 
+			bool allOk = true;
+
 			foreach (XmlNode xElem in xNode.ChildNodes)
 			{
-				if (xElem.Name == nc[SST.PatchCluster])
-					continue;
+				// TODO: rework load scheme
 				foreach (XmlNode xItem in xElem.ChildNodes)
 				{
 					OperandInfo oi = new OperandInfo();
@@ -376,6 +390,7 @@ namespace ILPatcher.Data
 						oi.oit = OperandInfoT.TypeReference;
 					else // CalliSite
 					{
+						allOk = false;
 						Log.Write(Log.Level.Careful, "Unknown Resolving Node: ", xElem.Name);
 						continue;
 					}
@@ -383,6 +398,7 @@ namespace ILPatcher.Data
 					MemberList[xItem.Name.ToBaseInt()] = oi;
 				}
 			}
+			return allOk;
 		}
 
 		/// <summary>Looks for a reference with the given ID. If the reference is unresolved,
@@ -419,8 +435,8 @@ namespace ILPatcher.Data
 		{
 			XmlElement xDataNode = oi.rawData;
 
-			string name = xDataNode.GetAttribute(SST.NAME);
-			string type = xDataNode.GetAttribute(SST.TYPE);
+			string name = xDataNode.GetAttribute(SST.Name);
+			string type = xDataNode.GetAttribute(SST.Type);
 			if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(type))
 			{
 				oi.Status = ResolveStatus.SaveFileError;
@@ -441,7 +457,7 @@ namespace ILPatcher.Data
 
 			// 2] search generics
 			#region search_generics
-			if (xDataNode.GetAttribute(SST.GENERICS, out genericvalstr))
+			if (xDataNode.GetAttribute(SST.Generics, out genericvalstr))
 			{
 				genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 				isGeneric = genericValues.Length != 0;
@@ -495,9 +511,9 @@ namespace ILPatcher.Data
 		{
 			XmlElement xDataNode = oi.rawData;
 
-			string FieldType = xDataNode.GetAttribute(SST.TYPE);
-			string Name = xDataNode.GetAttribute(SST.NAME);
-			string DeclaringType = xDataNode.GetAttribute(SST.MODULE);
+			string FieldType = xDataNode.GetAttribute(SST.Type);
+			string Name = xDataNode.GetAttribute(SST.Name);
+			string DeclaringType = xDataNode.GetAttribute(SST.Module);
 
 			if (string.IsNullOrEmpty(FieldType) || string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(DeclaringType))
 			{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No FieldType/Name/DeclaringType"); }
@@ -534,7 +550,7 @@ namespace ILPatcher.Data
 
 			Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
 
-			string name = xDataNode.GetAttribute(SST.NAME);
+			string name = xDataNode.GetAttribute(SST.Name);
 			if (string.IsNullOrEmpty(name)) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
 
 			string namesp = string.Empty;
@@ -549,15 +565,15 @@ namespace ILPatcher.Data
 
 			// 1] search in
 			#region search_in
-			string nestedin = xDataNode.GetAttribute(SST.NESTEDIN);
+			string nestedin = xDataNode.GetAttribute(SST.NestedIn);
 			if (string.IsNullOrEmpty(nestedin)) // type is module subtype
 			{
 				isNested = false;
 
-				string module = xDataNode.GetAttribute(SST.MODULE);
+				string module = xDataNode.GetAttribute(SST.Module);
 				if (string.IsNullOrEmpty(module)) { oi.Status = ResolveStatus.SaveFileError; return null; }
 
-				namesp = xDataNode.GetAttribute(SST.NAMESPACE);
+				namesp = xDataNode.GetAttribute(SST.Namespace);
 				if (string.IsNullOrEmpty(namesp))
 				{
 					noNamespaceGiven = true;
@@ -604,7 +620,7 @@ namespace ILPatcher.Data
 
 			// 2] search generics
 			#region search_generics
-			if (xDataNode.GetAttribute(SST.GENERICS, out genericvalstr))
+			if (xDataNode.GetAttribute(SST.Generics, out genericvalstr))
 			{
 				genericValues = genericvalstr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 				isGeneric = genericValues.Length != 0;

@@ -9,7 +9,7 @@ namespace ILPatcher.Utility
 	{
 		public static bool Active { get; set; }
 		public static int StackLevel { get; set; }
-		public static Action<ErrorLoggerItem> callback { get; set; }
+		public static Action<ErrorLoggerItem> callback { get; set; } // TODO make callback -> event
 
 		private static string[] spaceup;
 

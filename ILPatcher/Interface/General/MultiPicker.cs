@@ -20,7 +20,7 @@ namespace ILPatcher.Interface.General
 		private MultiPicker()
 		{
 			InitializeComponent();
-			Owner = MainForm.Instance;
+			//Owner = MainForm.Instance; // TODO: Check if necessary
 
 			ILManager.Instance.InitTree(MainPanel.MainAssemblyDefinition);
 			structureViever1.AfterSelect += structureViever1_AfterSelect;

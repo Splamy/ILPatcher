@@ -1,5 +1,4 @@
-﻿using ILPatcher.Data.General;
-using ILPatcher.Utility;
+﻿using ILPatcher.Utility;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
@@ -20,6 +19,7 @@ namespace ILPatcher.Data.Actions
 
 		public PatchActionILMethodFixed()
 		{
+
 		}
 
 		/// <summary>Executes its patch-routine to the currently loaded Assembly data</summary>
@@ -53,7 +53,7 @@ namespace ILPatcher.Data.Actions
 			NameCompressor nc = NameCompressor.Instance;
 
 			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
-			output.Attributes[nc[SST.NAME]].Value = ActionName;
+			output.Attributes[nc[SST.Name]].Value = ActionName;
 
 			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.IsOld);
 

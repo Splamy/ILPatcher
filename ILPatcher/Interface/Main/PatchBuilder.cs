@@ -1,5 +1,5 @@
-﻿using ILPatcher.Data.Actions;
-using ILPatcher.Data.General;
+﻿using ILPatcher.Data;
+using ILPatcher.Data.Actions;
 using ILPatcher.Interface.Actions;
 using ILPatcher.Interface.General;
 using ILPatcher.Utility;
@@ -11,13 +11,13 @@ namespace ILPatcher.Interface.Main
 {
 	public partial class PatchBuilder : UserControl
 	{
-		public PatchCluster PatchCluster { get; private set; }
-		private Action<PatchCluster> callbackAdd;
+		public PatchEntry PatchCluster { get; private set; }
+		private Action<PatchEntry> callbackAdd;
 		private AssemblyDefinition assemblyDefinition;
 
 		// TODO do patchfinder
 
-		public PatchBuilder(Action<PatchCluster> pCallbackAdd, AssemblyDefinition pAssemblyDefinition)
+		public PatchBuilder(Action<PatchEntry> pCallbackAdd, AssemblyDefinition pAssemblyDefinition)
 		{
 			InitializeComponent();
 
@@ -27,7 +27,7 @@ namespace ILPatcher.Interface.Main
 			LoadDropdownList();
 		}
 
-		public void LoadCluster(PatchCluster patchCluster)
+		public void LoadCluster(PatchEntry patchCluster)
 		{
 			PatchCluster = patchCluster;
 		}
@@ -94,7 +94,7 @@ namespace ILPatcher.Interface.Main
 		private void SetPatchAction(PatchAction patchAction)
 		{
 			if (PatchCluster == null)
-				PatchCluster = new PatchCluster();
+				PatchCluster = new PatchEntry();
 			PatchCluster.PatchAction = patchAction;
 		}
 

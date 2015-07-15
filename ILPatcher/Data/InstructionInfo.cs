@@ -3,7 +3,7 @@ using MetroObjects;
 using Mono.Cecil.Cil;
 using System.Drawing;
 
-namespace ILPatcher.Data.General
+namespace ILPatcher.Data
 {
 	public class InstructionInfo : DragItem
 	{

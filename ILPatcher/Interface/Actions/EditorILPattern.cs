@@ -1,6 +1,5 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Actions;
-using ILPatcher.Data.General;
 using ILPatcher.Interface.General;
 using ILPatcher.Utility;
 using MetroObjects;

@@ -2,9 +2,9 @@
 using ILPatcher.Data.Finder;
 using System.Xml;
 
-namespace ILPatcher.Data.General
+namespace ILPatcher.Data
 {
-	public class PatchCluster : ISaveToFile
+	public class PatchEntry : ISaveToFile
 	{
 		public string Label { get; set; }
 		public string Name { get; set; }
@@ -19,13 +19,15 @@ namespace ILPatcher.Data.General
 		}
 		public TargetFinder FindAction { get; set; }
 		public PatchAction PatchAction { get; set; }
+		private DataStruct dataManager;
 
-		public PatchCluster()
+		public PatchEntry(DataStruct dataManager)
 		{
 			FindAction = null;
 			PatchAction = null;
 			Label = null;
 			Name = string.Empty;
+			this.dataManager = dataManager;
 		}
 
 		public void Execute()
