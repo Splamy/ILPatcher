@@ -15,13 +15,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.IO;
 
 namespace ILPatcher.Data
 {
 	public class ILManager : ISaveToFile
 	{
-		private AnyArray<OperandInfo> MemberList;
+        private DataStruct dataStruct;
 
+        private AnyArray<OperandInfo> MemberList;
 		private Dictionary<string, ILNode> ModuleList;
 
 		private static Dictionary<string, OpCode> _OpCodeLookup;
@@ -57,9 +59,14 @@ namespace ILPatcher.Data
 		private ILManager()
 		{
 			MemberList = new AnyArray<OperandInfo>();
-
 			ModuleList = new Dictionary<string, ILNode>();
 		}
+
+        public ILManager(DataStruct dataStruct) 
+            : this()
+        {
+            this.dataStruct = dataStruct;
+        }
 
 		// SAVE METHODS ******************************************************
 
@@ -581,17 +588,17 @@ namespace ILPatcher.Data
 				}
 
 				ModuleDefinition ModDef = null;
-				if (MainPanel.MainAssemblyDefinition.MainModule.Name == module)
-					ModDef = MainPanel.MainAssemblyDefinition.MainModule;
+                if (dataStruct.AssemblyDefinition.MainModule.Name == module)
+                    ModDef = dataStruct.AssemblyDefinition.MainModule;
 				else
 				{
 					try
 					{
 						// fix if ns not found
-						foreach (AssemblyNameReference anr in MainPanel.MainAssemblyDefinition.MainModule.AssemblyReferences)
+						foreach (AssemblyNameReference anr in dataStruct.AssemblyDefinition.MainModule.AssemblyReferences)
 							if (anr.Name == module)
 							{
-								AssemblyDefinition AssDef = MainPanel.MainAssemblyDefinition.MainModule.AssemblyResolver.Resolve(anr);
+								AssemblyDefinition AssDef = dataStruct.AssemblyDefinition.MainModule.AssemblyResolver.Resolve(anr);
 								ModDef = AssDef.MainModule;
 								break;
 							}
@@ -731,8 +738,8 @@ namespace ILPatcher.Data
 			{
 				ILNode tnModDef = ilParent.Add(ModDef.Name, ModDef.Name, ModDef, StructureView.structure);
 				DefaultAssemblyResolver dar = ModDef.AssemblyResolver as DefaultAssemblyResolver;
-				Array.ForEach(dar.GetSearchDirectories(), x => dar.RemoveSearchDirectory(x));
-				dar.AddSearchDirectory(System.IO.Path.GetDirectoryName(MainPanel.AssemblyPath));
+				Array.ForEach(dar.GetSearchDirectories(), dar.RemoveSearchDirectory);
+				dar.AddSearchDirectory(Path.GetDirectoryName(dataStruct.AssemblyLocation));
 
 				// Subresolving references
 				foreach (AssemblyNameReference anr in ModDef.AssemblyReferences)

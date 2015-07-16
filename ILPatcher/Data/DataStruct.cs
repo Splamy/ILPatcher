@@ -35,7 +35,7 @@ namespace ILPatcher.Data
 			PatchActionList = new List<PatchAction>();
 			TargetFinderList = new List<TargetFinder>();
 			PatchEntryList = new TreeList<PatchEntry>();
-			ReferenceTable = ILManager.Instance;
+            ReferenceTable = new ILManager(this);
 
 			ClearASM();
 		}
@@ -63,7 +63,7 @@ namespace ILPatcher.Data
 			XmlElement xReferenceTable = xILPTableNode.InsertCompressedElement(SST.ReferenceTable);
 			allOk &= ReferenceTable.Save(xReferenceTable);
 
-			ILManager.Instance.MergeDoubleElements(); // TODO: move to save
+            ReferenceTable.MergeDoubleElements(); // TODO: move to save of ILManager
 
 			return allOk;
 		}
@@ -86,7 +86,7 @@ namespace ILPatcher.Data
 
 			NameCompressor nc = NameCompressor.Instance;
 			bool allOk = true;
-			ILManager.Instance.Clear();
+            ReferenceTable.Clear();
 
 			// TODO: load everyting
 
@@ -150,7 +150,7 @@ namespace ILPatcher.Data
 			PatchActionList.Clear();
 			TargetFinderList.Clear();
 			PatchEntryList.Clear();
-			ILManager.Instance.Clear();
+            ReferenceTable.Clear();
 		}
 
 		public void ClearASM()

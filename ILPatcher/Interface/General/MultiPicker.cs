@@ -7,6 +7,7 @@ namespace ILPatcher.Interface.General
 {
 	public partial class MultiPicker : Form
 	{
+		private DataStruct dataStruct;
 		private Func<object, bool> filterPredicate;
 		private Action<object> callback;
 
@@ -22,8 +23,17 @@ namespace ILPatcher.Interface.General
 			InitializeComponent();
 			//Owner = MainForm.Instance; // TODO: Check if necessary
 
-			ILManager.Instance.InitTree(MainPanel.MainAssemblyDefinition);
+			if (dataStruct == null)
+			{
+				throw new InvalidProgramException("Instance access is obsolete");
+			}
+			dataStruct.ReferenceTable.InitTree(dataStruct.AssemblyDefinition);
 			structureViever1.AfterSelect += structureViever1_AfterSelect;
+		}
+
+		public MultiPicker(DataStruct dataStruct) : this()
+		{
+			this.dataStruct = dataStruct;
 		}
 
 		/// <summary>Shows the Memberpicker and automatically initializes it with the structureViever rebuild and the given specifications.</summary>

@@ -11,15 +11,13 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
+using MetroObjects;
 
 namespace ILPatcher.Interface.Main
 {
 	public partial class MainPanel : UserControl
 	{
-		//public static AssemblyStatus status = AssemblyStatus.Uninitialized;
-		//public static AssemblyDefinition MainAssemblyDefinition { get; private set; } // TODO: get rid of static
-		//public static string AssemblyPath { get; private set; }
-		public DataStruct dataStruct;
+		private DataStruct dataStruct;
 		bool awaitingAssemblySelect = false;
 		string ilpFiletmp;
 
@@ -116,11 +114,11 @@ namespace ILPatcher.Interface.Main
 							}";
 			CSCompiler csc = new CSCompiler(dataStruct.AssemblyDefinition);
 			csc.Code = test;
-			Mono.Cecil.MethodDefinition md = csc.GetMethodDefinition(string.Empty, string.Empty);
+			MethodDefinition md = csc.GetMethodDefinition(string.Empty, string.Empty);
 			if (md == null) return;
-			TypeDefinition tdret = (TypeDefinition)ILManager.Instance.FindTypeByName("-.System.Void");
+			TypeDefinition tdret = (TypeDefinition)dataStruct.ReferenceTable.FindTypeByName("-.System.Void");
 			if (tdret == null) return;
-			MethodDefinition md2 = new MethodDefinition("blub", Mono.Cecil.MethodAttributes.Public, tdret);
+			MethodDefinition md2 = new MethodDefinition("blub", MethodAttributes.Public, tdret);
 			TypDef.Methods.Add(md2);
 
 			CecilHelper.CloneMethodBody(md, md2);
@@ -162,18 +160,19 @@ namespace ILPatcher.Interface.Main
 			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
 		}
 
-		private void btnExecutePatches_Click(object sender, EventArgs e)
+		private void btnExecutePatches_Click(object sender, EventArgs e) // XXX: Maby move into dataStruct or make own backup manager (incl readonly stuff after writing)
 		{
 			try
 			{
-				string backupPath = AssemblyPath + "_ilpbackup";
+				string backupPath = dataStruct.AssemblyLocation + "_ilpbackup";
 				if (!File.Exists(backupPath))
-					File.Copy(AssemblyPath, backupPath);
+					File.Copy(dataStruct.AssemblyLocation, backupPath);
 				tabInfoControl.SelectedIndex = 2;
-				for (int i = 0; i < dataStruct.ClusterList.Count; i++)
-					if (clbPatchList.GetItemChecked(i))
-						dataStruct.ClusterList[i].Execute();
-				dataStruct.AssemblyDefinition.Write(AssemblyPath);
+				foreach (var pe in dataStruct.PatchEntryList) // TODO: check if item checked
+				{
+					pe.Execute();
+				}
+				dataStruct.AssemblyDefinition.Write(dataStruct.AssemblyLocation);
 			}
 			catch (Exception ex) { MessageBox.Show(ex.Message); }
 		}
@@ -203,18 +202,17 @@ namespace ILPatcher.Interface.Main
 					if (dataStruct.AssemblyStatus == AssemblyStatus.RawAssemblyLoaded)
 					{
 						txtilaFile.Text = assemblyPath;
-						ILManager.Instance.InitTreeHalfAsync(dataStruct.AssemblyDefinition);
+						dataStruct.ReferenceTable.InitTreeHalfAsync(dataStruct.AssemblyDefinition);
 						structureViever1.RebuildHalfAsync();
+
+						if (awaitingAssemblySelect)
+						{
+							dataStruct.OpenILP(ilpFiletmp);
+						}
 					}
 					else if (dataStruct.AssemblyStatus == AssemblyStatus.LoadFailed)
 					{
 						MessageBox.Show("Couldn't read assembly, it is either unmanaged or obfuscated");
-						return;
-					}
-
-					if (awaitingAssemblySelect)
-					{
-						dataStruct.OpenILP(ilpFiletmp);
 					}
 					mLoading.ON = false;
 				}
@@ -228,22 +226,16 @@ namespace ILPatcher.Interface.Main
 			((SwooshPanel)Parent).PushPanel(patchBuilder, "PatchBuilder");
 		}
 
+		// HACK: temporary metroList
+
+		private MListBox mPatchEntryList;
+
 		private void RebuildTable(object sender)
 		{
 			DataStruct senderDataStruct = (DataStruct)sender;
-			var labels = new Dictionary<string, TreeNode>();
-			foreach (var patchCluster in senderDataStruct.ClusterList)
+			foreach (var patchEntry in senderDataStruct.PatchEntryList)
 			{
-				TreeNode treeNode = GenClusterNode(patchCluster);
-
-				if (patchCluster.Label == null)
-					treeView1.Nodes.Add(treeNode);
-				if (!labels.ContainsKey(patchCluster.Label))
-				{
-					TreeNode labelNode = new TreeNode(patchCluster.Label);
-					labels.Add(patchCluster.Label, labelNode);
-				}
-				labels[patchCluster.Label].Nodes.Add(treeNode);
+				mPatchEntryList.AddItem(new ILPatcher.Interface.Actions.DefaultDragItem<PatchEntry>(patchEntry));
 			}
 		}
 
