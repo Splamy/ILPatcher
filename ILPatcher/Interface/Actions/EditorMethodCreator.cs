@@ -1,4 +1,5 @@
-﻿using ILPatcher.Data.Actions;
+﻿using ILPatcher.Data;
+using ILPatcher.Data.Actions;
 using ILPatcher.Interface.General;
 using MetroObjects;
 using Mono.Cecil;
@@ -14,28 +15,26 @@ namespace ILPatcher.Interface.Actions
 		private PatchActionMethodCreator patchAction;
 		private MethodDefinition blankMethodDefinition;
 		private TypeDefinition insertClass;
-		private AssemblyDefinition assemblyDefinition;
 
 		//https://github.com/PavelTorgashov/FastColoredTextBox
 
-		public EditorMethodCreator(Action<PatchAction> pParentAddCallback, AssemblyDefinition pAssemblyDefinition)
-			: base(pParentAddCallback)
+		public EditorMethodCreator(DataStruct dataStruct)
+			: base(dataStruct)
 		{
 			InitializeComponent();
 
-			assemblyDefinition = pAssemblyDefinition;
 			Action<TypeReference> addMethod = tr => { lbxParameter.AddItem(new DefaultDragItem<TypeReference>(tr)); };
 
 			arcParameter.OnAdd = () =>
 			{
-				using (CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, addMethod))
+				using (CreateTypeForm ctf = new CreateTypeForm(dataStruct, addMethod))
 				{
 					ctf.Show();
 				}
 			};
 			arcParameter.OnEdit = () =>
 			{
-				using (CreateTypeForm ctf = new CreateTypeForm(assemblyDefinition, addMethod))
+				using (CreateTypeForm ctf = new CreateTypeForm(dataStruct, addMethod))
 				{
 					ctf.SetTypeReference(((DefaultDragItem<TypeReference>)lbxParameter.SelectedElement).Item);
 					ctf.Show();
@@ -53,12 +52,12 @@ namespace ILPatcher.Interface.Actions
 		{
 			if (patchAction == null)
 			{
-				patchAction = new PatchActionMethodCreator();
+				patchAction = new PatchActionMethodCreator(dataStruct);
 				patchAction.ActionName = string.Format("MethodCreator: <{0}> inserts {1} -> {2}",
 					txtPatchActionName.Text,
 					blankMethodDefinition == null ? "<>" : blankMethodDefinition.Name,
 					insertClass == null ? "<>" : insertClass.Name);
-				ParentAddCallback(patchAction);
+				dataStruct.PatchActionList.Add(patchAction);
 			}
 			((SwooshPanel)Parent).SwooshBack();
 		}

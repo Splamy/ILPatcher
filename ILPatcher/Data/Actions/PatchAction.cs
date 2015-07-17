@@ -15,6 +15,12 @@ namespace ILPatcher.Data.Actions
 		public string ActionName { get; set; }
 		public PatchStatus PatchStatus { get; protected set; }
 		public abstract PatchActionType PatchActionType { get; protected set; }
+		protected DataStruct dataStruct { get; private set; }
+
+		public PatchAction(DataStruct dataAssociation)
+		{
+			dataStruct = dataAssociation;
+		}
 
 		public abstract bool Execute();
 		public abstract bool Save(XmlNode output);

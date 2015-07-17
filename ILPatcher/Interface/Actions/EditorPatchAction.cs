@@ -1,6 +1,5 @@
-﻿using ILPatcher.Data.Actions;
-using System;
-using System.Windows.Forms;
+﻿using ILPatcher.Data;
+using ILPatcher.Data.Actions;
 using ILPatcher.Interface.General;
 
 namespace ILPatcher.Interface.Actions
@@ -10,8 +9,8 @@ namespace ILPatcher.Interface.Actions
 		public override string PanelName { get { return "Default PatchAction"; } }
 
 		protected EditorPatchAction() { /*Reserverd for VSDesigner*/ }
-		protected EditorPatchAction(Action<PatchAction> pParentAddCallback)
-			: base(pParentAddCallback)
+		protected EditorPatchAction(DataStruct dataAssociation)
+			: base(dataAssociation)
 		{ }
 	}
 }

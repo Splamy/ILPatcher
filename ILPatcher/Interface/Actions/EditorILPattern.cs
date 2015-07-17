@@ -7,7 +7,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
 
 namespace ILPatcher.Interface.Actions
@@ -25,8 +24,8 @@ namespace ILPatcher.Interface.Actions
 		//predeclared variables
 		//(predeclared params)
 
-		public EditorILPattern(Action<PatchAction> parentAddCallback)
-			: base(parentAddCallback)
+		public EditorILPattern(DataStruct dataAssociation)
+			: base(dataAssociation)
 		{
 			InitializeComponent();
 
@@ -65,14 +64,14 @@ namespace ILPatcher.Interface.Actions
 			{
 				if (patchAction == null)
 				{
-					patchAction = new PatchActionILMethodFixed();
+					patchAction = new PatchActionILMethodFixed(dataStruct);
 					patchAction.SetInitWorking(methodDefinition);
 
 					patchAction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
 				}
 
 				patchAction.ActionName = txtPatchActionName.Text;
-				ParentAddCallback(patchAction);
+				dataStruct.PatchActionList.Add(patchAction);
 			}
 
 			((SwooshPanel)Parent).SwooshBack();
@@ -80,7 +79,7 @@ namespace ILPatcher.Interface.Actions
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
-			MultiPicker.Instance.ShowStructure(StructureView.methods, x => x is MethodDefinition, x => LoadMetDef((MethodDefinition)x), true);
+			MultiPicker<MethodDefinition>.ShowStructure(dataStruct, StructureView.methods, x => true, LoadMetDef, true);
 		}
 
 		private void btnNewOpCode_Click(object sender, EventArgs e)
@@ -529,18 +528,18 @@ namespace ILPatcher.Interface.Actions
 				RedrawBoth();
 				break;
 			case PickOperandType.FieldReference:
-				MultiPicker.Instance.ShowStructure(StructureView.fields, x => x is FieldReference, x => ApplyOperand((MemberReference)x));
+				MultiPicker<FieldReference>.ShowStructure(dataStruct, StructureView.fields, x => true, ApplyOperand);
 				break;
 			case PickOperandType.MethodReference:
-				MultiPicker.Instance.ShowStructure(StructureView.methods, x => x is MethodReference, x => ApplyOperand((MemberReference)x));
+				MultiPicker<MethodReference>.ShowStructure(dataStruct, StructureView.methods, x => true, ApplyOperand);
 				break;
 			case PickOperandType.TypeReference:
-				MultiPicker.Instance.ShowStructure(StructureView.classes, x => x is TypeReference, x => ApplyOperand((MemberReference)x));
-				AddGenericsToToolBox();
+				var typPicker = MultiPicker<TypeReference>.ShowStructure(dataStruct, StructureView.classes, x => true, ApplyOperand);
+				AddGenericsToToolBox(typPicker);
 				break;
 			case PickOperandType.TMFReferenceDynamic:
-				MultiPicker.Instance.ShowStructure(StructureView.all, x => x is MemberReference, x => ApplyOperand((MemberReference)x));
-				AddGenericsToToolBox();
+				var mrfPicker = MultiPicker<MemberReference>.ShowStructure(dataStruct, StructureView.all, x => true, ApplyOperand);
+				AddGenericsToToolBox(mrfPicker);
 				break;
 			case PickOperandType.InstructionArrReference:
 				Instruction[] oldop = ((InstructionInfo)instructionEditor.DragItem).NewInstruction.Operand as Instruction[];
@@ -613,7 +612,7 @@ namespace ILPatcher.Interface.Actions
 			RedrawBoth();
 		}
 
-		private void AddGenericsToToolBox()
+		private void AddGenericsToToolBox<T>(MultiPicker<T> picker) where T : class
 		{
 			ILNode AddToolBoxNode = new ILNode(null, null, null, StructureView.none);
 			ILNode GenericExtension = AddToolBoxNode.Add("<Local GenericParameter>", "<Local GenericParameter>", null, StructureView.structure);
@@ -631,7 +630,7 @@ namespace ILPatcher.Interface.Actions
 				else
 					recdef = null;
 			}
-			MultiPicker.Instance.AddToolBoxNode(AddToolBoxNode);
+			picker.AddToolBoxNode(AddToolBoxNode);
 		}
 
 		public enum PickOperandType

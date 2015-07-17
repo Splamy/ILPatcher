@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DataStruct.cs" />
+    <Compile Include="Data\ILNode.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interface\Finder\EditorTargetFinder.cs">
       <SubType>UserControl</SubType>

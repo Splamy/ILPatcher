@@ -65,16 +65,11 @@ namespace ILPatcher.Interface.Main
 				patchActionType = patchAction.PatchActionType;
 			}
 
-			if (patchAction == null)
-			{
-				return;
-			}
-
 			EditorPatchAction editorform;
 			switch (patchActionType)
 			{
 			case PatchActionType.ILMethodFixed:
-				editorform = new EditorILPattern(SetPatchAction);
+				editorform = new EditorILPattern(dataStruct);
 				break;
 			case PatchActionType.ILMethodDynamic:
 				Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
@@ -86,7 +81,7 @@ namespace ILPatcher.Interface.Main
 				Log.Write(Log.Level.Info, "AoBRawScan not implemented");
 				return;
 			case PatchActionType.ILMethodCreator:
-				editorform = new EditorMethodCreator(SetPatchAction, assemblyDefinition);
+				editorform = new EditorMethodCreator(dataStruct);
 				break;
 			default:
 				return;

@@ -12,6 +12,12 @@ namespace ILPatcher.Data.Actions
 		private MethodDefinition blankMethodDefinition;
 		private TypeDefinition insertClass;
 
+		public PatchActionMethodCreator(DataStruct dataStruct)
+			: base(dataStruct)
+		{
+
+		}
+
 		public override bool Execute()
 		{
 			throw new NotImplementedException();

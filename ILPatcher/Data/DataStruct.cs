@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-
-using Mono.Cecil;
-
-using ILPatcher.Data.Actions;
+﻿using ILPatcher.Data.Actions;
 using ILPatcher.Data.Finder;
 using ILPatcher.Utility;
-
+using Mono.Cecil;
+using System;
+using System.Collections.Generic;
 using System.Xml;
 
 namespace ILPatcher.Data
@@ -25,17 +19,21 @@ namespace ILPatcher.Data
 		public readonly List<PatchAction> PatchActionList;
 		public readonly List<TargetFinder> TargetFinderList;
 		public readonly TreeList<PatchEntry> PatchEntryList;
+		public readonly Dictionary<string, ILNode> ModuleList;
+		public readonly ILNode StructViewToolBox;
 		public readonly ILManager ReferenceTable;
 
 		public delegate void FileLoadedDelegate(object sender);
 		public event FileLoadedDelegate OnILPFileLoadedDelegate;
+		public event FileLoadedDelegate OnASMFileLoadedDelegate;
 
 		public DataStruct()
 		{
 			PatchActionList = new List<PatchAction>();
 			TargetFinderList = new List<TargetFinder>();
 			PatchEntryList = new TreeList<PatchEntry>();
-            ReferenceTable = new ILManager(this);
+			ReferenceTable = new ILManager(this);
+			ModuleList = new Dictionary<string, ILNode>();
 
 			ClearASM();
 		}
@@ -63,8 +61,6 @@ namespace ILPatcher.Data
 			XmlElement xReferenceTable = xILPTableNode.InsertCompressedElement(SST.ReferenceTable);
 			allOk &= ReferenceTable.Save(xReferenceTable);
 
-            ReferenceTable.MergeDoubleElements(); // TODO: move to save of ILManager
-
 			return allOk;
 		}
 
@@ -86,7 +82,7 @@ namespace ILPatcher.Data
 
 			NameCompressor nc = NameCompressor.Instance;
 			bool allOk = true;
-            ReferenceTable.Clear();
+			ReferenceTable.Clear();
 
 			// TODO: load everyting
 
@@ -117,7 +113,11 @@ namespace ILPatcher.Data
 			catch
 			{
 				AssemblyStatus = AssemblyStatus.LoadFailed;
+				return;
 			}
+
+			if (OnASMFileLoadedDelegate != null)
+				OnASMFileLoadedDelegate(this);
 		}
 
 		public void OpenILP(string ilpPath)
@@ -143,6 +143,9 @@ namespace ILPatcher.Data
 			{
 				Log.Write(Log.Level.Error, "No PatchTable found!");
 			}
+
+			if (OnILPFileLoadedDelegate != null)
+				OnILPFileLoadedDelegate(this);
 		}
 
 		public void ClearILP()
@@ -150,7 +153,7 @@ namespace ILPatcher.Data
 			PatchActionList.Clear();
 			TargetFinderList.Clear();
 			PatchEntryList.Clear();
-            ReferenceTable.Clear();
+			ReferenceTable.Clear();
 		}
 
 		public void ClearASM()
@@ -158,6 +161,7 @@ namespace ILPatcher.Data
 			AssemblyDefinition = null;
 			AssemblyLocation = string.Empty;
 			AssemblyStatus = AssemblyStatus.Uninitialized;
+			ModuleList.Clear();
 		}
 	}
 

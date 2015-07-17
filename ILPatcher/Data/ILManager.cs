@@ -1,30 +1,20 @@
-﻿// ILNode does not belong here, since it is more Interface related
-// then data related
-using ILPatcher.Interface.General; // extract ILNode
-// The main-reference is only used for the assembly definition
-// this isn't nice...
-using ILPatcher.Interface.Main; // remove when static removed
-using ILPatcher.Utility;
-using ILPatcher.Data;
+﻿using ILPatcher.Utility;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-using System.IO;
 
 namespace ILPatcher.Data
 {
 	public class ILManager : ISaveToFile
 	{
-        private DataStruct dataStruct;
+		private DataStruct dataStruct;
 
-        private AnyArray<OperandInfo> MemberList;
-		private Dictionary<string, ILNode> ModuleList;
+		private AnyArray<OperandInfo> MemberList;
 
 		private static Dictionary<string, OpCode> _OpCodeLookup;
 		public static Dictionary<string, OpCode> OpCodeLookup
@@ -49,7 +39,7 @@ namespace ILPatcher.Data
 		}
 
 		private static ILManager instance; // TODO remove static
-		public static ILManager Instance
+		public static ILManager InstanceX
 		{
 			get { if (instance == null) instance = new ILManager(); return instance; }
 		}
@@ -59,14 +49,13 @@ namespace ILPatcher.Data
 		private ILManager()
 		{
 			MemberList = new AnyArray<OperandInfo>();
-			ModuleList = new Dictionary<string, ILNode>();
 		}
 
-        public ILManager(DataStruct dataStruct) 
-            : this()
-        {
-            this.dataStruct = dataStruct;
-        }
+		public ILManager(DataStruct dataStruct)
+			: this()
+		{
+			this.dataStruct = dataStruct;
+		}
 
 		// SAVE METHODS ******************************************************
 
@@ -158,6 +147,8 @@ namespace ILPatcher.Data
 					break;
 				}
 			}
+
+			MergeDoubleElements();
 
 			return allOk;
 		}
@@ -588,8 +579,8 @@ namespace ILPatcher.Data
 				}
 
 				ModuleDefinition ModDef = null;
-                if (dataStruct.AssemblyDefinition.MainModule.Name == module)
-                    ModDef = dataStruct.AssemblyDefinition.MainModule;
+				if (dataStruct.AssemblyDefinition.MainModule.Name == module)
+					ModDef = dataStruct.AssemblyDefinition.MainModule;
 				else
 				{
 					try
@@ -701,188 +692,6 @@ namespace ILPatcher.Data
 			 */
 
 			//TODO
-		}
-
-		// STRUCTUREVIEW MODULES *********************************************
-
-		/// <summary>Calls the InitTree method in a seperate Thread and waits for it to finish.
-		/// This will prevent the interface from freezing.</summary>
-		/// <param name="AssDef">The AssemblyDefinition which should be loaded into the searchlist</param>
-		/// <param name="SubResolveDepth">When the given AssemblyDefinition uses references to other Assemblys
-		/// the method will add then recursivly to the given depth</param>
-		public void InitTreeHalfAsync(AssemblyDefinition AssDef, int SubResolveDepth = 0)
-		{
-			System.Threading.Thread t = new System.Threading.Thread(() => InitTree(AssDef, SubResolveDepth));
-			t.Start();
-			while (t.IsAlive)
-			{
-				System.Windows.Forms.Application.DoEvents();
-				System.Threading.Thread.Sleep(1);
-			}
-		}
-
-		/// <summary>Creates an ILNode-Tree representing the structure of the given Assembly
-		/// and stores it in the ModuleList Dictionary with the AssemblyDefinition name as key.</summary>
-		/// <param name="AssDef">The AssemblyDefinition which should be loaded into the searchlist</param>
-		/// <param name="SubResolveDepth">When the given AssemblyDefinition uses references to other Assemblys
-		/// the method will add then recursivly to the given depth</param>
-		public void InitTree(AssemblyDefinition AssDef, int SubResolveDepth = 0)
-		{
-			if (AssDef == null) return;
-			if (ModuleList.ContainsKey(AssDef.Name.Name)) return;
-
-			ILNode ilParent = new ILNode(AssDef.Name.Name, AssDef.FullName, AssDef, StructureView.structure); // StructureView.Module
-			ModuleList.Add(AssDef.Name.Name, ilParent);
-
-			foreach (ModuleDefinition ModDef in AssDef.Modules)
-			{
-				ILNode tnModDef = ilParent.Add(ModDef.Name, ModDef.Name, ModDef, StructureView.structure);
-				DefaultAssemblyResolver dar = ModDef.AssemblyResolver as DefaultAssemblyResolver;
-				Array.ForEach(dar.GetSearchDirectories(), dar.RemoveSearchDirectory);
-				dar.AddSearchDirectory(Path.GetDirectoryName(dataStruct.AssemblyLocation));
-
-				// Subresolving references
-				foreach (AssemblyNameReference anr in ModDef.AssemblyReferences)
-				{
-					try
-					{
-						AssemblyDefinition AssSubRef = ModDef.AssemblyResolver.Resolve(anr);
-						tnModDef.Add(anr.Name, AssSubRef.FullName, AssSubRef, StructureView.structure);
-						if (SubResolveDepth > 0)
-							InitTree(AssSubRef, SubResolveDepth - 1);
-					}
-					catch { Log.Write(Log.Level.Warning, "AssemblyReference \"", anr.Name, "\" couldn't be found for \"", ModDef.Name, "\""); }
-				}
-
-				Dictionary<string, ILNode> nsDict = new Dictionary<string, ILNode>();
-				foreach (TypeDefinition TypDef in ModDef.Types)
-				{
-					string nsstr = TypDef.Namespace;
-					ILNode tnAssemblyContainer;
-					if (!nsDict.ContainsKey(nsstr))
-					{
-						string displaystr = string.IsNullOrEmpty(nsstr) ? "<Default Namespace>" : nsstr;
-						tnAssemblyContainer = ilParent.Add(displaystr, displaystr, new NamespaceHolder(displaystr), StructureView.namesp);
-						nsDict.Add(nsstr, tnAssemblyContainer);
-					}
-					else
-						tnAssemblyContainer = nsDict[nsstr];
-
-					ILNode tnTypDef = tnAssemblyContainer.Add(TypDef.Name, TypDef.FullName, TypDef, StructureView.classes);
-					LoadSubItemsRecursive(tnTypDef, TypDef);
-				}
-			}
-			ilParent.Sort();
-		}
-
-		/// <summary>Traverses the Assembly recursivly and adds the new ILnodes to the given ILNode</summary>
-		/// <param name="parentNode">The parent ILNode for the new subelements</param>
-		/// <param name="TypDef">The TypeDefinition to read</param>
-		private void LoadSubItemsRecursive(ILNode parentNode, TypeDefinition TypDef)
-		{
-			#region Functions
-			//if (ViewElements.HasFlag(StructureView.functions))
-			foreach (MethodDefinition MetDef in TypDef.Methods)
-			{
-				StringBuilder strb = new StringBuilder();
-				StringBuilder strbfn = new StringBuilder();
-				strb.Append(MetDef.Name); strbfn.Append(MetDef.Name);
-				strb.Append('('); strbfn.Append('(');
-				foreach (ParameterDefinition ParDef in MetDef.Parameters)
-				{
-					strbfn.Append(ParDef.ParameterType.FullName);
-					strb.Append(ParDef.ParameterType.Name);
-					strb.Append(','); strbfn.Append(',');
-				}
-				if (MetDef.Parameters.Count > 0)
-				{
-					strb.Remove(strb.Length - 1, 1); strbfn.Remove(strb.Length - 1, 1);
-				}
-				strb.Append(") : "); strbfn.Append(") : ");
-				strbfn.Append(MetDef.ReturnType.FullName);
-				strb.Append(MetDef.ReturnType.Name);
-				parentNode.Add(strb.ToString(), strbfn.ToString(), MetDef, StructureView.methods);
-			}
-			#endregion
-
-			#region Fields
-			//if (ViewElements.HasFlag(StructureView.fields))
-			foreach (FieldDefinition FieDef in TypDef.Fields)
-			{
-				StringBuilder strb = new StringBuilder();
-				StringBuilder strbfn = new StringBuilder();
-				strb.Append(FieDef.Name); strbfn.Append(FieDef.Name);
-				strb.Append(" : "); strbfn.Append(" : ");
-
-				strbfn.Append(FieDef.FieldType.FullName);
-				strb.Append(FieDef.FieldType.Name);
-
-				parentNode.Add(strb.ToString(), strbfn.ToString(), FieDef, StructureView.fields);
-			}
-			#endregion
-
-			#region SubClasses
-			foreach (TypeDefinition SubTypDef in TypDef.NestedTypes)
-			{
-				ILNode tnSubTypDef = parentNode.Add(SubTypDef.Name, SubTypDef.Name, SubTypDef, StructureView.classes);
-				LoadSubItemsRecursive(tnSubTypDef, SubTypDef);
-			}
-			#endregion
-		}
-
-		/// <summary>Returns a collection of all loaded ILNode Assemblys</summary>
-		/// <returns>Returns a ILNode Assembly collection</returns>
-		public ICollection<ILNode> getAllNodes()
-		{
-			return ModuleList.Values;
-		}
-
-		/// <summary>Searches for the Cecil Typ/Met/Fld/... matching the seatch path in the loaded ILNode ModuleList</summary>
-		/// <param name="path">A path of the form "asseblyname.namespace.class" or "-.namespace.class.method" to search all assemblys</param>
-		/// <returns>Returns the Cecil object if found, otherwise null</returns>
-		public object FindTypeByName(string path)
-		{
-			string[] pathbreaks = path.Split(new[] { '.', '/' });
-
-			if (pathbreaks.Length == 0)
-			{
-				Log.Write(Log.Level.Warning, "FindTypeByName path is empty");
-				return null;
-			}
-
-			if (pathbreaks[0] == "-")
-			{
-				foreach (ILNode child in ModuleList.Values)
-				{
-					object res = FindTypeByNameRecursive(child, pathbreaks, 1);
-					if (res != null) return res;
-				}
-			}
-			else if (ModuleList.ContainsKey(pathbreaks[0]))
-			{
-				return FindTypeByNameRecursive(ModuleList[pathbreaks[0]], pathbreaks, 1);
-			}
-			return null;
-		}
-
-		/// <summary>Traverses the loaded ILNode children and searches the current path index in its children</summary>
-		/// <param name="searchnode">The ILNode with the children for the current path index</param>
-		/// <param name="path">The array of all path parts</param>
-		/// <param name="index">The current path index</param>
-		/// <returns></returns>
-		private object FindTypeByNameRecursive(ILNode searchnode, string[] path, int index)
-		{
-			if (index >= path.Length) return null;
-
-			foreach (ILNode child in searchnode.Children)
-			{
-				if (child.Name == path[index])
-				{
-					if (index == path.Length - 1) return child.Value;
-					else return FindTypeByNameRecursive(child, path, index + 1);
-				}
-			}
-			return null;
 		}
 
 		// SUPPORT FUNCTIONS *************************************************
@@ -1011,11 +820,10 @@ namespace ILPatcher.Data
 			return null;
 		}
 
-		/// <summary>Clears the current reference table and the loaded ILNode Assemblys</summary>
+		/// <summary>Clears the current reference table</summary>
 		public void Clear()
 		{
-			MemberList.Length = 0;
-			ModuleList.Clear();
+			MemberList.Clear();
 		}
 	}
 
@@ -1062,62 +870,5 @@ namespace ILPatcher.Data
 		VariableReference, //(abstract)
 		CallSite,
 		ArrayType,
-	}
-
-	public class ILNode
-	{
-		private readonly List<ILNode> _children = new List<ILNode>();
-
-		public string Name { private set; get; }
-		public string FullName { private set; get; }
-		public object Value { private set; get; }
-		public StructureView Flags { private set; get; }
-
-		public ILNode(string name, string fullname, object value, StructureView viewFlag)
-		{
-			Value = value;
-			Name = name;
-			FullName = fullname;
-			Flags = viewFlag;
-		}
-
-		public ILNode this[int i]
-		{
-			get { return _children[i]; }
-		}
-
-		public ILNode Parent { get; private set; }
-
-		public ReadOnlyCollection<ILNode> Children
-		{
-			get { return _children.AsReadOnly(); }
-		}
-
-		public ILNode Add(string name, string fullname, object value, StructureView flags)
-		{
-			var node = new ILNode(name, fullname, value, flags) { Parent = this };
-			_children.Add(node);
-			return node;
-		}
-
-		public bool Remove(ILNode node)
-		{
-			return _children.Remove(node);
-		}
-
-		public override string ToString()
-		{
-			return FullName;
-		}
-
-		public void Sort()
-		{
-			_children.Sort((x, y) =>
-			{
-				var strucdiff = x.Flags - y.Flags;
-				return strucdiff != 0 ? strucdiff : x.Name.CompareTo(y.Name);
-			});
-			_children.ForEach(x => x.Sort());
-		}
 	}
 }

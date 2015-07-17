@@ -1,6 +1,6 @@
 ﻿namespace ILPatcher.Interface.General
 {
-	partial class MultiPicker
+	partial class MultiPicker<T>
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -72,7 +72,7 @@
 			this.structureViever1.PathSeparator = ".";
 			this.structureViever1.SelectedImageIndex = 0;
 			this.structureViever1.Size = new System.Drawing.Size(372, 416);
-			this.structureViever1.FilterElements = ILPatcher.Interface.General.StructureView.all;
+			this.structureViever1.FilterElements = ILPatcher.Data.StructureView.all;
 			this.structureViever1.TabIndex = 22;
 			// 
 			// MultiPicker

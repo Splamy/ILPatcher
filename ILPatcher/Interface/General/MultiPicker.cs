@@ -1,39 +1,21 @@
 ﻿using ILPatcher.Data;
-using ILPatcher.Interface.Main; // TODO: remove when static is removed
 using System;
 using System.Windows.Forms;
 
 namespace ILPatcher.Interface.General
 {
-	public partial class MultiPicker : Form
+	public partial class MultiPicker<T> : Form where T : class
 	{
 		private DataStruct dataStruct;
-		private Func<object, bool> filterPredicate;
-		private Action<object> callback;
-
-		private static MultiPicker _Instance;
-		public static MultiPicker Instance
-		{
-			get { if (_Instance == null || _Instance.IsDisposed) _Instance = new MultiPicker(); return _Instance; }
-			set { _Instance = value; }
-		}
+		private Func<T, bool> filterPredicate;
+		private Action<T> callback;
 
 		private MultiPicker()
 		{
 			InitializeComponent();
-			//Owner = MainForm.Instance; // TODO: Check if necessary
 
-			if (dataStruct == null)
-			{
-				throw new InvalidProgramException("Instance access is obsolete");
-			}
-			dataStruct.ReferenceTable.InitTree(dataStruct.AssemblyDefinition);
+			structureViever1.InitTree(dataStruct.AssemblyDefinition);
 			structureViever1.AfterSelect += structureViever1_AfterSelect;
-		}
-
-		public MultiPicker(DataStruct dataStruct) : this()
-		{
-			this.dataStruct = dataStruct;
 		}
 
 		/// <summary>Shows the Memberpicker and automatically initializes it with the structureViever rebuild and the given specifications.</summary>
@@ -41,18 +23,17 @@ namespace ILPatcher.Interface.General
 		/// <param name="fP">FilterPredicate: Method to check if the currently selected member could be chosen.</param>
 		/// <param name="cb">Callback: Method that gets called when a member has been chosen.</param>
 		/// <param name="mainmodonly">True if only the maindoule from the own assembly should be listed, false to show all.</param>
-		public void ShowStructure(StructureView fE, Func<object, bool> fP, Action<object> cb, bool mainmodonly = false)
+		public static MultiPicker<T> ShowStructure(DataStruct dataStruct, StructureView fE, Func<T, bool> fP, Action<T> cb, bool mainmodonly = false)
 		{
-			structureViever1.ContextAssemblyLoad = !mainmodonly;
-			this.Show();
-
-			if (filterPredicate != fP || callback != cb || structureViever1.FilterElements != fE)
-			{
-				filterPredicate = fP;
-				callback = cb;
-				structureViever1.FilterElements = fE;
-				structureViever1.RebuildHalfAsync(mainmodonly);
-			}
+			MultiPicker<T> mp = new MultiPicker<T>();
+			mp.dataStruct = dataStruct;
+			mp.structureViever1.ContextAssemblyLoad = !mainmodonly;
+			mp.filterPredicate = fP;
+			mp.callback = cb;
+			mp.structureViever1.FilterElements = fE;
+			mp.structureViever1.RebuildHalfAsync(mainmodonly);
+			mp.Show();
+			return mp;
 		}
 
 		/// <summary>Method to add Nodes in the StructureViewer to the seperated ToolBoxNode</summary>
@@ -64,7 +45,9 @@ namespace ILPatcher.Interface.General
 
 		private void structureViever1_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			btn_Select.Enabled = filterPredicate(structureViever1.SelectedNode.Tag);
+			T selectedValue = structureViever1.SelectedNode.Tag as T;
+			if (selectedValue != null)
+				btn_Select.Enabled = filterPredicate(selectedValue);
 		}
 
 		private void MultiPicker_Resize(object sender, EventArgs e)
@@ -78,7 +61,9 @@ namespace ILPatcher.Interface.General
 		{
 			if (structureViever1.SelectedNode == null) return;
 			Hide();
-			callback(structureViever1.SelectedNode.Tag);
+			T selectedValue = structureViever1.SelectedNode.Tag as T;
+			if (selectedValue != null)
+				callback(selectedValue);
 		}
 
 		private void btn_Cancel_Click(object sender, EventArgs e)

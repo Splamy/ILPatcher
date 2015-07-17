@@ -1,4 +1,5 @@
-﻿using ILPatcher.Utility;
+﻿using ILPatcher.Data;
+using ILPatcher.Utility;
 using Mono.Cecil;
 using System;
 using System.Windows.Forms;
@@ -9,23 +10,23 @@ namespace ILPatcher.Interface.General
 	{
 		private Action<TypeReference> callback;
 		public TypeReference createTypeDefinition { get; protected set; }
-		AssemblyDefinition assemblyDefinition;
+		DataStruct dataStruct;
 		CSCompiler cSCompiler;
 		string CapsuleVarNamespaces = @"using System.Windows.Forms;";
 		string CapsuleVarStart = @"namespace A{class B{";
 		string CapsuleVarEnd = @" C(){throw new System.Exception();}}}";
 
-		public CreateTypeForm(AssemblyDefinition pAssemblyDefinition, Action<TypeReference> pCallback)
+		public CreateTypeForm(DataStruct pDataStruct, Action<TypeReference> pCallback)
 		{
 			InitializeComponent();
 
-			assemblyDefinition = pAssemblyDefinition;
+			dataStruct = pDataStruct;
 			callback = pCallback;
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
-			MultiPicker.Instance.ShowStructure(StructureView.classes, x => x is TypeReference, x => SetTypeReference((TypeReference)x));
+			MultiPicker<TypeReference>.ShowStructure(dataStruct, StructureView.classes, x => true, SetTypeReference);
 		}
 
 		private void btnOK_Click(object sender, EventArgs e)
@@ -41,7 +42,7 @@ namespace ILPatcher.Interface.General
 								+ txtTypeCompile.Text
 								+ CapsuleVarEnd;
 			if (cSCompiler == null)
-				cSCompiler = new CSCompiler(assemblyDefinition);
+				cSCompiler = new CSCompiler(dataStruct.AssemblyDefinition);
 			cSCompiler.Code = compileVar;
 			MethodDefinition methodDefiniton = cSCompiler.GetMethodDefinition(string.Empty, string.Empty);
 			if (methodDefiniton == null)

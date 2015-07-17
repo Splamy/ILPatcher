@@ -3,15 +3,13 @@ using ICSharpCode.Decompiler.Ast;
 using ILPatcher.Data;
 using ILPatcher.Interface.General;
 using ILPatcher.Utility;
+using MetroObjects;
 using Mono.Cecil;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
-using MetroObjects;
 
 namespace ILPatcher.Interface.Main
 {
@@ -30,6 +28,7 @@ namespace ILPatcher.Interface.Main
 
 			dataStruct = new DataStruct();
 			dataStruct.OnILPFileLoadedDelegate += RebuildTable;
+			structureViever1.SetDataAssociation(dataStruct);
 		}
 
 		private void btnOpenILFile_Click(object sender, EventArgs e)
@@ -90,7 +89,7 @@ namespace ILPatcher.Interface.Main
 
 		private void btnTestpatch_Click(object sender, EventArgs e)
 		{
-			((SwooshPanel)Parent).PushPanel(new ILPatcher.Interface.Actions.EditorMethodCreator(x => { }, dataStruct.AssemblyDefinition), "Debug Disassemble"); // HACK: Change to dataStruct param
+			((SwooshPanel)Parent).PushPanel(new ILPatcher.Interface.Actions.EditorMethodCreator(dataStruct), "Debug Disassemble"); // HACK: Change to dataStruct param
 			//TestMet1();
 			//TestMet2();
 		}
@@ -116,7 +115,7 @@ namespace ILPatcher.Interface.Main
 			csc.Code = test;
 			MethodDefinition md = csc.GetMethodDefinition(string.Empty, string.Empty);
 			if (md == null) return;
-			TypeDefinition tdret = (TypeDefinition)dataStruct.ReferenceTable.FindTypeByName("-.System.Void");
+			TypeDefinition tdret = (TypeDefinition)structureViever1.FindTypeByName("-.System.Void");
 			if (tdret == null) return;
 			MethodDefinition md2 = new MethodDefinition("blub", MethodAttributes.Public, tdret);
 			TypDef.Methods.Add(md2);
@@ -155,7 +154,7 @@ namespace ILPatcher.Interface.Main
 			PlainTextOutput pto = new PlainTextOutput();
 			ast.GenerateCode(pto);
 
-			var emc = new ILPatcher.Interface.Actions.EditorMethodCreator(x => { }, dataStruct.AssemblyDefinition);
+			var emc = new ILPatcher.Interface.Actions.EditorMethodCreator(dataStruct);
 			//emc.txtInjectCode.Text = pto.ToString();
 			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
 		}
@@ -202,9 +201,6 @@ namespace ILPatcher.Interface.Main
 					if (dataStruct.AssemblyStatus == AssemblyStatus.RawAssemblyLoaded)
 					{
 						txtilaFile.Text = assemblyPath;
-						dataStruct.ReferenceTable.InitTreeHalfAsync(dataStruct.AssemblyDefinition);
-						structureViever1.RebuildHalfAsync();
-
 						if (awaitingAssemblySelect)
 						{
 							dataStruct.OpenILP(ilpFiletmp);

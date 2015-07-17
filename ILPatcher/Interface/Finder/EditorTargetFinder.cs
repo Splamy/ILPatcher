@@ -1,6 +1,6 @@
-﻿using ILPatcher.Data.Finder;
+﻿using ILPatcher.Data;
+using ILPatcher.Data.Finder;
 using ILPatcher.Interface.General;
-using System;
 
 namespace ILPatcher.Interface.Finder
 {
@@ -9,8 +9,8 @@ namespace ILPatcher.Interface.Finder
 		public override string PanelName { get { return "Default TargetFinder"; } }
 
 		protected EditorTargetFinder() { /*Reserverd for VSDesigner*/ }
-		protected EditorTargetFinder(Action<TargetFinder> pParentAddCallback)
-			: base(pParentAddCallback)
+		protected EditorTargetFinder(DataStruct dataStruct)
+			: base(dataStruct)
 		{ }
 	}
 }

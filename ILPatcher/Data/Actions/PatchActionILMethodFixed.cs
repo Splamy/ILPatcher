@@ -17,7 +17,8 @@ namespace ILPatcher.Data.Actions
 		private int OriginalInstructionCount;
 		public List<InstructionInfo> instructPatchList;
 
-		public PatchActionILMethodFixed()
+		public PatchActionILMethodFixed(DataStruct dataStruct)
+			: base(dataStruct)
 		{
 
 		}
@@ -58,7 +59,7 @@ namespace ILPatcher.Data.Actions
 			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.IsOld);
 
 			XmlElement xListPatched = output.InsertCompressedElement(SST.PatchList);
-			xListPatched.CreateAttribute(SST.MethodPath, ILManager.Instance.Reference(methodDefinition).ToBaseAlph());
+			xListPatched.CreateAttribute(SST.MethodPath, dataStruct.ReferenceTable.Reference(methodDefinition).ToBaseAlph());
 			xListPatched.CreateAttribute(SST.InstructionCount, OriginalInstructionCount.ToString());
 
 			int instructionPos = 0;
@@ -136,7 +137,7 @@ namespace ILPatcher.Data.Actions
 
 			string metpathunres = PatchList.GetAttribute(SST.MethodPath);
 			if (string.IsNullOrEmpty(metpathunres)) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); PatchStatus = PatchStatus.Broken; return false; }
-			methodDefinition = ILManager.Instance.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
+			methodDefinition = dataStruct.ReferenceTable.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
 			if (methodDefinition == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
 
 			OriginalInstructionCount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
@@ -314,7 +315,7 @@ namespace ILPatcher.Data.Actions
 			case OperandType.InlineMethod:
 			case OperandType.InlineTok:
 			case OperandType.InlineType:
-				xParent.CreateAttribute(SST.Resolve, ILManager.Instance.Reference(operand).ToBaseAlph());
+				xParent.CreateAttribute(SST.Resolve, dataStruct.ReferenceTable.Reference(operand).ToBaseAlph());
 				break;
 
 			case OperandType.InlineArg:
@@ -323,7 +324,7 @@ namespace ILPatcher.Data.Actions
 				strb = new StringBuilder();
 				strb.Append(parref.Index.ToString());
 				strb.Append(' ');
-				strb.Append(ILManager.Instance.Reference(parref.ParameterType).ToBaseAlph());
+				strb.Append(dataStruct.ReferenceTable.Reference(parref.ParameterType).ToBaseAlph());
 				xParent.CreateAttribute(SST.Resolve, strb.ToString());
 				break;
 
@@ -333,7 +334,7 @@ namespace ILPatcher.Data.Actions
 				strb = new StringBuilder();
 				strb.Append(varref.Index.ToString());
 				strb.Append(' ');
-				strb.Append(ILManager.Instance.Reference(varref.VariableType).ToBaseAlph());
+				strb.Append(dataStruct.ReferenceTable.Reference(varref.VariableType).ToBaseAlph());
 				xParent.CreateAttribute(SST.Resolve, strb.ToString());
 				break;
 
@@ -393,7 +394,7 @@ namespace ILPatcher.Data.Actions
 			case OperandType.InlineType:
 				string opVal = xOperandNode.GetAttribute(SST.Resolve);
 				if (!string.IsNullOrEmpty(opVal))
-					return ILManager.GenInstruction(opcode, ILManager.Instance.Resolve(opVal.ToBaseInt()));
+					return ILManager.GenInstruction(opcode, dataStruct.ReferenceTable.Resolve(opVal.ToBaseInt()));
 				else
 					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
 				break;
