@@ -14,7 +14,6 @@ namespace ILPatcher.Interface.Main
 		public PatchEntry PatchEntry { get; private set; }
 		private bool editMode;
 		private DataStruct dataStruct;
-		private AssemblyDefinition assemblyDefinition;
 
 		// TODO: do patchfinder
 

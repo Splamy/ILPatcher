@@ -258,22 +258,22 @@ namespace ILPatcher.Interface.Actions
 			mInstructBox.Items = patchAction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
 		}
 
-		public void LoadMetDef(MethodDefinition methodDefinition)
+		public void LoadMetDef(MethodDefinition pMethodDefinition)
 		{
-			if (methodDefinition == null)
+			if (pMethodDefinition == null)
 				throw new ArgumentNullException("methodDefinition");
 
 			mInstructBox.ClearItems();
 
 			patchAction = null;
 
-			txtMethodFullName.Text = methodDefinition.FullName;
-			this.methodDefinition = methodDefinition;
+			txtMethodFullName.Text = pMethodDefinition.FullName;
+			methodDefinition = pMethodDefinition;
 			// copy all old instructions to the new, so we don't modify the original method
-			for (int i = 0; i < methodDefinition.Body.Instructions.Count; i++)
+			for (int i = 0; i < pMethodDefinition.Body.Instructions.Count; i++)
 			{
 				InstructionInfo nII = new InstructionInfo();
-				nII.OldInstruction = methodDefinition.Body.Instructions[i];
+				nII.OldInstruction = pMethodDefinition.Body.Instructions[i];
 				nII.NewInstruction = nII.OldInstruction.Clone();
 				nII.OldInstructionNum = i;
 				nII.NewInstructionNum = i;
@@ -287,14 +287,14 @@ namespace ILPatcher.Interface.Actions
 				if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineBrTarget ||
 					nII.OldInstruction.OpCode.OperandType == OperandType.ShortInlineBrTarget)
 				{
-					nII.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[methodDefinition.Body.Instructions.IndexOf((Instruction)nII.OldInstruction.Operand)]).NewInstruction;
+					nII.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[pMethodDefinition.Body.Instructions.IndexOf((Instruction)nII.OldInstruction.Operand)]).NewInstruction;
 				}
 				else if (nII.OldInstruction.OpCode.OperandType == OperandType.InlineSwitch)
 				{
 					Instruction[] tmpold = (Instruction[])nII.OldInstruction.Operand;
 					Instruction[] tmpnew = new Instruction[tmpold.Length];
 					for (int j = 0; j < tmpold.Length; j++)
-						tmpnew[j] = ((InstructionInfo)mInstructBox.Items[methodDefinition.Body.Instructions.IndexOf(tmpold[j])]).NewInstruction;
+						tmpnew[j] = ((InstructionInfo)mInstructBox.Items[pMethodDefinition.Body.Instructions.IndexOf(tmpold[j])]).NewInstruction;
 					nII.NewInstruction.Operand = tmpnew;
 				}
 			}

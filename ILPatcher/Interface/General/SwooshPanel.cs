@@ -130,6 +130,7 @@ namespace ILPatcher.Interface.General
 
 			LayerLevel last = null;
 			int index = 0;
+			SuspendLayout();
 			foreach (LayerLevel ll in TabList.Reverse())
 			{
 				ll.btn.Index = index++;
@@ -157,6 +158,7 @@ namespace ILPatcher.Interface.General
 				}
 				last = ll;
 			}
+			ResumeLayout();
 		}
 
 		private class LayerLevel : IDisposable

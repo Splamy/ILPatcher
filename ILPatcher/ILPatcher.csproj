@@ -108,6 +108,7 @@
     <Compile Include="Interface\General\EditorPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Interface\General\GridLineManager.cs" />
     <Compile Include="Interface\General\HoizontalTabControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -148,6 +149,7 @@
     <Compile Include="Utility\ErrorLogger.cs" />
     <Compile Include="Utility\ExtensionMethods.cs" />
     <Compile Include="Data\ILManager.cs" />
+    <Compile Include="Utility\GlobalLayout.cs" />
     <Compile Include="Utility\NameCompressor.cs" />
     <Compile Include="Interface\Actions\EditorILPattern.cs">
       <SubType>UserControl</SubType>
@@ -166,10 +168,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\Main\MainPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Interface\Main\MainPanel.Designer.cs">
-      <DependentUpon>MainPanel.cs</DependentUpon>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\General\MultiPicker.cs">
       <SubType>Form</SubType>
@@ -271,7 +270,9 @@
   <ItemGroup>
     <None Include="Resources\Property.gif" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="TODO.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

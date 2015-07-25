@@ -1,0 +1,19 @@
+﻿///////////////////////////////////////////////////////////
+///////////                                     ///////////
+///////////          FANCY TODO LIST            ///////////
+///////////                                     ///////////
+///////////////////////////////////////////////////////////
+
+//>--
+||	[opt]		Optional feature
+||	...
+\\>--
+
+- Layout Manager for Forms {
+	- Add array of Controls to the layoutmanager to add a control line
+	- Alternative to Control: String -> converted to label
+	- Every control line can be marked with fixed height /
+	  scalable / or strechable at min height (with max) [opt]
+	- maby implement recursive to use horizontally and vertically
+	- probably getting something like a grid layout manager...
+}

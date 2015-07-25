@@ -10,6 +10,7 @@ namespace ILPatcher.Interface.General
 		public virtual string PanelName { get { return "Default EditorPanel"; } }
 		public virtual bool IsInline { get { return false; } }
 
+		public virtual T CreateNewEntryPart() { throw new NotImplementedException(); }
 		public virtual void SetPatchData(T pPatchAction) { throw new NotImplementedException(); }
 
 		protected EditorPanel() { /*Reserverd for VSDesigner*/ }
