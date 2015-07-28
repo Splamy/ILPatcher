@@ -2,7 +2,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace ILPatcher.Interface.General
+namespace ILPatcher.Interface
 {
 	public abstract class EditorPanel<T> : UserControl
 	{

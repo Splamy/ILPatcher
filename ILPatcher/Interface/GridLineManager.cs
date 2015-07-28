@@ -5,7 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace ILPatcher.Interface.General
+namespace ILPatcher.Interface
 {
 	class GridLineManager
 	{
@@ -16,29 +16,28 @@ namespace ILPatcher.Interface.General
 		public int ElementDistance
 		{
 			get { return useGlobalLayout ? globalElementDistance : localElementDistance; }
-			set { if (useGlobalLayout)  globalElementDistance = value; else  localElementDistance = value; }
+			set { if (useGlobalLayout) globalElementDistance = value; else localElementDistance = value; }
 		}
 
 		private Control parent;
-		private List<GridLine> gridLinesList;
 		private List<LayoutElement> elementList;
 
 		public GridLineManager(Control parent, bool globalLayout)
 		{
 			this.parent = parent;
 			this.useGlobalLayout = globalLayout;
-			gridLinesList = new List<GridLine>();
 			elementList = new List<LayoutElement>();
 			parent.Resize += parent_Resize;
 		}
 
 		void parent_Resize(object sender, EventArgs e)
 		{
-			GenerateAxisPositionValues(elementList, parent.Height);
+			GenerateAxisPositionValues(elementList, parent.ClientRectangle.Height);
 			parent.SuspendLayout();
-			foreach (var element in gridLinesList)
+			foreach (var element in elementList)
 			{
-				GenerateAxisPositionValues(element.elementList, parent.Width);
+				element.Width = parent.ClientRectangle.Width; // pass width
+				element.Left = 0; // pass left
 				element.MatchContent();
 			}
 			parent.ResumeLayout();
@@ -90,12 +89,13 @@ namespace ILPatcher.Interface.General
 			int minSizeSpacedPossible = minSizePossible + neededSpaceSum;
 			int minSizeWanted = minFixedSum + prefnsSum + minFillSum + neededSpaceSum;
 
-			if (targetSize < minSizePossible) // 0 < x < minHeightPossible
+			/*if (targetSize < minSizePossible) // 0 < x < minHeightPossible
 			{
 				// do nothing or shrink all proportianally
 				return;
 			}
-			else if (targetSize < minSizeSpacedPossible) // minHeightPossible < x < minHeightSpacedPossible
+			else */
+			if (targetSize < minSizePossible || targetSize < minSizeSpacedPossible) // minHeightPossible < x < minHeightSpacedPossible
 			{
 				int spaceRemainder = targetSize - minSizePossible;
 				int pxPerSpace = spaceRemainder / spaceCount;
@@ -146,7 +146,7 @@ namespace ILPatcher.Interface.General
 			}
 		}
 
-		private Rational GetFractionSum(List<LayoutElement> fractList, int ofMaximum)
+		private static Rational GetFractionSum(List<LayoutElement> fractList, int ofMaximum)
 		{
 			Rational ratSum = new Rational(0, 1);
 			foreach (var element in fractList)
@@ -176,11 +176,10 @@ namespace ILPatcher.Interface.General
 
 		private int AddLineInternal(ArrangementType arrType, int minHeight, int maxHeight)
 		{
-			var elem = new GridLine(arrType, minHeight);
+			var elem = new GridLine(this, arrType, minHeight);
 			elem.prefValue = maxHeight;
-			gridLinesList.Add(elem);
 			elementList.Add(elem);
-			return gridLinesList.Count - 1;
+			return elementList.Count - 1;
 		}
 
 		// Add elements
@@ -190,9 +189,9 @@ namespace ILPatcher.Interface.General
 			AddElementInternal(line, child, ArrangementType.Fixed, width, -1);
 		}
 
-		public void AddElementStrechable(int line, Control child, int minWidth, int maxHeight)
+		public void AddElementStretchable(int line, Control child, int minWidth, int maxWidth)
 		{
-			AddElementInternal(line, child, ArrangementType.PreferredAndShrink, minWidth, maxHeight);
+			AddElementInternal(line, child, ArrangementType.PreferredAndShrink, minWidth, maxWidth);
 		}
 
 		public void AddElementFilling(int line, Control child, int minWidth)
@@ -200,76 +199,96 @@ namespace ILPatcher.Interface.General
 			AddElementInternal(line, child, ArrangementType.Fill, minWidth, -1);
 		}
 
-		private void AddElementInternal(int line, Control child, ArrangementType arrType, int minWidth, int maxHeight)
+		private void AddElementInternal(int line, Control child, ArrangementType arrType, int minWidth, int maxWidth)
 		{
-			parent.Controls.Add(child);
-			var elem = new GridElement(child, arrType, minWidth);
-			elem.prefValue = maxHeight;
-			gridLinesList[line].AddElement(elem);
+			LayoutElement element = null;
+			if (child == null)
+			{
+				element = new BlankElement(arrType, minWidth);
+			}
+			else
+			{
+				parent.Controls.Add(child);
+				element = new GridElement(this, child, arrType, minWidth);
+			}
+			element.prefValue = maxWidth;
+			elementList[line].AddElement(element);
 		}
 
 		// Class structures
 
 		private class GridLine : LayoutElement
 		{
-			public List<GridElement> gridElementList;
 			public List<LayoutElement> elementList;
 
-			public GridLine(ArrangementType arrTyp, int minVal)
-				: base(arrTyp, minVal)
+			public GridLine(GridLineManager manager, ArrangementType arrTyp, int minVal)
+				: base(manager, arrTyp, minVal)
 			{
-				gridElementList = new List<GridElement>();
 				elementList = new List<LayoutElement>();
 			}
 
 			public override void MatchContent()
 			{
-				foreach (var element in gridElementList)
+				manager.GenerateAxisPositionValues(elementList, Width);
+				foreach (var element in elementList)
 				{
-					Control ctrl = element.control;
-					ctrl.Top = curPosition;
-					ctrl.Height = curSize;
+					element.Left = Left; // pass left
+					element.Top = curPosition; // adjust top
+					element.Width = Width; // pass width
+					element.Height = curSize; // adjust height
 					element.MatchContent();
 				}
 			}
 
-			public void AddElement(GridElement element)
+			public override void AddElement(LayoutElement element)
 			{
-				gridElementList.Add(element);
 				elementList.Add(element);
 			}
 
-			public void RemoveElement(GridElement element)
+			public void RemoveElement(LayoutElement element)
 			{
-				gridElementList.Remove(element);
 				elementList.Remove(element);
 			}
 
-			public GridElement GetElementAt(int index)
+			public LayoutElement GetElementAt(int index)
 			{
-				return gridElementList[index];
+				return elementList[index];
 			}
+		}
+
+		private class BlankElement : LayoutElement
+		{
+			public Control control;
+
+			public BlankElement(ArrangementType arrTyp, int minVal)
+				: base(null, arrTyp, minVal)
+			{ }
+
+			public override void MatchContent() { }
 		}
 
 		private class GridElement : LayoutElement
 		{
 			public Control control;
 
-			public GridElement(Control control, ArrangementType arrTyp, int minVal)
-				: base(arrTyp, minVal)
+			public GridElement(GridLineManager manager, Control control, ArrangementType arrTyp, int minVal)
+				: base(manager, arrTyp, minVal)
 			{
 				this.control = control;
 			}
 
 			public override void MatchContent()
 			{
-				control.Left = curPosition;
-				control.Width = curSize;
+				control.Left = curPosition; // adjust left
+				control.Top = Top; // pass top
+				control.Width = curSize; // adjust width
+				control.Height = Height; // pass height
 			}
 		}
 
 		private abstract class LayoutElement
 		{
+			public GridLineManager manager;
 			public ArrangementType arrangementType;
 			public int minValue;
 			public int prefValue;
@@ -278,13 +297,23 @@ namespace ILPatcher.Interface.General
 			public int curSize;
 			public Rational fractionOfMax;
 
-			protected LayoutElement(ArrangementType arrTyp, int minVal)
+			public int Left;
+			public int Top;
+			public int Width;
+			public int Height;
+
+			protected LayoutElement(GridLineManager manager, ArrangementType arrType, int minVal)
 			{
-				arrangementType = arrTyp;
+				this.manager = manager;
+				arrangementType = arrType;
 				minValue = minVal;
 			}
 
 			public abstract void MatchContent();
+			public virtual void AddElement(LayoutElement layoutElement)
+			{
+				throw new NotSupportedException();
+			}
 		}
 
 		enum ArrangementType

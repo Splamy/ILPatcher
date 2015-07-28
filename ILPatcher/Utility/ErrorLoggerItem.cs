@@ -5,7 +5,7 @@ namespace ILPatcher.Utility
 {
 	public class ErrorLoggerItem : DragItem
 	{
-		private string error;
+		public string error; // HACK
 		private Log.Level level;
 
 		public ErrorLoggerItem(Log.Level _level, string _error)

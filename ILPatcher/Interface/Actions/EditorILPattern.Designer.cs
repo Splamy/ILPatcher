@@ -53,7 +53,7 @@
 			this.panTMFPicker = new System.Windows.Forms.Panel();
 			this.lblTMFPicker = new System.Windows.Forms.Label();
 			this.btnTMFPicker = new System.Windows.Forms.Button();
-			this.instructionEditor = new ILPatcher.Interface.General.InspectorHolder();
+			this.instructionEditor = new ILPatcher.Interface.InspectorHolder();
 			this.contextMenuStrip1.SuspendLayout();
 			this.panTMFPicker.SuspendLayout();
 			this.SuspendLayout();
@@ -374,7 +374,7 @@
 		private System.Windows.Forms.Button btnPickMethod;
 		private System.Windows.Forms.Button btnDone;
 		private System.Windows.Forms.Label lblOperandType;
-		private ILPatcher.Interface.General.InspectorHolder instructionEditor;
+		private ILPatcher.Interface.InspectorHolder instructionEditor;
 		private System.Windows.Forms.ComboBox cbxOperand;
 		private System.Windows.Forms.Label lblOperand;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;

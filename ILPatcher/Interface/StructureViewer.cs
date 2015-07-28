@@ -11,7 +11,7 @@ using System.Threading;
 using System.Windows.Forms;
 using LocRes = ILPatcher.Properties.Resources;
 
-namespace ILPatcher.Interface.General
+namespace ILPatcher.Interface
 {
 	public class StructureViewer : TreeView
 	{
@@ -28,9 +28,10 @@ namespace ILPatcher.Interface.General
 		private TreeNode ExtensionNode = new TreeNode("Extension Node");
 		private ContextMenuStrip cxMenu = new ContextMenuStrip();
 
-		public StructureViewer()
+		public StructureViewer(DataStruct dataAssociation)
 		{
 			FilterElements = StructureView.all;
+			PathSeparator = ".";
 
 			ImageList imgl = new ImageList();
 			imgl.Images.Add(LocRes.Array);
@@ -50,12 +51,7 @@ namespace ILPatcher.Interface.General
 			MouseUp += StructureViewer_MouseUp;
 
 			cxMenu.Items.Add("Load Assembly", null, ToolStripBar_LoadAssembly_Click);
-			//Controls.Add(cxMenu);
-		}
 
-		public StructureViewer(DataStruct dataAssociation)
-			: this()
-		{
 			SetDataAssociation(dataAssociation);
 		}
 
@@ -66,10 +62,10 @@ namespace ILPatcher.Interface.General
 
 			if (dataStruct != null)
 			{
-				dataAssociation.OnASMFileLoadedDelegate -= dataAssociation_OnASMFileLoadedDelegate;
+				dataAssociation.OnASMFileLoaded -= dataAssociation_OnASMFileLoadedDelegate;
 			}
 
-			dataAssociation.OnASMFileLoadedDelegate += dataAssociation_OnASMFileLoadedDelegate;
+			dataAssociation.OnASMFileLoaded += dataAssociation_OnASMFileLoadedDelegate;
 
 			dataStruct = dataAssociation;
 		}

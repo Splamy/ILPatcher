@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace ILPatcher.Interface.General
+namespace ILPatcher.Interface
 {
 	public partial class InstructArrPicker : Form
 	{

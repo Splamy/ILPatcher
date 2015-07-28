@@ -3,15 +3,24 @@ using System.Windows.Forms;
 
 namespace ILPatcher.Interface.Main
 {
-	public partial class MainForm : Form
+	public class MainForm : Form
 	{
+		#region Interface Elements
+		SwooshPanel swooshPanel;
+		#endregion
+
 		public MainForm()
 		{
-			InitializeComponent();
+			Text = "ILPatcher";
 
 			NameCompressor.Instance.CheckUnique();
 
-			swooshPanel1.PushPanel(new MainPanel(), "Overview");
+			swooshPanel = new SwooshPanel();
+			this.Controls.Add(swooshPanel);
+			swooshPanel.Dock = DockStyle.Fill;
+			swooshPanel.PushPanel(new MainPanel(), "Overview");
+
+			Size = new System.Drawing.Size(640, 480);
 		}
 	}
 }

@@ -24,8 +24,8 @@ namespace ILPatcher.Data
 		public readonly ILManager ReferenceTable;
 
 		public delegate void FileLoadedDelegate(object sender);
-		public event FileLoadedDelegate OnILPFileLoadedDelegate;
-		public event FileLoadedDelegate OnASMFileLoadedDelegate;
+		public event FileLoadedDelegate OnILPFileLoaded;
+		public event FileLoadedDelegate OnASMFileLoaded;
 
 		public DataStruct()
 		{
@@ -116,8 +116,8 @@ namespace ILPatcher.Data
 				return;
 			}
 
-			if (OnASMFileLoadedDelegate != null)
-				OnASMFileLoadedDelegate(this);
+			if (OnASMFileLoaded != null)
+				OnASMFileLoaded(this);
 		}
 
 		public void OpenILP(string ilpPath)
@@ -144,8 +144,8 @@ namespace ILPatcher.Data
 				Log.Write(Log.Level.Error, "No PatchTable found!");
 			}
 
-			if (OnILPFileLoadedDelegate != null)
-				OnILPFileLoadedDelegate(this);
+			if (OnILPFileLoaded != null)
+				OnILPFileLoaded(this);
 		}
 
 		public void ClearILP()

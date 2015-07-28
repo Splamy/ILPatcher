@@ -6,14 +6,13 @@ using ILPatcher.Utility;
 using MetroObjects;
 using Mono.Cecil;
 using System;
-using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 
 namespace ILPatcher.Interface.Main
 {
-	public partial class MainPanel : Control
+	public class MainPanel : Control
 	{
 		private DataStruct dataStruct;
 		bool awaitingAssemblySelect = false;
@@ -33,19 +32,17 @@ namespace ILPatcher.Interface.Main
 			Log.callback = VisualLog;
 
 			dataStruct = new DataStruct();
-			dataStruct.OnILPFileLoadedDelegate += RebuildTable;
+			dataStruct.OnILPFileLoaded += RebuildTable;
 
 			InitializeGridLineManager();
 		}
 
 		private void InitializeGridLineManager()
 		{
-			this.SuspendLayout();
 			lblPathILPFile = GlobalLayout.GenMetroLabel("<<Patch File>>");
 			lblPathNETFile = GlobalLayout.GenMetroLabel("<< .NET Assembly >>");
 			lbxPatchEntryListBox = new MListBox();
 			structureViever = new StructureViewer(dataStruct);
-			structureViever.PathSeparator = ".";
 			loadingBox = new MLoadingCircle();
 			lbxErrors = new MListBox();
 
@@ -53,7 +50,7 @@ namespace ILPatcher.Interface.Main
 			int line = grid.AddLineFixed(GlobalLayout.LineHeight);
 			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Open patch file (*.ilp)", OpenILPatchFile_Click), GlobalLayout.LabelWidth);
 			grid.AddElementFilling(line, lblPathILPFile, GlobalLayout.MinFill);
-			grid.AddElementStrechable(line, GlobalLayout.GenMetroButton("Save", Save_Click), GlobalLayout.MinFill, GlobalLayout.LabelWidth);
+			grid.AddElementStretchable(line, GlobalLayout.GenMetroButton("Save", Save_Click), GlobalLayout.MinFill, GlobalLayout.LabelWidth);
 			line = grid.AddLineFixed(GlobalLayout.LineHeight);
 			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Open .NET assembly", OpenNETAssembly_Click), GlobalLayout.LabelWidth);
 			grid.AddElementFilling(line, lblPathNETFile, GlobalLayout.MinFill);
@@ -66,14 +63,46 @@ namespace ILPatcher.Interface.Main
 			grid.AddElementFilling(line, GlobalLayout.GenMetroButton("(Testpatch)", Testpatch_Click), GlobalLayout.MinFill);
 			grid.AddElementFilling(line, GlobalLayout.GenMetroButton("[New patch]", NewPatch_Click), GlobalLayout.MinFill);
 			grid.AddElementFilling(line, GlobalLayout.GenMetroButton("[Edit patch]", EditPatch_Click), GlobalLayout.MinFill);
-			this.ResumeLayout(false);
 		}
 
 		// Interface events
 
 		private void OpenNETAssembly_Click(object sender, EventArgs e)
 		{
-			openAssembly();
+			using (OpenFileDialog openAsm = new OpenFileDialog())
+			{
+				openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
+				if (openAsm.ShowDialog() == DialogResult.OK)
+				{
+					string assemblyPath = openAsm.FileName;
+					string backupPath = assemblyPath + "_ilpbackup";
+					if (File.Exists(backupPath))
+					{
+						using (PatchQuestionWindow pqw = new PatchQuestionWindow())
+						{
+							DialogResult dr = pqw.ShowDialog(this);
+							if (dr == DialogResult.Yes) File.Copy(backupPath, assemblyPath, true); // TODO: check for rights
+							else return;
+						}
+					}
+					loadingBox.ON = true;
+
+					dataStruct.OpenASM(assemblyPath);
+					if (dataStruct.AssemblyStatus == AssemblyStatus.RawAssemblyLoaded)
+					{
+						lblPathNETFile.Text = assemblyPath;
+						if (awaitingAssemblySelect)
+						{
+							dataStruct.OpenILP(ilpFiletmp);
+						}
+					}
+					else if (dataStruct.AssemblyStatus == AssemblyStatus.LoadFailed)
+					{
+						MessageBox.Show("Couldn't read assembly, it is either unmanaged or obfuscated");
+					}
+					loadingBox.ON = false;
+				}
+			}
 		}
 
 		private void OpenILPatchFile_Click(object sender, EventArgs e)
@@ -86,9 +115,7 @@ namespace ILPatcher.Interface.Main
 					ilpFiletmp = openIlp.FileName;
 					lblPathILPFile.Text = ilpFiletmp;
 					if (dataStruct.AssemblyStatus == AssemblyStatus.RawAssemblyLoaded)
-					{
 						dataStruct.OpenILP(openIlp.FileName);
-					}
 					else
 						awaitingAssemblySelect = true;
 				}
@@ -135,6 +162,7 @@ namespace ILPatcher.Interface.Main
 			//((SwooshPanel)Parent).PushPanel(new ILPatcher.Interface.Actions.EditorMethodCreator(dataStruct), "Debug Disassemble"); // HACK: Change to dataStruct param
 			//TestMet1();
 			//TestMet2();
+			new CreateTypeForm(dataStruct, (d) => { }).Show();
 		}
 
 		private void NewPatch_Click(object sender, EventArgs e)
@@ -220,44 +248,6 @@ namespace ILPatcher.Interface.Main
 			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
 		}
 
-		private void openAssembly()
-		{
-			using (OpenFileDialog openAsm = new OpenFileDialog())
-			{
-				openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
-				if (openAsm.ShowDialog() == DialogResult.OK)
-				{
-					string assemblyPath = openAsm.FileName;
-					string backupPath = assemblyPath + "_ilpbackup";
-					if (File.Exists(backupPath))
-					{
-						using (PatchQuestionWindow pqw = new PatchQuestionWindow())
-						{
-							DialogResult dr = pqw.ShowDialog(this);
-							if (dr == DialogResult.Cancel) return;
-							else if (dr == DialogResult.Yes) File.Copy(backupPath, assemblyPath, true); // TODO: check for rights
-						}
-					}
-					loadingBox.ON = true;
-
-					dataStruct.OpenASM(assemblyPath);
-					if (dataStruct.AssemblyStatus == AssemblyStatus.RawAssemblyLoaded)
-					{
-						lblPathNETFile.Text = assemblyPath;
-						if (awaitingAssemblySelect)
-						{
-							dataStruct.OpenILP(ilpFiletmp);
-						}
-					}
-					else if (dataStruct.AssemblyStatus == AssemblyStatus.LoadFailed)
-					{
-						MessageBox.Show("Couldn't read assembly, it is either unmanaged or obfuscated");
-					}
-					loadingBox.ON = false;
-				}
-			}
-		}
-
 		public void EditCluster(PatchEntry patchcluster)
 		{
 			PatchBuilder patchBuilder = new PatchBuilder(dataStruct);
@@ -278,6 +268,7 @@ namespace ILPatcher.Interface.Main
 		{
 			lbxErrors.AddItem(eli);
 			lbxErrors.InvalidateBuffer();
+			Console.WriteLine(eli.error);
 		}
 	}
 }

@@ -41,10 +41,10 @@
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.label5 = new System.Windows.Forms.Label();
 			this.button1 = new System.Windows.Forms.Button();
-			this.hoizontalTabControl1 = new ILPatcher.Interface.General.HoizontalTabControl();
+			this.hoizontalTabControl1 = new ILPatcher.Interface.HoizontalTabControl();
 			this.tabParameter = new System.Windows.Forms.TabPage();
 			this.lbxParameter = new MetroObjects.MListBox();
-			this.arcParameter = new ILPatcher.Interface.General.AddRemoveControl();
+			this.arcParameter = new ILPatcher.Interface.AddRemoveControl();
 			this.tabVariables = new System.Windows.Forms.TabPage();
 			this.tabAttributes = new System.Windows.Forms.TabPage();
 			this.hoizontalTabControl1.SuspendLayout();
@@ -308,10 +308,10 @@
 		public System.Windows.Forms.TextBox textBox1;
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.Button button1;
-		private ILPatcher.Interface.General.HoizontalTabControl hoizontalTabControl1;
+		private ILPatcher.Interface.HoizontalTabControl hoizontalTabControl1;
 		private System.Windows.Forms.TabPage tabParameter;
 		private System.Windows.Forms.TabPage tabVariables;
 		private System.Windows.Forms.TabPage tabAttributes;
-		private ILPatcher.Interface.General.AddRemoveControl arcParameter;
+		private ILPatcher.Interface.AddRemoveControl arcParameter;
 	}
 }
