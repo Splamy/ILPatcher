@@ -19,8 +19,7 @@ namespace ILPatcher.Data
 		public readonly List<PatchAction> PatchActionList;
 		public readonly List<TargetFinder> TargetFinderList;
 		public readonly TreeList<PatchEntry> PatchEntryList;
-		public readonly Dictionary<string, ILNode> ModuleList;
-		public readonly ILNode StructViewToolBox;
+		public readonly ILNodeManager ILNodeManager;
 		public readonly ILManager ReferenceTable;
 
 		public delegate void FileLoadedDelegate(object sender);
@@ -33,8 +32,7 @@ namespace ILPatcher.Data
 			TargetFinderList = new List<TargetFinder>();
 			PatchEntryList = new TreeList<PatchEntry>();
 			ReferenceTable = new ILManager(this);
-			ModuleList = new Dictionary<string, ILNode>();
-
+			
 			ClearASM();
 		}
 
@@ -45,20 +43,20 @@ namespace ILPatcher.Data
 
 			bool allOk = true;
 
-			XmlElement xILPTableNode = output.InsertCompressedElement(SST.ILPTable);
+			XmlNode xILPTableNode = output.InsertCompressedElement(SST.ILPTable);
 
-			XmlElement xPatchActionTable = xILPTableNode.InsertCompressedElement(SST.PatchActionTable);
+			XmlNode xPatchActionTable = xILPTableNode.InsertCompressedElement(SST.PatchActionTable);
 			foreach (PatchAction pa in PatchActionList)
 				allOk &= pa.Save(xPatchActionTable);
 
-			XmlElement xTargetFinderTable = xILPTableNode.InsertCompressedElement(SST.TargetFinderTable);
+			XmlNode xTargetFinderTable = xILPTableNode.InsertCompressedElement(SST.TargetFinderTable);
 			foreach (TargetFinder tf in TargetFinderList)
 				allOk &= tf.Save(xTargetFinderTable);
 
-			XmlElement xPatchEntryTable = xILPTableNode.InsertCompressedElement(SST.PatchEntryTable);
+			XmlNode xPatchEntryTable = xILPTableNode.InsertCompressedElement(SST.PatchEntryTable);
 			allOk &= SaveEntryRecursive(xPatchEntryTable, PatchEntryList);
 
-			XmlElement xReferenceTable = xILPTableNode.InsertCompressedElement(SST.ReferenceTable);
+			XmlNode xReferenceTable = xILPTableNode.InsertCompressedElement(SST.ReferenceTable);
 			allOk &= ReferenceTable.Save(xReferenceTable);
 
 			return allOk;
@@ -161,7 +159,7 @@ namespace ILPatcher.Data
 			AssemblyDefinition = null;
 			AssemblyLocation = string.Empty;
 			AssemblyStatus = AssemblyStatus.Uninitialized;
-			ModuleList.Clear();
+			ILNodeManager.Clear();
 		}
 	}
 

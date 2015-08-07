@@ -1,16 +1,15 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Actions;
-using ILPatcher.Interface.General;
 
 namespace ILPatcher.Interface.Actions
 {
-	public class EditorPatchAction : EditorPanel<PatchAction>
+	public abstract class EditorPatchAction<T> : EditorPanel<PatchAction, T>, IEditorPatchAction where T : PatchAction
 	{
-		public override string PanelName { get { return "Default PatchAction"; } }
-
-		protected EditorPatchAction() { /*Reserverd for VSDesigner*/ }
-		protected EditorPatchAction(DataStruct dataAssociation)
-			: base(dataAssociation)
-		{ }
+		protected EditorPatchAction(DataStruct dataStruct) : base(dataStruct) { }
 	}
+
+	public interface IEditorPatchAction : IEditorPanel
+	{
+		void SetPatchData(PatchAction pPatchAction);
+    }
 }

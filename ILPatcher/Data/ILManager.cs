@@ -64,10 +64,10 @@ namespace ILPatcher.Data
 		/// <param name="xNode">The parent node for the new reference nodes</param>
 		public bool Save(XmlNode xNode)
 		{
-			XmlElement xM = xNode.InsertCompressedElement(SST.MethodReference);
-			XmlElement xF = xNode.InsertCompressedElement(SST.FieldReference);
-			XmlElement xT = xNode.InsertCompressedElement(SST.TypeReference);
-			XmlElement xCS = xNode.InsertCompressedElement(SST.CallSite);
+			XmlNode xM = xNode.InsertCompressedElement(SST.MethodReference);
+			XmlNode xF = xNode.InsertCompressedElement(SST.FieldReference);
+			XmlNode xT = xNode.InsertCompressedElement(SST.TypeReference);
+			XmlNode xCS = xNode.InsertCompressedElement(SST.CallSite);
 
 			bool allOk = true;
 
@@ -133,7 +133,7 @@ namespace ILPatcher.Data
 				case OperandInfoT.CallSite:
 					if (oi.resolved)
 					{
-						XmlElement xElem = xCS.InsertCompressedElement(i);
+						XmlNode xElem = xCS.InsertCompressedElement(i);
 						xElem.CreateAttribute(SST.Name, ((CallSite)MemberList[i].operand).FullName);
 						Log.Write(Log.Level.Error, "Unhandled CallSite: ", oi.ToString());
 						allOk = false;
@@ -157,9 +157,9 @@ namespace ILPatcher.Data
 		/// <param name="xGroup">The xml parent for the new generated element</param>
 		/// <param name="mr">The MethodReference which will be xml formatted</param>
 		/// <param name="val">The ID of the MethodReference in the ILM list</param>
-		private void GenMChild(XmlElement xGroup, MethodReference mr, int val)
+		private void GenMChild(XmlNode xGroup, MethodReference mr, int val)
 		{
-			XmlElement xElem = xGroup.InsertCompressedElement(val);
+			XmlNode xElem = xGroup.InsertCompressedElement(val);
 			StringBuilder strb = new StringBuilder();
 
 			xElem.CreateAttribute(SST.Type, Reference(mr.DeclaringType).ToBaseAlph());
@@ -239,9 +239,9 @@ namespace ILPatcher.Data
 		/// <param name="xGroup">The xml parent for the new generated element</param>
 		/// <param name="fr">The FieldReference which will be xml formatted</param>
 		/// <param name="val">The ID of the FieldReference in the ILM list</param>
-		private void GenFChild(XmlElement xGroup, FieldReference fr, int val)
+		private void GenFChild(XmlNode xGroup, FieldReference fr, int val)
 		{
-			XmlElement xElem = xGroup.InsertCompressedElement(val);
+			XmlNode xElem = xGroup.InsertCompressedElement(val);
 			xElem.CreateAttribute(SST.Type, Reference(fr.FieldType).ToBaseAlph());
 			xElem.CreateAttribute(SST.Name, fr.Name);
 			xElem.CreateAttribute(SST.Module, Reference(fr.DeclaringType).ToBaseAlph());
@@ -251,9 +251,9 @@ namespace ILPatcher.Data
 		/// <param name="xGroup">The xml parent for the new generated element</param>
 		/// <param name="tr">The TypeReference which will be xml formatted</param>
 		/// <param name="val">The ID of the TypeReference in the ILM list</param>
-		private void GenTChild(XmlElement xGroup, TypeReference tr, int val)
+		private void GenTChild(XmlNode xGroup, TypeReference tr, int val)
 		{
-			XmlElement xElem = xGroup.InsertCompressedElement(val);
+			XmlNode xElem = xGroup.InsertCompressedElement(val);
 			xElem.CreateAttribute(SST.Name, tr.Name);
 
 			StringBuilder strb = new StringBuilder();
@@ -314,9 +314,9 @@ namespace ILPatcher.Data
 		/// <param name="xGroup">The xml parent for the new generated element</param>
 		/// <param name="at">The ArrayType which will be xml formatted</param>
 		/// <param name="val">The ID of the ArrayType in the ILM list</param>
-		private void GenAChild(XmlElement xGroup, ArrayType at, int val)
+		private void GenAChild(XmlNode xGroup, ArrayType at, int val)
 		{
-			XmlElement xElem = xGroup.InsertCompressedElement(val);
+			XmlNode xElem = xGroup.InsertCompressedElement(val);
 			xElem.CreateAttribute(SST.Type, Reference(at.ElementType).ToBaseAlph());
 			if (at.IsVector)
 				xElem.CreateAttribute(SST.Array, "0");
@@ -392,7 +392,7 @@ namespace ILPatcher.Data
 						Log.Write(Log.Level.Careful, "Unknown Resolving Node: ", xElem.Name);
 						continue;
 					}
-					oi.rawData = xItem as XmlElement;
+					oi.rawData = xItem;
 					MemberList[xItem.Name.ToBaseInt()] = oi;
 				}
 			}
@@ -431,7 +431,7 @@ namespace ILPatcher.Data
 		/// <returns>Returns the MethodReference if found, otherwise null</returns>
 		private object ResMElement(OperandInfo oi)
 		{
-			XmlElement xDataNode = oi.rawData;
+			XmlNode xDataNode = oi.rawData;
 
 			string name = xDataNode.GetAttribute(SST.Name);
 			string type = xDataNode.GetAttribute(SST.Type);
@@ -507,7 +507,7 @@ namespace ILPatcher.Data
 		/// <returns>Returns the FieldReference if found, otherwise null</returns>
 		private object ResFElement(OperandInfo oi)
 		{
-			XmlElement xDataNode = oi.rawData;
+			XmlNode xDataNode = oi.rawData;
 
 			string FieldType = xDataNode.GetAttribute(SST.Type);
 			string Name = xDataNode.GetAttribute(SST.Name);
@@ -544,7 +544,7 @@ namespace ILPatcher.Data
 		/// <returns>Returns the TypeReference if found, otherwise null</returns>
 		private object ResTElement(OperandInfo oi)
 		{
-			XmlElement xDataNode = oi.rawData;
+			XmlNode xDataNode = oi.rawData;
 
 			Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
 
@@ -831,7 +831,7 @@ namespace ILPatcher.Data
 	{
 		public object operand;
 		public OperandInfoT oit;
-		public XmlElement rawData;
+		public XmlNode rawData;
 		public bool resolved { get { return operand != null && Status == ResolveStatus.Resolved; } }
 		public ResolveStatus Status;
 		public override string ToString()

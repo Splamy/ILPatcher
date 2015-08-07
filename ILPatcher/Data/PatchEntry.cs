@@ -1,31 +1,37 @@
 ﻿using ILPatcher.Data.Actions;
 using ILPatcher.Data.Finder;
+using System.Collections.Generic;
+using System.Text;
 using System.Xml;
+using System;
 
 namespace ILPatcher.Data
 {
-	public class PatchEntry : ISaveToFile
+	public class PatchEntry : NamedElement, ISaveToFile
 	{
-		public string Label { get; set; }
-		public string Name { get; set; }
-		public string Description
+		public override string Label
 		{
 			get
 			{
-				return string.Format("{0} -> {1}",
-					FindAction != null ? FindAction.Description : "{}",
-					PatchAction != null ? PatchAction.ActionName : "{}");
+				var strb = new StringBuilder();
+				foreach (var finder in FinderChain)
+				{
+					strb.Append(finder.Name);
+					strb.Append(" ->\n");
+				}
+				strb.Append(PatchAction.Name);
+				return strb.ToString();
 			}
 		}
-		public TargetFinder FindAction { get; set; }
+		public override string Description { get { return "Provides the way to find and change a part in the targeted binary."; } }
+		public List<TargetFinder> FinderChain { get; set; }
 		public PatchAction PatchAction { get; set; }
 		private DataStruct dataManager;
 
 		public PatchEntry(DataStruct dataManager)
 		{
-			FindAction = null;
+			FinderChain = new List<TargetFinder>();
 			PatchAction = null;
-			Label = null;
 			Name = string.Empty;
 			this.dataManager = dataManager;
 		}

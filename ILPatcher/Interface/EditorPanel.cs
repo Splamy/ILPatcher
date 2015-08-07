@@ -1,19 +1,34 @@
 ﻿using ILPatcher.Data;
-using System;
 using System.Windows.Forms;
+using System;
 
 namespace ILPatcher.Interface
 {
-	public abstract class EditorPanel<T> : UserControl
+	public abstract class EditorPanel<Kind, Spec> : UserControl, IEditorPanel where Spec : class, Kind
 	{
 		protected readonly DataStruct dataStruct;
-		public virtual string PanelName { get { return "Default EditorPanel"; } }
-		public virtual bool IsInline { get { return false; } }
+		protected Spec myData;
 
-		public virtual T CreateNewEntryPart() { throw new NotImplementedException(); }
-		public virtual void SetPatchData(T pPatchAction) { throw new NotImplementedException(); }
+		public abstract string PanelName { get; }
+		public abstract bool IsInline { get; }
 
-		protected EditorPanel() { /*Reserverd for VSDesigner*/ }
+		public abstract Kind CreateNewEntryPart();
+		public void SetPatchData(Kind pPatchAction)
+		{
+			if (pPatchAction == null) throw new ArgumentNullException("pPatchAction");
+			var tmp = pPatchAction as Spec;
+			if (tmp == null) throw new InvalidOperationException("The passed parameter is not designed for this interface element");
+            myData = tmp;
+			OnPatchDataSet();
+		}
+		protected abstract void OnPatchDataSet();
+		
 		protected EditorPanel(DataStruct dataAssociation) { dataStruct = dataAssociation; }
+	}
+
+	public interface IEditorPanel
+	{
+		string PanelName { get; }
+		bool IsInline { get; }
 	}
 }

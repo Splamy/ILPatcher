@@ -91,12 +91,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DataStruct.cs" />
+    <Compile Include="Data\Finder\TargetNotFoundException.cs" />
     <Compile Include="Data\ILNode.cs" />
-    <Compile Include="Interface\Finder\EditorFinderByName.cs">
+    <Compile Include="Data\ILNodeManager.cs" />
+    <Compile Include="Data\NamedElement.cs" />
+    <Compile Include="Data\Validator.cs" />
+    <Compile Include="Data\XMLInstruction.cs" />
+    <Compile Include="Interface\Finder\EditorFinderClassByName.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Interface\Finder\EditorTargetFinder.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Interface\AddRemoveControl.cs">
       <SubType>Component</SubType>
@@ -140,7 +145,7 @@
     </Compile>
     <Compile Include="Data\Actions\PatchActionMethodCreator.cs" />
     <Compile Include="Data\Finder\TargetFinder.cs" />
-    <Compile Include="Data\Finder\TargetFinderByName.cs" />
+    <Compile Include="Data\Finder\TargetFinderClassByName.cs" />
     <Compile Include="Utility\CecilFormatter.cs" />
     <Compile Include="Utility\AnyArray.cs" />
     <Compile Include="Utility\CecilHelper.cs" />

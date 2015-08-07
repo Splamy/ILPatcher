@@ -1,16 +1,15 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Finder;
-using ILPatcher.Interface.General;
 
 namespace ILPatcher.Interface.Finder
 {
-	public class EditorTargetFinder : EditorPanel<TargetFinder>
+	public abstract class EditorTargetFinder<T> : EditorPanel<TargetFinder, T>, IEditorTargetFinder where T : TargetFinder
 	{
-		public override string PanelName { get { return "Default TargetFinder"; } }
+		protected EditorTargetFinder(DataStruct dataStruct) : base(dataStruct) { }
+	}
 
-		protected EditorTargetFinder() { /*Reserverd for VSDesigner*/ }
-		protected EditorTargetFinder(DataStruct dataStruct)
-			: base(dataStruct)
-		{ }
+	public interface IEditorTargetFinder : IEditorPanel
+	{
+		void SetPatchData(TargetFinder pPatchAction);
 	}
 }

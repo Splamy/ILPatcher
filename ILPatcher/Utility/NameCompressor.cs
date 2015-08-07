@@ -101,6 +101,12 @@ namespace ILPatcher.Utility
 
 		private void InitializeValue(SST entry, string lowname)
 		{
+#if DEBUG
+			if (lowtable[(int)entry] != null)
+			{
+				Log.Write(Log.Level.Error, "NameCompress Value already set: ", entry.ToString());
+			}
+#endif
 			lowtable[(int)entry] = new Tuple<string, string>(entry.ToString(), lowname);
 		}
 
@@ -185,5 +191,8 @@ namespace ILPatcher.Utility
 
 		True,
 		False,
+
+		//from: TargetFinderClassByName
+		ILNodePath,
 	}
 }

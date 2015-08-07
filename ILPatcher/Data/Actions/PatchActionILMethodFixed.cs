@@ -11,8 +11,16 @@ namespace ILPatcher.Data.Actions
 {
 	public class PatchActionILMethodFixed : PatchAction
 	{
-		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodFixed; } protected set { } }
+		//I: NamedElement
+		public override string Label { get { return "+/- changes"; } } // TODO: implement
+		public override string Description { get { return "Modifies an entire method by changing/adding instructions individually"; } }
 
+		//I: PatchAction
+		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodFixed; } }
+		public override bool RequiresFixedOutput { get { return true; } }
+		public override Type TInput { get { return typeof(MethodDefinition); } }
+
+		//Own:
 		public MethodDefinition methodDefinition;
 		private int OriginalInstructionCount;
 		public List<InstructionInfo> instructPatchList;
@@ -23,17 +31,25 @@ namespace ILPatcher.Data.Actions
 
 		}
 
-		/// <summary>Executes its patch-routine to the currently loaded Assembly data</summary>
-		/// <returns>Returns true if it succeeded, false otherwise</returns>
-		public override bool Execute()
+		/// <summary>Sets the status of the Patch to "WorkingPerfectly" and and saves the given MethodDefinition</summary>
+		/// <param name="target">The MethodDefinition for this Patch</param>
+		public override void PassTarget(object target)
 		{
+			methodDefinition = (MethodDefinition)target;
+			OriginalInstructionCount = methodDefinition.Body.Instructions.Count;
+			PatchStatus = PatchStatus.WoringPerfectly;
+		}
+
+		public override bool Execute(object target)
+		{
+			var modMethod = (MethodDefinition)target;
 			AnyArray<Instruction> cpyBuffer = new AnyArray<Instruction>();
 			foreach (InstructionInfo II in instructPatchList)
 			{
 				if (II.Delete) continue;
 				cpyBuffer[II.NewInstructionNum] = II.NewInstruction;
 			}
-			Mono.Collections.Generic.Collection<Instruction> nList = methodDefinition.Body.Instructions;
+			Mono.Collections.Generic.Collection<Instruction> nList = modMethod.Body.Instructions;
 			nList.Clear();
 			for (int i = 0; i < cpyBuffer.Length; i++)
 				if (cpyBuffer[i] != null) nList.Add(cpyBuffer[i]);
@@ -47,25 +63,35 @@ namespace ILPatcher.Data.Actions
 		{
 			if (methodDefinition == null)
 			{
-				Log.Write(Log.Level.Careful, "The PatchAction(ILMethodFixed) ", ActionName, " is empty and won't be saved!");
+				Log.Write(Log.Level.Careful, "The PatchAction(ILMethodFixed) ", this.Name, " is empty and won't be saved!");
 				return false;
 			}
 
 			NameCompressor nc = NameCompressor.Instance;
 
 			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
-			output.Attributes[nc[SST.Name]].Value = ActionName;
+			output.Attributes[nc[SST.Name]].Value = this.Name;
 
 			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.IsOld);
 
-			XmlElement xListPatched = output.InsertCompressedElement(SST.PatchList);
+			XmlNode xListPatched = output.InsertCompressedElement(SST.PatchList);
 			xListPatched.CreateAttribute(SST.MethodPath, dataStruct.ReferenceTable.Reference(methodDefinition).ToBaseAlph());
 			xListPatched.CreateAttribute(SST.InstructionCount, OriginalInstructionCount.ToString());
+
+			var xmlInstructionOriginalMethod = new XMLInstruction<Instruction>(
+				dataStruct.ReferenceTable,
+				methodDefinition.Body.Instructions,
+				(list, instruct) => list.IndexOf(instruct));
+
+			var xmlInstructionModifiedList = new XMLInstruction<InstructionInfo>(
+				dataStruct.ReferenceTable,
+				instructPatchList,
+				(list, instruct) => { var res = list.FirstOrDefault(x => x.NewInstruction == instruct); return res != null ? res.NewInstructionNum : -1; });
 
 			int instructionPos = 0;
 			foreach (InstructionInfo II in instructPatchList)
 			{
-				XmlElement xInstruction = xListPatched.InsertCompressedElement(SST.Instruction);
+				XmlNode xInstruction = xListPatched.InsertCompressedElement(SST.Instruction);
 				II.NewInstructionNum = instructionPos;
 
 				if (II.IsOld)
@@ -75,13 +101,13 @@ namespace ILPatcher.Data.Actions
 					xInstruction.CreateAttribute(SST.InstructionNum, II.OldInstructionNum.ToString());
 					xInstruction.CreateAttribute(SST.OpCode, II.OldInstruction.OpCode.Name);
 					xInstruction.CreateAttribute(SST.Delete, nc[II.Delete ? SST.True : SST.False]);
-					Operand2Node(xInstruction, II.OldInstruction, true);
+					xmlInstructionOriginalMethod.Operand2Node(xInstruction, II.OldInstruction);
 
 					if (!II.Delete)
 					{
 						instructionPos++;
 
-						XmlElement patchelem = null;
+						XmlNode patchelem = null;
 						if (II.InstructionNumPatch)
 						{
 							if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
@@ -97,7 +123,7 @@ namespace ILPatcher.Data.Actions
 						if (II.InstructionOperandPatch)
 						{
 							if (patchelem == null) patchelem = xInstruction.CreateCompressedElement(SST.InstructionPatch);
-							Operand2Node(patchelem, II.NewInstruction, false);
+							xmlInstructionModifiedList.Operand2Node(patchelem, II.NewInstruction);
 						}
 
 						if (patchelem != null)
@@ -109,7 +135,7 @@ namespace ILPatcher.Data.Actions
 					xInstruction.CreateAttribute(SST.InstructionNum, II.NewInstructionNum.ToString());
 					xInstruction.CreateAttribute(SST.OpCode, II.NewInstruction.OpCode.Name);
 					if (PatchStatus != PatchStatus.Broken) // maby safer if == PatchStatus.WoringPerfectly 
-						Operand2Node(xInstruction, II.NewInstruction, false);
+						xmlInstructionModifiedList.Operand2Node(xInstruction, II.NewInstruction);
 					instructionPos++;
 				}
 			}
@@ -126,13 +152,7 @@ namespace ILPatcher.Data.Actions
 
 			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Careful, "Node ", input.Name, " has no Childnodes"); PatchStatus = PatchStatus.Broken; return false; }
 
-			XmlElement PatchList = null;
-			for (int i = 0; i < input.ChildNodes.Count; i++)
-				if (input.ChildNodes[i].Name == nc[SST.PatchList])
-				{
-					PatchList = input.ChildNodes[i] as XmlElement;
-					break;
-				}
+			XmlNode PatchList = input.GetChildNode(SST.PatchList, 0);
 			if (PatchList == null) { Log.Write(Log.Level.Error, "No PatchList Child found"); PatchStatus = PatchStatus.Broken; return false; }
 
 			string metpathunres = PatchList.GetAttribute(SST.MethodPath);
@@ -140,11 +160,12 @@ namespace ILPatcher.Data.Actions
 			methodDefinition = dataStruct.ReferenceTable.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
 			if (methodDefinition == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
 
+			// TODO: move methodDef related checks to Execute
 			OriginalInstructionCount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
 			if (methodDefinition.Body.Instructions.Count != OriginalInstructionCount)
 			{
 				// new method body has changed -> patching the new assembly will not work
-				Log.Write(Log.Level.Error, "The PatchAction \"", ActionName, "\" cannot be applied to a changend method"); PatchStatus = PatchStatus.Broken; return false;
+				Log.Write(Log.Level.Error, "The PatchAction \"", this.Name, "\" cannot be applied to a changend method"); PatchStatus = PatchStatus.Broken; return false;
 			}
 
 			// TODO: init with given params, instead of static
@@ -152,11 +173,13 @@ namespace ILPatcher.Data.Actions
 			bool checkopcdes = true;
 			bool resolveparams = false; // resolves types/methods/...
 			bool checkprimitives = true; // checks if primitive types are identical
-
-			List<PostInitData> postinitbrs = new List<PostInitData>();
+			
+			var xmlInstructionLoader = new XMLInstruction<InstructionInfo>(
+				dataStruct.ReferenceTable,
+				methodDefinition);
 
 			#region Load all InstructionInfo
-			foreach (XmlElement xelem in PatchList.ChildNodes)
+			foreach (XmlNode xelem in PatchList.ChildNodes)
 			{
 				if (xelem.Name != nc[SST.Instruction]) { Log.Write(Log.Level.Warning, "PatchList elemtent \"", xelem.Name, "\" is not recognized"); PatchStatus = PatchStatus.Broken; continue; }
 
@@ -203,7 +226,7 @@ namespace ILPatcher.Data.Actions
 
 					if (xelem.ChildNodes.Count == 1) // check if patchnode exists
 					{
-						XmlElement xpatchelem = xelem.ChildNodes[0] as XmlElement;
+						XmlNode xpatchelem = xelem.ChildNodes[0];
 
 						string instnum = xpatchelem.GetAttribute(SST.InstructionNum);
 						if (string.IsNullOrEmpty(instnum)) // check InstructionNum Patch
@@ -218,7 +241,7 @@ namespace ILPatcher.Data.Actions
 						else
 							patchopc = ILManager.OpCodeLookup[patchopcode];
 
-						nII.NewInstruction = Node2Instruction(xpatchelem, patchopc, nII.NewInstructionNum, postinitbrs);
+						nII.NewInstruction = xmlInstructionLoader.Node2Instruction(xpatchelem, patchopc, nII.NewInstructionNum);
 						if (nII.NewInstruction == null)
 							nII.NewInstruction = ILManager.GenInstruction(patchopc, nII.OldInstruction.Operand);
 					}
@@ -232,7 +255,7 @@ namespace ILPatcher.Data.Actions
 				{
 					nII.OldInstructionNum = -1;
 					nII.NewInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
-					nII.NewInstruction = Node2Instruction(xelem, opcode, nII.NewInstructionNum, postinitbrs);
+					nII.NewInstruction = xmlInstructionLoader.Node2Instruction(xelem, opcode, nII.NewInstructionNum);
 					if (nII.NewInstruction == null)
 					{
 						PatchStatus = PatchStatus.Broken;
@@ -252,19 +275,19 @@ namespace ILPatcher.Data.Actions
 			#region Check for not loaded Instructions
 			if (!instructPatchList.All(x => x != null))
 			{
-				Log.Write(Log.Level.Error, "PatchList has holes: ", string.Join<int>(", ", instructPatchList.Select((b, i) => b == null ? i : -1).Where(i => i != -1).ToArray()));
+				Log.Write(Log.Level.Error, "PatchList has holes: ", string.Join(", ", instructPatchList.Select((b, i) => b == null ? i : -1).Where(i => i != -1).ToArray()));
 				PatchStatus = PatchStatus.Broken;
 				return false;
 			}
 			#endregion
 
 			#region Set all jump operands from PostInitData
-			foreach (PostInitData pid in postinitbrs)
+			foreach (PostInitData pid in xmlInstructionLoader.GetPostInitalisationList())
 			{
 				if (pid.isArray)
 				{
 					bool success = true;
-					instructPatchList[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll<int, Instruction>(pid.targetArray, a =>
+					instructPatchList[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll(pid.targetArray, a =>
 					{
 						InstructionInfo pidinstr = instructPatchList.First(x => x.NewInstructionNum == a);
 						if (pidinstr == null) { success = false; Log.Write(Log.Level.Error, "PID_At: ", a.ToString()); return null; }
@@ -285,237 +308,6 @@ namespace ILPatcher.Data.Actions
 				PatchStatus = PatchStatus.WoringPerfectly;
 
 			return true;
-		}
-
-		/// <summary>Saves an Operand from an Instruction to a Instruction XmlNode</summary>
-		/// <param name="xParent">The XmlNode where the new Instruction XmlNode will be added as child node</param>
-		/// <param name="i">The Instruction with the Operand to be saved</param>
-		/// <param name="OldI">If the Instruction is a branch, true will look for the target in the old Instruction list, false in the new one</param>
-		private void Operand2Node(XmlElement xParent, Instruction i, bool OldI)
-		{
-			OpCode oc = i.OpCode;
-			object operand = i.Operand;
-			StringBuilder strb;
-
-			switch (oc.OperandType)
-			{
-			case OperandType.InlineNone:
-				return;
-
-			case OperandType.InlineI:
-			case OperandType.InlineI8:
-			case OperandType.InlineR:
-			case OperandType.InlineString:
-			case OperandType.ShortInlineI:
-			case OperandType.ShortInlineR:
-				xParent.CreateAttribute(SST.PrimitiveValue, operand.ToString());
-				break;
-
-			case OperandType.InlineField:
-			case OperandType.InlineMethod:
-			case OperandType.InlineTok:
-			case OperandType.InlineType:
-				xParent.CreateAttribute(SST.Resolve, dataStruct.ReferenceTable.Reference(operand).ToBaseAlph());
-				break;
-
-			case OperandType.InlineArg:
-			case OperandType.ShortInlineArg:
-				ParameterReference parref = ((ParameterReference)operand); // TODO: check this
-				strb = new StringBuilder();
-				strb.Append(parref.Index.ToString());
-				strb.Append(' ');
-				strb.Append(dataStruct.ReferenceTable.Reference(parref.ParameterType).ToBaseAlph());
-				xParent.CreateAttribute(SST.Resolve, strb.ToString());
-				break;
-
-			case OperandType.InlineVar:
-			case OperandType.ShortInlineVar:
-				VariableReference varref = ((VariableReference)operand); // TODO: check this
-				strb = new StringBuilder();
-				strb.Append(varref.Index.ToString());
-				strb.Append(' ');
-				strb.Append(dataStruct.ReferenceTable.Reference(varref.VariableType).ToBaseAlph());
-				xParent.CreateAttribute(SST.Resolve, strb.ToString());
-				break;
-
-			case OperandType.InlineBrTarget:
-			case OperandType.ShortInlineBrTarget:
-				xParent.CreateAttribute(SST.BrTargetIndex, FindInstruction((Instruction)i.Operand, OldI).ToString());
-				break;
-
-			case OperandType.InlineSwitch:
-				strb = new StringBuilder();
-				Instruction[] arr = (Instruction[])operand;
-				foreach (Instruction instr in arr)
-				{
-					strb.Append(FindInstruction(instr, OldI));
-					strb.Append(' ');
-				}
-				xParent.CreateAttribute(SST.BrTargetArray, strb.ToString());
-				break;
-
-			case OperandType.InlineSig:
-			case OperandType.InlinePhi:
-			default:
-				Log.Write(Log.Level.Error, "Opcode not processed: ", oc.Name);
-				break;
-			}
-		}
-
-		/// <summary>Reads an XmlNode and creates an Instruction from the data</summary>
-		/// <param name="xOperandNode">The XmlElement containing the operand info, created by Operand2Node</param>
-		/// <param name="opcode">The OpCode the new Instruction should have, independently of the XmlElement</param>
-		/// <param name="nInstructionNum">The NewInstructionNum the Instruction will have after the patch (InstructionInfo.NewInstructionNum)</param>
-		/// <param name="postinitbrs">A reference to the PostInitData list, in order to load branch Instructions correctly</param>
-		/// <returns>Returns the new Instruction if succeeded, null otherwise</returns>
-		private Instruction Node2Instruction(XmlElement xOperandNode, OpCode opcode, int nInstructionNum, List<PostInitData> postinitbrs)
-		{
-			switch (opcode.OperandType)
-			{
-			case OperandType.InlineNone:
-				return ILManager.GenInstruction(opcode, null);
-
-			case OperandType.InlineI:
-			case OperandType.InlineI8:
-			case OperandType.InlineR:
-			case OperandType.InlineString:
-			case OperandType.ShortInlineI:
-			case OperandType.ShortInlineR:
-				string primVal;
-				if (xOperandNode.GetAttribute(SST.PrimitiveValue, out primVal))
-					return ILManager.GenInstruction(opcode, primVal);
-				else
-					Log.Write(Log.Level.Error, "Expected 'PrimitiveValue' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
-				break;
-
-			case OperandType.InlineField:
-			case OperandType.InlineMethod:
-			case OperandType.InlineTok:
-			case OperandType.InlineType:
-				string opVal = xOperandNode.GetAttribute(SST.Resolve);
-				if (!string.IsNullOrEmpty(opVal))
-					return ILManager.GenInstruction(opcode, dataStruct.ReferenceTable.Resolve(opVal.ToBaseInt()));
-				else
-					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
-				break;
-
-			case OperandType.InlineArg:
-			case OperandType.ShortInlineArg:
-				string[] parArrVal = xOperandNode.GetAttribute(SST.Resolve).Split(' ');
-				if (parArrVal.Length != 2)
-				{
-					int parIndexVal = int.Parse(parArrVal[0]);
-					//object parTypVal = ILManager.Instance.Resolve(parArrVal[1].ToBaseInt());
-					return ILManager.GenInstruction(opcode, methodDefinition.Parameters[parIndexVal]);
-				}
-				else
-					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
-				break;
-
-			case OperandType.InlineVar:
-			case OperandType.ShortInlineVar:
-				string[] varArrVal = xOperandNode.GetAttribute(SST.Resolve).Split(' ');
-				if (varArrVal.Length != 2)
-				{
-					int varIndexVal = int.Parse(varArrVal[0]);
-					//object varTypVal = ILManager.Instance.Resolve(varArrVal[1].ToBaseInt());
-					return ILManager.GenInstruction(opcode, methodDefinition.Parameters[varIndexVal]);
-				}
-				else
-					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
-				break;
-
-			case OperandType.InlineBrTarget:
-			case OperandType.ShortInlineBrTarget:
-				string briVal = xOperandNode.GetAttribute(SST.BrTargetIndex);
-				if (!string.IsNullOrEmpty(briVal))
-				{
-					PostInitData pid = new PostInitData();
-					pid.InstructionNum = nInstructionNum;
-					pid.isArray = false;
-					pid.targetNum = int.Parse(briVal);
-					postinitbrs.Add(pid);
-					ILManager.GenInstruction(opcode, Instruction.Create(OpCodes.Nop));
-				}
-				break;
-
-			case OperandType.InlineSwitch:
-				string braVal = xOperandNode.GetAttribute(SST.BrTargetArray);
-				if (!string.IsNullOrEmpty(braVal))
-				{
-					PostInitData pid = new PostInitData();
-					pid.InstructionNum = nInstructionNum;
-					pid.isArray = true;
-					pid.targetArray = Array.ConvertAll<string, int>(braVal.Trim().Split(new[] { ' ' }), s => int.Parse(s));
-					postinitbrs.Add(pid);
-					ILManager.GenInstruction(opcode, new Instruction[0]);
-				}
-				break;
-
-			case OperandType.InlineSig:
-			case OperandType.InlinePhi:
-			default:
-				Log.Write(Log.Level.Error, "Opcode not processed: ", opcode.Name);
-				break;
-			}
-			return null;
-		}
-
-		/// <summary>Looks for the index of a Instruction</summary>
-		/// <param name="i">The instruction to be searched</param>
-		/// <param name="OldI">True will look for the target in the old Instruction list, false in the new one</param>
-		/// <returns></returns>
-		private int FindInstruction(Instruction i, bool OldI)
-		{
-			int res = -1;
-			if (OldI)
-				res = methodDefinition.Body.Instructions.IndexOf(i);
-			else
-			{
-				InstructionInfo fII = instructPatchList.First<InstructionInfo>(x => x.NewInstruction == i);
-				if (fII != null) res = fII.NewInstructionNum;
-			}
-
-			if (res == -1) Log.Write(Log.Level.Warning, "Instruction not found: ", i.Offset.ToString());
-			return res;
-		}
-
-		/// <summary>Sets the status of the Patch to "WorkingPerfectly" and and saves the given MethodDefinition</summary>
-		/// <param name="MetDef">The MethodDefinition for this Patch</param>
-		public void SetInitWorking(MethodDefinition MetDef)
-		{
-			methodDefinition = MetDef;
-			OriginalInstructionCount = MetDef.Body.Instructions.Count;
-			PatchStatus = PatchStatus.WoringPerfectly;
-		}
-
-		/// <summary>Data staructure to save branch Instructions in order to initialize the later</summary>
-		private class PostInitData
-		{
-			/// <summary>The index of the branch Instruction after the patch</summary>
-			public int InstructionNum;
-			/// <summary>True if the Instruction is a switch, false if single branch</summary>
-			public bool isArray;
-			/// <summary>The branch target index after the patch</summary>
-			public int targetNum;
-			/// <summary>The switch targets after the patch</summary>
-			public int[] targetArray;
-
-			/// <summary>Prints a human readable branch patch</summary>
-			/// <returns>Returns the String</returns>
-			public override string ToString()
-			{
-				if (isArray)
-				{
-					if (targetArray != null)
-						return InstructionNum + " -> {" + string.Join(", ", targetArray) + "}";
-					else
-						return InstructionNum + " -> null";
-				}
-				else
-					return InstructionNum + " -> " + targetNum;
-			}
-
 		}
 	}
 }

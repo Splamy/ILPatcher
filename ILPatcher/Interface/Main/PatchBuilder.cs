@@ -64,7 +64,7 @@ namespace ILPatcher.Interface.Main
 				patchActionType = patchAction.PatchActionType;
 			}
 
-			EditorPatchAction editorform;
+			IEditorPatchAction editorform;
 			switch (patchActionType)
 			{
 			case PatchActionType.ILMethodFixed:
@@ -87,7 +87,7 @@ namespace ILPatcher.Interface.Main
 			}
 
 			editorform.SetPatchData(patchAction);
-			((SwooshPanel)Parent).PushPanel(editorform, "PatchAction: " + editorform.PanelName);
+			((SwooshPanel)Parent).PushPanel((Control)editorform, "PatchAction: " + editorform.PanelName);
 		}
 
 		private void SetPatchAction(PatchAction patchAction)

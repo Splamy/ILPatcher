@@ -204,7 +204,7 @@ namespace ILPatcher.Interface.Main
 			csc.Code = test;
 			MethodDefinition md = csc.GetMethodDefinition(string.Empty, string.Empty);
 			if (md == null) return;
-			TypeDefinition tdret = (TypeDefinition)structureViever.FindTypeByName("-.System.Void");
+			TypeDefinition tdret = (TypeDefinition)dataStruct.ILNodeManager.FindMemberByPath("-.System.Void");
 			if (tdret == null) return;
 			MethodDefinition md2 = new MethodDefinition("blub", MethodAttributes.Public, tdret);
 			TypDef.Methods.Add(md2);

@@ -11,11 +11,12 @@ using System.Windows.Forms;
 
 namespace ILPatcher.Interface.Actions
 {
-	public partial class EditorILPattern : EditorPatchAction
+	public partial class EditorILPattern : EditorPatchAction<PatchActionILMethodFixed>
 	{
-		public override string PanelName { get { return "ILMethodFixed"; } }
+		//I: EditorPanel
+		public override string PanelName { get { return "Instruction Editor"; } }
+		public override bool IsInline { get { return false; } }
 
-		private PatchActionILMethodFixed patchAction;
 		private MethodDefinition methodDefinition;
 		private Control[] OperandCList;
 		private PickOperandType currentPOT = PickOperandType.None;
@@ -62,16 +63,16 @@ namespace ILPatcher.Interface.Actions
 		{
 			if (methodDefinition != null)
 			{
-				if (patchAction == null)
+				if (myData == null)
 				{
-					patchAction = new PatchActionILMethodFixed(dataStruct);
-					patchAction.SetInitWorking(methodDefinition);
+					myData = new PatchActionILMethodFixed(dataStruct);
+					myData.PassTarget(methodDefinition);
 
-					patchAction.instructPatchList = mInstructBox.Items.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+					myData.instructPatchList = mInstructBox.Items.ConvertAll(x => (InstructionInfo)x);
 				}
 
-				patchAction.ActionName = txtPatchActionName.Text;
-				dataStruct.PatchActionList.Add(patchAction);
+				myData.Name = txtPatchActionName.Text;
+				dataStruct.PatchActionList.Add(myData);
 			}
 
 			((SwooshPanel)Parent).SwooshBack();
@@ -242,20 +243,21 @@ namespace ILPatcher.Interface.Actions
 
 		// LOAD METHODS ******************************************************
 
-		public override void SetPatchData(PatchAction pPatchAction)
+		public override PatchAction CreateNewEntryPart()
 		{
-			mInstructBox.ClearItems(); // TODO check if necessart sincea new Editor gets created each time
+			return new PatchActionILMethodFixed(dataStruct);
+		}
 
-			patchAction = (PatchActionILMethodFixed)pPatchAction;
-
-			methodDefinition = patchAction.methodDefinition;
+		protected override void OnPatchDataSet()
+		{
+			methodDefinition = myData.methodDefinition;
 			if (methodDefinition != null)
 				txtMethodFullName.Text = methodDefinition.FullName;
-			txtPatchActionName.Text = patchAction.ActionName;
+			txtPatchActionName.Text = myData.Name;
 
-			if (patchAction.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", patchAction.ActionName, " is not initialized correctly"); return; }
+			if (myData.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", myData.Name, " is not initialized correctly"); return; }
 
-			mInstructBox.Items = patchAction.instructPatchList.ConvertAll<DragItem>(x => (DragItem)x);
+			mInstructBox.Items = myData.instructPatchList.ConvertAll(x => (DragItem)x);
 		}
 
 		public void LoadMetDef(MethodDefinition pMethodDefinition)
@@ -265,7 +267,7 @@ namespace ILPatcher.Interface.Actions
 
 			mInstructBox.ClearItems();
 
-			patchAction = null;
+			myData = null;
 
 			txtMethodFullName.Text = pMethodDefinition.FullName;
 			methodDefinition = pMethodDefinition;

@@ -27,21 +27,9 @@ namespace ILPatcher.Utility
 		/// <param name="xelem">The XmlElement where the attribute should be added</param>
 		/// <param name="name">The SSD-ID of the element, which will be converted with the NameCompressor and used as the name for the attribute</param>
 		/// <param name="value">The value for the new attribute</param>
-		public static void CreateAttribute(this XmlElement xelem, SST name, string value)
+		public static void CreateAttribute(this XmlNode xelem, SST name, string value)
 		{
 			XmlAttribute NewAttribute = xelem.OwnerDocument.CreateAttribute(nc[name]);
-			NewAttribute.Value = value;
-			xelem.Attributes.Append(NewAttribute);
-		}
-
-		/// <summary>Creates an attribute for a XmlElement and appends it</summary>
-		/// <param name="xelem">The XmlElement where the attribute should be added</param>
-		/// <param name="name">The ID of the element, which will be converted ToBaseAlph and used as the name for the attribute</param>
-		/// <param name="value">The value for the new attribute</param>
-		[ObsoleteAttribute("Dynamic attributes are dangerous!", false)]
-		public static void CreateAttribute(this XmlElement xelem, int name, string value)
-		{
-			XmlAttribute NewAttribute = xelem.OwnerDocument.CreateAttribute(name.ToBaseAlph());
 			NewAttribute.Value = value;
 			xelem.Attributes.Append(NewAttribute);
 		}
@@ -50,7 +38,7 @@ namespace ILPatcher.Utility
 		/// <param name="xelem">The XmlElement with the attribute</param>
 		/// <param name="name">SST-Name of the attribute</param>
 		/// <returns>Returns the value of the attribute if the attribute exist, otherwise string.Empty</returns>
-		public static string GetAttribute(this XmlElement xelem, SST name)
+		public static string GetAttribute(this XmlNode xelem, SST name)
 		{
 			XmlAttribute res = xelem.Attributes[nc[name]];
 			if (res != null)
@@ -64,7 +52,7 @@ namespace ILPatcher.Utility
 		/// <param name="name">SST-Name of the attribute</param>
 		/// <param name="value">The read value (can be string.Empty)</param>
 		/// <returns>Returns true if the attribute exists, otherwise false</returns>
-		public static bool GetAttribute(this XmlElement xelem, SST name, out string value)
+		public static bool GetAttribute(this XmlNode xelem, SST name, out string value)
 		{
 			XmlAttribute res = xelem.Attributes[nc[name]];
 			if (res != null)
@@ -80,13 +68,13 @@ namespace ILPatcher.Utility
 		}
 
 		/// <summary>Creates a copy of the given XmlElement with all attributes and appends it. Subnodes won't be copied.
-		/// This method can be used to copy a XmlElement from a another XmlDocument.</summary>
+		/// This method can be used to copy a XmlElement from an another XmlDocument.</summary>
 		/// <param name="xelem">The XmlElement where the copied XmlElement will be added</param>
 		/// <param name="child">The XmlElement to be copied</param>
-		public static void AppendClonedChild(this XmlElement xelem, XmlElement child)
+		public static void AppendClonedChild(this XmlNode xelem, XmlNode child)
 		{
 			XmlDocument xDoc = xelem.OwnerDocument;
-			XmlElement xnew = xDoc.CreateElement(child.Name);
+			XmlNode xnew = xDoc.CreateElement(child.Name);
 			foreach (XmlAttribute xatt in child.Attributes)
 			{
 				XmlAttribute NewAttribute = xDoc.CreateAttribute(xatt.Name);
@@ -104,11 +92,11 @@ namespace ILPatcher.Utility
 		/// Since the new XmlElement won't be added it doesn't matter</param>
 		/// <param name="name">The SSD-ID of the element, which will be converted with the NameCompressor and used as the name for the XmlElement</param>
 		/// <returns>Returns a new XmlElement with the give values</returns>
-		public static XmlElement CreateCompressedElement(this XmlNode xelem, SST name)
+		public static XmlNode CreateCompressedElement(this XmlNode xelem, SST name)
 		{
 			if (xelem.NodeType == XmlNodeType.Document)
 				return ((XmlDocument)xelem).CreateElement(nc[name]);
-			else	//if (xelem.NodeType == XmlNodeType.Element)
+			else    //if (xelem.NodeType == XmlNodeType.Element)
 				return xelem.OwnerDocument.CreateElement(nc[name]);
 		}
 
@@ -117,30 +105,47 @@ namespace ILPatcher.Utility
 		/// <param name="xelem">A XmlNode or XmlDocument where the new XmlElement should be added</param>
 		/// <param name="name">The SSD-ID of the element, which will be converted with the NameCompressor and used as the name for the XmlElement</param>
 		/// <returns>Returns the new XmlElement with the give values</returns>
-		public static XmlElement InsertCompressedElement(this XmlNode xelem, SST name)
+		public static XmlNode InsertCompressedElement(this XmlNode xelem, SST name)
 		{
-			XmlElement tmpnode;
+			XmlNode tmpnode;
 			if (xelem.NodeType == XmlNodeType.Document)
 				tmpnode = ((XmlDocument)xelem).CreateElement(nc[name]);
-			else	//if (xelem.NodeType == XmlNodeType.Element)
+			else    //if (xelem.NodeType == XmlNodeType.Element)
 				tmpnode = xelem.OwnerDocument.CreateElement(nc[name]);
 			xelem.AppendChild(tmpnode);
 			return tmpnode;
 		}
 
-		/// <summary>Creates a new XmlElement with the given ID and appends it.</summary>
+		/// <summary>Creates a new XmlElement with the given ID and appends it</summary>
 		/// <param name="xelem">A XmlNode or XmlDocument where the new XmlElement should be added</param>
 		/// <param name="name">The ID of the element, which will be converted ToBaseAlph and used as the name for the XmlElement</param>
 		/// <returns>Returns the new XmlElement with the give values</returns>
-		public static XmlElement InsertCompressedElement(this XmlNode xelem, int name)
+		public static XmlNode InsertCompressedElement(this XmlNode xelem, int name)
 		{
-			XmlElement tmpnode;
+			XmlNode tmpnode;
 			if (xelem.NodeType == XmlNodeType.Document)
 				tmpnode = ((XmlDocument)xelem).CreateElement(name.ToBaseAlph());
-			else	//if (xelem.NodeType == XmlNodeType.Element)
+			else    //if (xelem.NodeType == XmlNodeType.Element)
 				tmpnode = xelem.OwnerDocument.CreateElement(name.ToBaseAlph());
 			xelem.AppendChild(tmpnode);
 			return tmpnode;
+		}
+
+		/// <summary>Returns the first occourence of a node with the given SST name</summary>
+		/// <param name="xelem">The XmlNode containing the searched XmlElement</param>
+		/// <param name="name">The SST name of the searched Element</param>
+		/// <param name="startIndex">The child index where to seach from on</param>
+		/// <returns>Returns the XMLElement if found, null otherwise.</returns>
+		public static XmlNode GetChildNode(this XmlNode xelem, SST name, int startIndex)
+		{
+			XmlNode returnElement = null;
+			for (int i = Math.Max(0, startIndex); i < xelem.ChildNodes.Count; i++)
+				if (xelem.ChildNodes[i].Name == nc[name])
+				{
+					returnElement = xelem.ChildNodes[i];
+					break;
+				}
+			return returnElement;
 		}
 
 		// Point ********************************************************************

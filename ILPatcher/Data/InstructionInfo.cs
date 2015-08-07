@@ -5,6 +5,7 @@ using System.Drawing;
 
 namespace ILPatcher.Data
 {
+	// TODO: rework! seperate data and interface
 	public class InstructionInfo : DragItem
 	{
 		public int dragFrom = -1;

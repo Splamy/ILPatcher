@@ -8,11 +8,11 @@ using System.Drawing;
 
 namespace ILPatcher.Interface.Actions
 {
-	public partial class EditorMethodCreator : EditorPatchAction
+	public partial class EditorMethodCreator : EditorPatchAction<PatchActionMethodCreator>
 	{
-		public override string PanelName { get { return "PatchAction: ILMethodCreator"; } }
+		public override string PanelName { get { return "Method-Creator"; } }
+		public override bool IsInline { get { return false; } }
 
-		private PatchActionMethodCreator patchAction;
 		private MethodDefinition blankMethodDefinition;
 		private TypeDefinition insertClass;
 
@@ -50,14 +50,11 @@ namespace ILPatcher.Interface.Actions
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			if (patchAction == null)
+			if (myData == null)
 			{
-				patchAction = new PatchActionMethodCreator(dataStruct);
-				patchAction.ActionName = string.Format("MethodCreator: <{0}> inserts {1} -> {2}",
-					txtPatchActionName.Text,
-					blankMethodDefinition == null ? "<>" : blankMethodDefinition.Name,
-					insertClass == null ? "<>" : insertClass.Name);
-				dataStruct.PatchActionList.Add(patchAction);
+				myData = new PatchActionMethodCreator(dataStruct);
+				myData.Name = txtPatchActionName.Text;
+				dataStruct.PatchActionList.Add(myData);
 			}
 			((SwooshPanel)Parent).SwooshBack();
 		}
@@ -68,10 +65,14 @@ namespace ILPatcher.Interface.Actions
 			//MethodDefinition md = csc.InjectCode(txtInjectCode.Text);
 		}
 
-		public override void SetPatchData(PatchAction pPatchAction)
+		public override PatchAction CreateNewEntryPart()
 		{
-			PatchActionMethodCreator pamc = (PatchActionMethodCreator)pPatchAction;
-			patchAction = pamc;
+			throw new NotImplementedException();
+		}
+
+		protected override void OnPatchDataSet()
+		{
+			// TODO: visualize
 		}
 
 		private void button2_Click(object sender, EventArgs e)

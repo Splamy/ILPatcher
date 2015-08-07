@@ -132,7 +132,7 @@ namespace ILPatcher.Interface
 				Nodes.Clear();
 				ExtensionNode.Nodes.Clear();
 			}
-			foreach (ILNode iln in getAllNodes())
+			foreach (ILNode iln in dataStruct.ILNodeManager.GetAllModules())
 			{
 				if ((iln.Flags & (StructureView.basestructure | FilterElements)) != StructureView.none)
 				{
@@ -235,10 +235,10 @@ namespace ILPatcher.Interface
 		public void InitTree(AssemblyDefinition AssDef, int SubResolveDepth = 0)
 		{
 			if (AssDef == null) return;
-			if (dataStruct.ModuleList.ContainsKey(AssDef.Name.Name)) return;
+			if (dataStruct.ILNodeManager.IsModuleLoaded(AssDef.Name.Name)) return;
 
 			ILNode ilParent = new ILNode(AssDef.Name.Name, AssDef.FullName, AssDef, StructureView.structure); // StructureView.Module
-			dataStruct.ModuleList.Add(AssDef.Name.Name, ilParent);
+			dataStruct.ILNodeManager.AddModule(AssDef.Name.Name, ilParent);
 
 			foreach (ModuleDefinition ModDef in AssDef.Modules)
 			{
@@ -334,61 +334,6 @@ namespace ILPatcher.Interface
 				LoadSubItemsRecursive(tnSubTypDef, SubTypDef);
 			}
 			#endregion
-		}
-
-		/// <summary>Returns a collection of all loaded ILNode Assemblys</summary>
-		/// <returns>Returns a ILNode Assembly collection</returns>
-		public ICollection<ILNode> getAllNodes()
-		{
-			return dataStruct.ModuleList.Values;
-		}
-
-		/// <summary>Searches for the Cecil Typ/Met/Fld/... matching the seatch path in the loaded ILNode ModuleList</summary>
-		/// <param name="path">A path of the form "asseblyname.namespace.class" or "-.namespace.class.method" to search all assemblys</param>
-		/// <returns>Returns the Cecil object if found, otherwise null</returns>
-		public object FindTypeByName(string path)
-		{
-			string[] pathbreaks = path.Split(new[] { '.', '/' });
-
-			if (pathbreaks.Length == 0)
-			{
-				Log.Write(Log.Level.Warning, "FindTypeByName path is empty");
-				return null;
-			}
-
-			if (pathbreaks[0] == "-")
-			{
-				foreach (ILNode child in dataStruct.ModuleList.Values)
-				{
-					object res = FindTypeByNameRecursive(child, pathbreaks, 1);
-					if (res != null) return res;
-				}
-			}
-			else if (dataStruct.ModuleList.ContainsKey(pathbreaks[0]))
-			{
-				return FindTypeByNameRecursive(dataStruct.ModuleList[pathbreaks[0]], pathbreaks, 1);
-			}
-			return null;
-		}
-
-		/// <summary>Traverses the loaded ILNode children and searches the current path index in its children</summary>
-		/// <param name="searchnode">The ILNode with the children for the current path index</param>
-		/// <param name="path">The array of all path parts</param>
-		/// <param name="index">The current path index</param>
-		/// <returns></returns>
-		private object FindTypeByNameRecursive(ILNode searchnode, string[] path, int index)
-		{
-			if (index >= path.Length) return null;
-
-			foreach (ILNode child in searchnode.Children)
-			{
-				if (child.Name == path[index])
-				{
-					if (index == path.Length - 1) return child.Value;
-					else return FindTypeByNameRecursive(child, path, index + 1);
-				}
-			}
-			return null;
 		}
 	}
 
