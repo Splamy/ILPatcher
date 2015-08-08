@@ -1,6 +1,5 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Actions;
-using ILPatcher.Interface.General;
 using ILPatcher.Utility;
 using MetroObjects;
 using Mono.Cecil;
@@ -263,7 +262,7 @@ namespace ILPatcher.Interface.Actions
 		public void LoadMetDef(MethodDefinition pMethodDefinition)
 		{
 			if (pMethodDefinition == null)
-				throw new ArgumentNullException("methodDefinition");
+				throw new ArgumentNullException(nameof(pMethodDefinition));
 
 			mInstructBox.ClearItems();
 

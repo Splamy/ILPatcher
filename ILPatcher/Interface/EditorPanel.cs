@@ -15,14 +15,14 @@ namespace ILPatcher.Interface
 		public abstract Kind CreateNewEntryPart();
 		public void SetPatchData(Kind pPatchAction)
 		{
-			if (pPatchAction == null) throw new ArgumentNullException("pPatchAction");
+			if (pPatchAction == null) throw new ArgumentNullException(nameof(pPatchAction));
 			var tmp = pPatchAction as Spec;
 			if (tmp == null) throw new InvalidOperationException("The passed parameter is not designed for this interface element");
-            myData = tmp;
+			myData = tmp;
 			OnPatchDataSet();
 		}
 		protected abstract void OnPatchDataSet();
-		
+
 		protected EditorPanel(DataStruct dataAssociation) { dataStruct = dataAssociation; }
 	}
 

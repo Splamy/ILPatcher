@@ -38,7 +38,6 @@ namespace ILPatcher.Data.Finder
 
 		public override bool Save(XmlNode output)
 		{
-			NameCompressor nc = NameCompressor.Instance;
 			var xmlPathElement = output.InsertCompressedElement(SST.ILNodePath);
 			xmlPathElement.Value = ILNodePath;
 			return true;
@@ -47,10 +46,9 @@ namespace ILPatcher.Data.Finder
 		public override bool Load(XmlNode input)
 		{
 			Validator val = new Validator();
-			NameCompressor nc = NameCompressor.Instance;
 			var xmlPathElement = input.GetChildNode(SST.ILNodePath, 0);
-			val.ValidateSet(xmlPathElement, () => "No ILNodePath element found!");
-			if (!val.Ok) return false;
+			if (!val.ValidateSet(xmlPathElement, () => "No ILNodePath element found!")) return false;
+
 			ILNodePath = xmlPathElement.Value;
 			return val.Ok;
 		}

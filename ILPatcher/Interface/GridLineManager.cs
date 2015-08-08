@@ -258,8 +258,6 @@ namespace ILPatcher.Interface
 
 		private class BlankElement : LayoutElement
 		{
-			public Control control;
-
 			public BlankElement(ArrangementType arrTyp, int minVal)
 				: base(null, arrTyp, minVal)
 			{ }
@@ -334,7 +332,7 @@ namespace ILPatcher.Interface
 			public Rational(int numerator, int denominator)
 			{
 				if (denominator <= 0)
-					throw new ArgumentException("denominator must be positive");
+					throw new ArgumentException(nameof(denominator) + "must be positive");
 				this.numerator = numerator;
 				this.denominator = numerator == 0 ? 1 : denominator;
 				Reduce();

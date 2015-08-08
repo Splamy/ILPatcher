@@ -133,6 +133,9 @@ namespace ILPatcher.Utility
 
 		public void Add(TreeListNode<T> item)
 		{
+			if (item == null)
+				throw new ArgumentNullException(nameof(item));
+
 			var end = children.Last();
 			end.next = item;
 			item.previous = end;
@@ -161,7 +164,7 @@ namespace ILPatcher.Utility
 		public bool Remove(TreeListNode<T> item)
 		{
 			if (item == null)
-				throw new ArgumentNullException("item");
+				throw new ArgumentNullException(nameof(item));
 
 			if (item.next != null)
 			{

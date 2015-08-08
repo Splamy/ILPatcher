@@ -8,19 +8,19 @@ using System.Xml;
 
 namespace ILPatcher.Data
 {
-	public class DataStruct : ISaveToFile // TODO: Find a better name ^^
+	public sealed class DataStruct : ISaveToFile // TODO: Find a better name ^^
 	{
-		public AssemblyDefinition AssemblyDefinition { get; protected set; }
-		public string AssemblyLocation { get; protected set; }
-		public AssemblyStatus AssemblyStatus { get; protected set; }
+		public AssemblyDefinition AssemblyDefinition { get; private set; }
+		public string AssemblyLocation { get; private set; }
+		public AssemblyStatus AssemblyStatus { get; private set; }
 
-		public string ILPLocation { get; protected set; }
+		public string ILPLocation { get; private set; }
 
-		public readonly List<PatchAction> PatchActionList;
-		public readonly List<TargetFinder> TargetFinderList;
-		public readonly TreeList<PatchEntry> PatchEntryList;
-		public readonly ILNodeManager ILNodeManager;
-		public readonly ILManager ReferenceTable;
+		public List<PatchAction> PatchActionList { get; }
+		public List<TargetFinder> TargetFinderList { get; }
+		public List<PatchEntry> PatchEntryList { get; }
+		public ILNodeManager ILNodeManager { get; }
+		public ILManager ReferenceTable { get; }
 
 		public delegate void FileLoadedDelegate(object sender);
 		public event FileLoadedDelegate OnILPFileLoaded;
@@ -30,31 +30,34 @@ namespace ILPatcher.Data
 		{
 			PatchActionList = new List<PatchAction>();
 			TargetFinderList = new List<TargetFinder>();
-			PatchEntryList = new TreeList<PatchEntry>();
+			PatchEntryList = new List<PatchEntry>();
 			ReferenceTable = new ILManager(this);
-			
+			ILNodeManager = new ILNodeManager(this);
+
 			ClearASM();
 		}
 
 		public bool Save(XmlNode output)
 		{
 			if (output == null)
-				throw new ArgumentNullException("output");
+				throw new ArgumentNullException(nameof(output));
 
+			int idNum = 0;
 			bool allOk = true;
 
 			XmlNode xILPTableNode = output.InsertCompressedElement(SST.ILPTable);
-
+			
 			XmlNode xPatchActionTable = xILPTableNode.InsertCompressedElement(SST.PatchActionTable);
 			foreach (PatchAction pa in PatchActionList)
-				allOk &= pa.Save(xPatchActionTable);
+				allOk &= Save(xPatchActionTable, pa, (idNum++).ToBaseAlph());
 
 			XmlNode xTargetFinderTable = xILPTableNode.InsertCompressedElement(SST.TargetFinderTable);
 			foreach (TargetFinder tf in TargetFinderList)
-				allOk &= tf.Save(xTargetFinderTable);
+				allOk &= Save(xPatchActionTable, tf, (idNum++).ToBaseAlph());
 
 			XmlNode xPatchEntryTable = xILPTableNode.InsertCompressedElement(SST.PatchEntryTable);
-			allOk &= SaveEntryRecursive(xPatchEntryTable, PatchEntryList);
+			foreach (PatchEntry pe in PatchEntryList)
+				allOk &= Save(xPatchActionTable, pe);
 
 			XmlNode xReferenceTable = xILPTableNode.InsertCompressedElement(SST.ReferenceTable);
 			allOk &= ReferenceTable.Save(xReferenceTable);
@@ -62,21 +65,37 @@ namespace ILPatcher.Data
 			return allOk;
 		}
 
-		private bool SaveEntryRecursive(XmlNode xnode, TreeListNode<PatchEntry> tlnode)
+		private bool Save(XmlNode xGroupNode, PatchAction patchAction, string ID)
 		{
-			bool allOk = true;
+			patchAction.ID = "PA_" + ID;
+            XmlNode xPatchAction = xGroupNode.InsertCompressedElement(SST.PatchAction);
+			xPatchAction.CreateAttribute(SST.PatchType, patchAction.PatchActionType.ToString());
+			xPatchAction.CreateAttribute(SST.ID, patchAction.ID);
+			xPatchAction.CreateAttribute(SST.Name, patchAction.Name);
+			return patchAction.Save(xPatchAction);
+		}
 
-			allOk = tlnode.Value.Save(xnode);
-			foreach (var tlchild in tlnode.Children)
-				allOk &= SaveEntryRecursive(xnode.LastChild, tlchild);
+		private bool Save(XmlNode xGroupNode, TargetFinder targetFinder, string ID)
+		{
+			targetFinder.ID = "TF_" + ID;
+			XmlNode xPatchAction = xGroupNode.InsertCompressedElement(SST.TargetFinder);
+			xPatchAction.CreateAttribute(SST.PatchType, targetFinder.TargetFinderType.ToString());
+			xPatchAction.CreateAttribute(SST.ID, targetFinder.ID);
+			xPatchAction.CreateAttribute(SST.Name, targetFinder.Name);
+			return targetFinder.Save(xPatchAction);
+		}
 
-			return allOk;
+		private bool Save(XmlNode xGroupNode, PatchEntry patchEntry)
+		{
+			XmlNode xPatchAction = xGroupNode.InsertCompressedElement(SST.PatchEntry);
+			xPatchAction.CreateAttribute(SST.Name, patchEntry.Name);
+			return patchEntry.Save(xPatchAction);
 		}
 
 		public bool Load(XmlNode input)
 		{
 			if (input == null)
-				throw new ArgumentNullException("input");
+				throw new ArgumentNullException(nameof(input));
 
 			NameCompressor nc = NameCompressor.Instance;
 			bool allOk = true;
@@ -108,14 +127,13 @@ namespace ILPatcher.Data
 				AssemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath);
 				AssemblyStatus = AssemblyStatus.RawAssemblyLoaded;
 			}
-			catch
+			catch // TODO: Error description
 			{
 				AssemblyStatus = AssemblyStatus.LoadFailed;
 				return;
 			}
 
-			if (OnASMFileLoaded != null)
-				OnASMFileLoaded(this);
+			OnASMFileLoaded?.Invoke(this);
 		}
 
 		public void OpenILP(string ilpPath)
@@ -142,8 +160,7 @@ namespace ILPatcher.Data
 				Log.Write(Log.Level.Error, "No PatchTable found!");
 			}
 
-			if (OnILPFileLoaded != null)
-				OnILPFileLoaded(this);
+			OnILPFileLoaded?.Invoke(this);
 		}
 
 		public void ClearILP()

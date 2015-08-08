@@ -1,7 +1,6 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Actions;
 using ILPatcher.Interface.Actions;
-using ILPatcher.Interface.General;
 using ILPatcher.Utility;
 using Mono.Cecil;
 using System;
@@ -53,7 +52,7 @@ namespace ILPatcher.Interface.Main
 			PatchActionType patchActionType;
 			if (PatchEntry == null || PatchEntry.PatchAction == null)
 			{
-				if (!Enum.TryParse<PatchActionType>(comboBox2.Text, out patchActionType))
+				if (!Enum.TryParse(comboBox2.Text, out patchActionType))
 				{
 					throw new InvalidOperationException("PatchActionType not found");
 				}

@@ -1,4 +1,4 @@
-﻿namespace ILPatcher.Interface.General
+﻿namespace ILPatcher.Interface
 {
 	partial class PatchQuestionWindow
 	{

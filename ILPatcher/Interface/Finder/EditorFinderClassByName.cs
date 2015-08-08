@@ -22,7 +22,7 @@ namespace ILPatcher.Interface.Finder
 
 		public EditorFinderClassByName(DataStruct dataStruct) : base(dataStruct)
 		{
-
+			InitializeGridLineManager();
 		}
 
 		private void InitializeGridLineManager()
@@ -44,24 +44,32 @@ namespace ILPatcher.Interface.Finder
 			myData.ILNodePath = txtVaue;
 			string[] pathParts = txtVaue.Split(new[] { '.', '/' });
 			if (pathParts.Length == ilNodePathLevel) return;
-			ilNodePathLevel = pathParts.Length;
+
+			int okTextIndex = txtVaue.LastIndexOfAny(ILNodeManager.Seperators);
+			string okText = txtVaue.Substring(0, okTextIndex + 1);
 			var source = new AutoCompleteStringCollection();
+
 			ICollection<ILNode> sourceCollection;
-			if (ilNodePathLevel == 0)
+			ilNodePathLevel = pathParts.Length;
+			if (ilNodePathLevel <= 1) // module
 			{
-				source.Add("-");
 				sourceCollection = dataStruct.ILNodeManager.GetAllModules();
 			}
-			else
+			else // rest
 			{
-				int okTextIndex = txtVaue.LastIndexOfAny(ILNodeManager.Seperators);
-				ILNode searchNode = dataStruct.ILNodeManager.FindNodeByPath(txtVaue.Substring(0, okTextIndex));
-				sourceCollection = searchNode?.Children;
+				sourceCollection = dataStruct.ILNodeManager.FindNodeByPath(txtVaue.Substring(0, okTextIndex))?.Children;
 			}
 
 			if (sourceCollection != null)
-				source.AddRange(sourceCollection.Select(node => node.Name).ToArray());
-			txtClassPath.AutoCompleteCustomSource = source;
+			{
+				if (ilNodePathLevel == 2)
+					source.AddRange(sourceCollection.Select(node => okText + node.Name.Replace('.', ':')).ToArray()); // HACK: improve
+				else
+					source.AddRange(sourceCollection.Select(node => okText + node.Name).ToArray());
+			}
+			if (source.Count > 0)
+				txtClassPath.AutoCompleteCustomSource = source;
+
 		}
 
 		public override TargetFinder CreateNewEntryPart()

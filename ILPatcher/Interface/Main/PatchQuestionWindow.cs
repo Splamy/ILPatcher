@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace ILPatcher.Interface.General
+namespace ILPatcher.Interface
 {
 	public partial class PatchQuestionWindow : Form
 	{

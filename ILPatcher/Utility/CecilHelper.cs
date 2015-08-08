@@ -16,7 +16,7 @@ namespace ILPatcher.Utility
 		public static TypeDefinition FindMatchingType(ICollection<TypeDefinition> types, string fullTypeName)
 		{
 			if (types == null)
-				throw new ArgumentNullException("types");
+				throw new ArgumentNullException(nameof(types));
 
 			foreach (var type in types)
 			{
@@ -33,7 +33,7 @@ namespace ILPatcher.Utility
 		public static TypeDefinition FindMatchingType(ModuleDefinition moduleDefinition, string fullTypeName)
 		{
 			if (moduleDefinition == null)
-				throw new ArgumentNullException("moduleDefinition");
+				throw new ArgumentNullException(nameof(moduleDefinition));
 
 			return FindMatchingType(moduleDefinition.Types, fullTypeName);
 		}
@@ -47,9 +47,9 @@ namespace ILPatcher.Utility
 		public static FieldDefinition FindMatchingField(TypeDefinition typeDefinition, FieldReference fieldReference)
 		{
 			if (typeDefinition == null)
-				throw new ArgumentNullException("typeDefinition");
+				throw new ArgumentNullException(nameof(typeDefinition));
 			if (fieldReference == null)
-				throw new ArgumentNullException("fieldReference");
+				throw new ArgumentNullException(nameof(fieldReference));
 
 			return typeDefinition.Fields.FirstOrDefault(fdef => (fdef.Name == fieldReference.Name)
 													&& (fdef.FieldType.FullName == fieldReference.FieldType.FullName));
@@ -64,9 +64,9 @@ namespace ILPatcher.Utility
 		public static bool ReferenceMatches(AssemblyNameReference assemblyNameReferenceA, AssemblyNameReference assemblyNameReferenceB)
 		{
 			if (assemblyNameReferenceA == null)
-				throw new ArgumentNullException("assemblyNameReferenceA");
+				throw new ArgumentNullException(nameof(assemblyNameReferenceA));
 			if (assemblyNameReferenceB == null)
-				throw new ArgumentNullException("assemblyNameReferenceB");
+				throw new ArgumentNullException(nameof(assemblyNameReferenceB));
 
 			return ((assemblyNameReferenceA.Name == assemblyNameReferenceB.Name) &&
 					(string.Compare(assemblyNameReferenceA.Version.ToString(2), assemblyNameReferenceB.Version.ToString(2), StringComparison.Ordinal) == 0) &&
@@ -102,9 +102,9 @@ namespace ILPatcher.Utility
 		public static MethodDefinition FindMatchingMethod(TypeDefinition typeDefinition, MethodReference methodReference)
 		{
 			if (typeDefinition == null)
-				throw new ArgumentNullException("typeDefinition");
+				throw new ArgumentNullException(nameof(typeDefinition));
 			if (methodReference == null)
-				throw new ArgumentNullException("methodReference");
+				throw new ArgumentNullException(nameof(methodReference));
 
 			return typeDefinition.Methods.FirstOrDefault(mdef => MethodMatches(mdef, methodReference));
 		}
@@ -275,9 +275,9 @@ namespace ILPatcher.Utility
 		public static void CloneMethodBody(MethodDefinition source, MethodDefinition target)
 		{
 			if (source == null)
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException(nameof(source));
 			if (target == null)
-				throw new ArgumentNullException("target");
+				throw new ArgumentNullException(nameof(target));
 
 			var newBody = CloneMethodBody(source.Body, source, target);
 			target.Body = newBody;

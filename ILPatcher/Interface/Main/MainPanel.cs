@@ -1,7 +1,6 @@
 ﻿using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
 using ILPatcher.Data;
-using ILPatcher.Interface.General;
 using ILPatcher.Utility;
 using MetroObjects;
 using Mono.Cecil;
@@ -159,10 +158,16 @@ namespace ILPatcher.Interface.Main
 
 		private void Testpatch_Click(object sender, EventArgs e)
 		{
-			//((SwooshPanel)Parent).PushPanel(new ILPatcher.Interface.Actions.EditorMethodCreator(dataStruct), "Debug Disassemble"); // HACK: Change to dataStruct param
+			//var test = new Finder.EditorFinderClassByName(dataStruct);
+			//var pat = test.CreateNewEntryPart();
+			//test.SetPatchData(pat);
+			//((SwooshPanel)Parent).PushPanel(test, "Debug Disassemble");
+
 			//TestMet1();
 			//TestMet2();
-			new CreateTypeForm(dataStruct, (d) => { }).Show();
+			//new CreateTypeForm(dataStruct, (d) => { }).Show();
+
+			MultiPicker<TypeDefinition>.ShowStructure(dataStruct, StructureView.all, (x) => true, (x) => { });
 		}
 
 		private void NewPatch_Click(object sender, EventArgs e)

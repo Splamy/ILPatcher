@@ -8,7 +8,7 @@ namespace ILPatcher.Interface
 	public partial class MultiPicker<T> : Form where T : class
 	{
 		private DataStruct dataStruct;
-		private Func<T, bool> filterPredicate;
+		private Predicate<T> filterPredicate;
 		private Action<T> callback;
 
 		#region Interface Elements
@@ -27,7 +27,7 @@ namespace ILPatcher.Interface
 		private void InitializeGridLineManager()
 		{
 			structureViever = new StructureViewer(dataStruct);
-			structureViever.InitTree(dataStruct.AssemblyDefinition);
+			//structureViever.RebuildHalfAsync();
 			structureViever.AfterSelect += structureViever1_AfterSelect;
 			btnSelect = GlobalLayout.GenMetroButton("Select", Select_Click);
 
@@ -44,14 +44,14 @@ namespace ILPatcher.Interface
 		/// <param name="fP">FilterPredicate: Method to check if the currently selected member could be chosen.</param>
 		/// <param name="cb">Callback: Method that gets called when a member has been chosen.</param>
 		/// <param name="mainmodonly">True if only the maindoule from the own assembly should be listed, false to show all.</param>
-		public static MultiPicker<T> ShowStructure(DataStruct dataStruct, StructureView fE, Func<T, bool> fP, Action<T> cb, bool mainmodonly = false)
+		public static MultiPicker<T> ShowStructure(DataStruct dataStruct, StructureView fE, Predicate<T> fP, Action<T> cb, bool mainmodonly = false)
 		{
 			MultiPicker<T> mp = new MultiPicker<T>(dataStruct);
 			mp.structureViever.ContextAssemblyLoad = !mainmodonly;
 			mp.filterPredicate = fP;
 			mp.callback = cb;
 			mp.structureViever.FilterElements = fE;
-			mp.structureViever.RebuildHalfAsync(mainmodonly);
+			mp.structureViever.RebuildAsync(mainmodonly);
 			mp.Show();
 			return mp;
 		}
@@ -86,6 +86,7 @@ namespace ILPatcher.Interface
 
 		private void ClosePicker()
 		{
+			structureViever.Dispose();
 			Close();
 		}
 	}

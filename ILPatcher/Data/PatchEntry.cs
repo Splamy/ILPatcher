@@ -3,7 +3,10 @@ using ILPatcher.Data.Finder;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using Mono.Cecil;
+using ILPatcher.Utility;
 using System;
+using System.Linq;
 
 namespace ILPatcher.Data
 {
@@ -26,101 +29,89 @@ namespace ILPatcher.Data
 		public override string Description { get { return "Provides the way to find and change a part in the targeted binary."; } }
 		public List<TargetFinder> FinderChain { get; set; }
 		public PatchAction PatchAction { get; set; }
-		private DataStruct dataManager;
+		private DataStruct dataStruct;
 
-		public PatchEntry(DataStruct dataManager)
+		public PatchEntry(DataStruct dataStruct)
 		{
 			FinderChain = new List<TargetFinder>();
 			PatchAction = null;
 			Name = string.Empty;
-			this.dataManager = dataManager;
+			this.dataStruct = dataStruct;
 		}
 
 		public void Execute()
 		{
-			// TODO
-			// object foundarget(s) = TargetFinder.Find();
-			// foundtarget can be an array but the patchacation must know what to do with it.
-			// PatchAction.ExecuteOn(foundtarget);
+			if (!Validate())
+				return;
 
-			/*ActionList.ForEach(pa =>
+			if (PatchAction.PatchStatus != PatchStatus.WoringPerfectly)
 			{
-				if (pa.PatchStatus == PatchStatus.WoringPerfectly && pa.Execute())
-					Log.Write(Log.Level.Info, "Patch <", pa.ActionName, "> executed successfully!");
-				else
-					Log.Write(Log.Level.Info, "Patch <", pa.ActionName, "> is broken and won't be executed");
-			});*/
+				Log.Write(Log.Level.Info, $"Patch \"{PatchAction.Name}\" is broken and won't be executed");
+				return;
+			}
+
+			object currentInput = dataStruct.AssemblyDefinition;
+			try
+			{
+				foreach (var tf in FinderChain)
+				{
+					currentInput = tf.FilterInput(currentInput);
+					throw new InvalidOperationException($"{tf.TargetFinderType} gave out wrong output type");
+				}
+			}
+			catch (TargetNotFoundException tnf)
+			{
+				Log.Write(Log.Level.Info, $"Finder \"{tnf.FailedFinder}\" found no target");
+				return;
+			}
+		}
+
+		private bool Validate()
+		{
+			Validator val = new Validator();
+
+			if (!val.ValidateSet(PatchAction, () => $"\"{Name}\": No action defined")) return false;
+			if (!val.ValidateTrue(FinderChain.Count == 0, () => $"\"{Name}\": No finders defined")) return false;
+			if (!val.ValidateTrue(FinderChain[0].TInput != typeof(AssemblyDefinition), () => $"\"{Name}\": Starting finder has no AssemblyDefinition input")) return false;
+
+			Type currentType = typeof(AssemblyDefinition);
+			foreach (var tf in FinderChain)
+			{
+				if (!val.ValidateTrue(currentType != tf.TInput, () => $"\"{Name}\": Mismatch in the finder chain for \"{tf.Name}\"")) return false;
+				currentType = tf.TOutput;
+			}
+			return PatchAction.TInput == currentType;
 		}
 
 		public bool Save(XmlNode output)
 		{
-			//TODO:
+			var xTargetFinder = output.InsertCompressedElement(SST.TargetFinder);
+			xTargetFinder.Value = string.Join(" ", FinderChain.Select(x => x.ID));
 
-			// possible with same cluster
-			// <cluster>
-			// <finder> ... <\finder>
-			// <action> ... <\action>
-			// <\cluster>
+			var xPatchAction = output.InsertCompressedElement(SST.PatchAction);
+			xTargetFinder.Value = PatchAction.ID;
 
-
-			/*XmlElement xPatchClusterNode = output.InsertCompressedElement(SST.PatchCluster);
-			xPatchClusterNode.CreateAttribute(SST.NAME, ClusterName);
-			foreach (PatchAction pa in ActionList)
-			{
-				XmlElement xPatchActionNode = xPatchClusterNode.InsertCompressedElement(SST.PatchAction); //parent
-
-				xPatchActionNode.CreateAttribute(SST.PatchType, string.Empty);
-				xPatchActionNode.CreateAttribute(SST.NAME, string.Empty);
-				pa.Save(xPatchActionNode);
-			}*/
 			return true;
 		}
 
 		public bool Load(XmlNode input)
 		{
-			//TODO see save
+			Validator val = new Validator();
+			var xTargetFinder = input.GetChildNode(SST.TargetFinder, 0);
+			if (!val.ValidateSet(xTargetFinder, () => "No TargetFinder element found!")) return false;
 
-			/*NameCompressor nc = NameCompressor.Instance;
+			var xPatchAction = input.GetChildNode(SST.PatchAction, 1);
+			if (!val.ValidateSet(xPatchAction, () => "No PatchAction element found!")) return false;
 
-			foreach (XmlElement xnode in input.ChildNodes)
+			string[] finderIds = xTargetFinder.Value.Split(' ');
+			foreach (string finderId in finderIds)
 			{
-				if (xnode.Name == nc[SST.PatchAction])
-				{
-					string pt = xnode.GetAttribute(SST.PatchType);
-					PatchActionType pat;
-					if (!Enum.TryParse<PatchActionType>(pt, out pat))
-					{
-						string pn = xnode.GetAttribute(SST.NAME);
-						Log.Write(Log.Level.Warning, "PatchType \"", pt, "\" couldn't be found");
-						continue;
-					}
-					PatchAction pa = null;
-					switch (pat)
-					{
-					case PatchActionType.ILMethodFixed:
-						pa = new PatchActionILMethodFixed();
-						break;
-					case PatchActionType.ILMethodDynamic:
-						Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
-						continue;
-					case PatchActionType.ILDynamicScan:
-						Log.Write(Log.Level.Info, "ILDynamicScan not implemented");
-						continue;
-					case PatchActionType.AoBRawScan:
-						Log.Write(Log.Level.Info, "AoBRawScan not implemented");
-						continue;
-					case PatchActionType.ILMethodCreator:
-						Log.Write(Log.Level.Info, "ILMethodCreator not implemented");
-						continue;
-					default:
-						continue;
-					}
-					pa.ActionName = xnode.GetAttribute(SST.NAME);
-					pa.Load(xnode);
-					ActionList.Add(pa);
-				}
-			}*/
-			return true;
+				var targetFinder = dataStruct.TargetFinderList.FirstOrDefault(tf => tf.ID == finderId);
+				if (!val.ValidateSet(targetFinder, () => $"TargetFinder with the ID \"{finderId}\" was not found")) continue;
+				FinderChain.Add(targetFinder);
+			}
+
+			return val.Ok;
 		}
 	}
 }

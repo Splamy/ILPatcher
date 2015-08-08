@@ -13,16 +13,18 @@ namespace ILPatcher.Data
 			Ok = true;
 		}
 
-		public void ValidateSet(object validateObject, Func<string> errEessage)
+		public bool ValidateSet(object validateObject, Func<string> errEessage)
 		{
-			if (validateObject != null) return;
+			if (validateObject != null) return true;
 			SetError(errEessage());
+			return false;
 		}
 
-		public void ValidateTrue(bool result, Func<string> errEessage)
+		public bool ValidateTrue(bool result, Func<string> errEessage)
 		{
-			if (result) return;
+			if (result) return true;
 			SetError(errEessage());
+			return false;
 		}
 
 		public Validator(Action OnErrorEvent) : this()

@@ -1,6 +1,5 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Actions;
-using ILPatcher.Interface.General;
 using MetroObjects;
 using Mono.Cecil;
 using System;
