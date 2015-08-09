@@ -17,6 +17,7 @@ namespace ILPatcher.Interface.Finder
 		int ilNodePathLevel = -1;
 
 		#region Interface Elements
+		TextBox txtName;
 		TextBox txtClassPath;
 		#endregion
 
@@ -27,6 +28,8 @@ namespace ILPatcher.Interface.Finder
 
 		private void InitializeGridLineManager()
 		{
+			txtName = new TextBox();
+			txtName.TextChanged += TxtName_TextChanged;
 			txtClassPath = new TextBox();
 			txtClassPath.AutoCompleteMode = AutoCompleteMode.Suggest;
 			txtClassPath.AutoCompleteSource = AutoCompleteSource.CustomSource;
@@ -34,8 +37,17 @@ namespace ILPatcher.Interface.Finder
 
 			var grid = new GridLineManager(this, true);
 			int line = grid.AddLineFilling(GlobalLayout.MinFill);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("Name"), GlobalLayout.LineHeight);
+			grid.AddElementFilling(line, txtName, GlobalLayout.LabelWidth);
+			line = grid.AddLineFilling(GlobalLayout.MinFill);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("ILNodePath"), GlobalLayout.LineHeight);
 			grid.AddElementFilling(line, txtClassPath, GlobalLayout.LabelWidth);
 
+		}
+
+		private void TxtName_TextChanged(object sender, System.EventArgs e)
+		{
+			myData.Name = txtName.Text;
 		}
 
 		private void TxtClassPath_TextChanged(object sender, System.EventArgs e) // TODO: test

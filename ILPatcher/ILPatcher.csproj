@@ -91,17 +91,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DataStruct.cs" />
+    <Compile Include="Data\EntryBase.cs" />
     <Compile Include="Data\Finder\TargetNotFoundException.cs" />
     <Compile Include="Data\ILNode.cs" />
     <Compile Include="Data\ILNodeManager.cs" />
     <Compile Include="Data\NamedElement.cs" />
     <Compile Include="Data\Validator.cs" />
     <Compile Include="Data\XMLInstruction.cs" />
+    <Compile Include="Interface\DebugPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Interface\Finder\EditorFinderClassByName.cs">
-      <SubType>UserControl</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\Finder\EditorTargetFinder.cs">
-      <SubType>UserControl</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\AddRemoveControl.cs">
       <SubType>Component</SubType>
@@ -109,8 +113,8 @@
     <Compile Include="Interface\CreateTypeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Interface\EditorPanel.cs">
-      <SubType>UserControl</SubType>
+    <Compile Include="Interface\EditorBase.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\GridLineManager.cs" />
     <Compile Include="Interface\HoizontalTabControl.cs">
@@ -122,11 +126,11 @@
     <Compile Include="Interface\InstructArrPicker.Designer.cs">
       <DependentUpon>InstructArrPicker.cs</DependentUpon>
     </Compile>
-    <Compile Include="Interface\Main\PatchBuilder.cs">
-      <SubType>UserControl</SubType>
+    <Compile Include="Interface\Main\EntryBlockHolder.cs">
+      <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Interface\Main\PatchBuilder.Designer.cs">
-      <DependentUpon>PatchBuilder.cs</DependentUpon>
+    <Compile Include="Interface\Main\PatchBuilder.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\Main\PatchQuestionWindow.cs">
       <SubType>Form</SubType>
@@ -135,13 +139,13 @@
       <DependentUpon>PatchQuestionWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Interface\Actions\EditorMethodCreator.cs">
-      <SubType>UserControl</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\Actions\EditorMethodCreator.Designer.cs">
       <DependentUpon>EditorMethodCreator.cs</DependentUpon>
     </Compile>
     <Compile Include="Interface\Actions\EditorPatchAction.cs">
-      <SubType>UserControl</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Data\Actions\PatchActionMethodCreator.cs" />
     <Compile Include="Data\Finder\TargetFinder.cs" />
@@ -153,10 +157,10 @@
     <Compile Include="Utility\ErrorLogger.cs" />
     <Compile Include="Utility\ExtensionMethods.cs" />
     <Compile Include="Data\ILManager.cs" />
-    <Compile Include="Utility\GlobalLayout.cs" />
+    <Compile Include="Interface\GlobalLayout.cs" />
     <Compile Include="Utility\NameCompressor.cs" />
     <Compile Include="Interface\Actions\EditorILPattern.cs">
-      <SubType>UserControl</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\Actions\EditorILPattern.Designer.cs">
       <DependentUpon>EditorILPattern.cs</DependentUpon>
@@ -183,15 +187,12 @@
     <Compile Include="Interface\StructureViewer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Interface\SwooshPanel.cs">
+    <Compile Include="Interface\Swoosh.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Utility\ErrorLoggerItem.cs" />
     <Compile Include="Utility\TreeList.cs" />
     <Compile Include="Utility\XMLUtility.cs" />
-    <EmbeddedResource Include="Interface\Main\PatchBuilder.resx">
-      <DependentUpon>PatchBuilder.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

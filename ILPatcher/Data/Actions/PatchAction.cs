@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Xml;
 
 namespace ILPatcher.Data.Actions
 {
-	public abstract class PatchAction : NamedElement, ISaveToFile
+	public abstract class PatchAction : EntryBase
 	{
 		/*
 		 * Guide to PatchActions
@@ -13,7 +12,7 @@ namespace ILPatcher.Data.Actions
 		 * -Every PA must be able to Save/Load independently from the managing form and other (non-own) objects
 		 */
 
-		protected DataStruct dataStruct;
+		public sealed override EntryKind EntryKind { get { return EntryKind.PatchAction; } }
 
 		public PatchStatus PatchStatus { get; protected set; }
 		public abstract PatchActionType PatchActionType { get; }
@@ -25,21 +24,12 @@ namespace ILPatcher.Data.Actions
 		/// <returns>Returns true if it succeeded, false otherwise</returns>
 		public abstract bool Execute(object target);
 
-		public abstract bool Save(XmlNode output);
-		public abstract bool Load(XmlNode input);
-
-		public PatchAction(DataStruct dataAssociation)
-		{
-			dataStruct = dataAssociation;
-		}
+		public PatchAction(DataStruct dataStruct) : base(dataStruct) { }
 	}
 
 	public enum PatchActionType
 	{
 		ILMethodFixed,
-		ILMethodDynamic,
-		ILDynamicScan,
-		AoBRawScan,
 		ILMethodCreator,
 	}
 

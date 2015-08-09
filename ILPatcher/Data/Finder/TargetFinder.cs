@@ -1,11 +1,10 @@
-﻿using System.Xml;
-using System;
+﻿using System;
 
 namespace ILPatcher.Data.Finder
 {
-	public abstract class TargetFinder : NamedElement, ISaveToFile
+	public abstract class TargetFinder : EntryBase
 	{
-		protected DataStruct dataStruct;
+		public sealed override EntryKind EntryKind { get { return EntryKind.TargetFinder; } }
 
 		public abstract TargetFinderType TargetFinderType { get; }
 		/// <summary><para>True if the output is already known during patch creation.</para>
@@ -19,13 +18,7 @@ namespace ILPatcher.Data.Finder
 
 		public abstract object FilterInput(object input);
 
-		public abstract bool Save(XmlNode output);
-		public abstract bool Load(XmlNode input);
-
-		public TargetFinder(DataStruct dataStruct)
-		{
-			this.dataStruct = dataStruct;
-		}
+		public TargetFinder(DataStruct dataStruct) : base(dataStruct) { }
 	}
 
 	public enum TargetFinderType

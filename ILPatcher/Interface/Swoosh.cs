@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace ILPatcher.Interface
 {
-	public class SwooshPanel : Control
+	public class Swoosh : Control
 	{
 		//private List<LayerLevel> TabList;
 		private Stack<LayerLevel> TabList;
@@ -17,7 +17,7 @@ namespace ILPatcher.Interface
 		bool swooshRight; // true if right, false is left
 		int currentPos;
 
-		public SwooshPanel()
+		public Swoosh()
 		{
 			TabList = new Stack<LayerLevel>();
 			swooshTimer = new Timer();
@@ -27,7 +27,7 @@ namespace ILPatcher.Interface
 
 		void swooshTimer_Tick(object sender, EventArgs e)
 		{
-			int minspeed = Width / 50;
+			int minspeed = Width / 40;
 			float pos = currentPos * 2f / Width - 1;
 			int speed = (int)Math.Round(Math.Pow(Width, (-.5 * pos * pos)) * Math.Log(Width, 1.5)) + minspeed;
 			if (swooshRight) speed *= -1;
@@ -44,10 +44,11 @@ namespace ILPatcher.Interface
 					WorkLayer = null;
 				}
 				ResizeAll(true);
-			}
+				TabList.Peek().ctrl.LandHereEvent();
+            }
 		}
 
-		public void PushPanel(Control c, string name)
+		public void PushPanel(ISwoosh c, string name)
 		{
 			if (TabList.Count > 0)
 			{
@@ -163,14 +164,15 @@ namespace ILPatcher.Interface
 
 		private class LayerLevel : IDisposable
 		{
-			public Control ctrl;
+			public ISwoosh ctrl;
 			public CustomButton btn;
 			public Label lbl;
-			private SwooshPanel parent;
+			private Swoosh parent;
 
-			public LayerLevel(SwooshPanel _parent, Control c, string name)
+			public LayerLevel(Swoosh _parent, ISwoosh c, string name)
 			{
 				parent = _parent;
+				c.swooshParent = _parent;
 				ctrl = c;
 				ctrl.Parent = _parent;
 				btn = new CustomButton(name);
@@ -185,8 +187,8 @@ namespace ILPatcher.Interface
 					Text = ">",
 					Parent = parent,
 					Width = 0,
-					MinimumSize = new Size(0, SwooshPanel.PATHBOXHEIGHT),
-					MaximumSize = new Size(0, SwooshPanel.PATHBOXHEIGHT),
+					MinimumSize = new Size(0, PATHBOXHEIGHT),
+					MaximumSize = new Size(0, PATHBOXHEIGHT),
 					Visible = false,
 				};
 			}
@@ -205,7 +207,7 @@ namespace ILPatcher.Interface
 			{
 				parent.Controls.Remove(btn);
 				parent.Controls.Remove(lbl);
-				parent.Controls.Remove(ctrl);
+				parent.Controls.Remove((Control)ctrl);
 				btn.Dispose();
 				lbl.Dispose();
 				ctrl.Dispose();
@@ -222,11 +224,46 @@ namespace ILPatcher.Interface
 				Text = name;
 				FlatAppearance.BorderColor = SystemColors.WindowFrame;
 				SetStyle(ControlStyles.Selectable, false);
-				MinimumSize = new Size(0, SwooshPanel.PATHBOXHEIGHT);
-				MaximumSize = new Size(0, SwooshPanel.PATHBOXHEIGHT);
+				MinimumSize = new Size(0, PATHBOXHEIGHT);
+				MaximumSize = new Size(0, PATHBOXHEIGHT);
 				Width = 0;
 				Enabled = false;
 			}
+		}
+
+		public interface ISwoosh : IDisposable
+		{
+			Swoosh swooshParent { get; set; }
+			void PushPanel(ISwoosh c, string name);
+			void SwooshBack();
+			void LandHereEvent();
+
+			//Forms
+			System.Windows.Forms.Control Parent { get; set; }
+			DockStyle Dock { get; set; }
+			int Width { get; set; }
+			int Height { get; set; }
+			int Left { get; set; }
+			int Top { get; set; }
+
+			void SuspendLayout();
+			void ResumeLayout();
+		}
+
+		public abstract class Control : System.Windows.Forms.Control, ISwoosh
+		{
+			public Swoosh swooshParent { get; set; }
+			public void PushPanel(ISwoosh c, string name) { swooshParent.PushPanel(c, name); }
+			public void SwooshBack() { swooshParent.SwooshBack(); }
+			public virtual void LandHereEvent() { }
+		}
+
+		public abstract class Panel : System.Windows.Forms.Panel, ISwoosh
+		{
+			public Swoosh swooshParent { get; set; }
+			public void PushPanel(ISwoosh c, string name) { swooshParent.PushPanel(c, name); }
+			public void SwooshBack() { swooshParent.SwooshBack(); }
+			public virtual void LandHereEvent() { }
 		}
 	}
 }

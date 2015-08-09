@@ -89,13 +89,18 @@ namespace ILPatcher.Interface
 			int minSizeSpacedPossible = minSizePossible + neededSpaceSum;
 			int minSizeWanted = minFixedSum + prefnsSum + minFillSum + neededSpaceSum;
 
-			/*if (targetSize < minSizePossible) // 0 < x < minHeightPossible
+			if (targetSize < minSizePossible) // 0 < x < minHeightPossible
 			{
-				// do nothing or shrink all proportianally
-				return;
+				int location = 0;
+				foreach (var element in listToSize)
+				{
+					element.curSize = element.minValue;
+					element.curPosition = location;
+
+					location += element.curSize;
+				}
 			}
-			else */
-			if (targetSize < minSizePossible || targetSize < minSizeSpacedPossible) // minHeightPossible < x < minHeightSpacedPossible
+			else if (targetSize < minSizeSpacedPossible) // minHeightPossible < x < minHeightSpacedPossible
 			{
 				int spaceRemainder = targetSize - minSizePossible;
 				int pxPerSpace = spaceRemainder / spaceCount;

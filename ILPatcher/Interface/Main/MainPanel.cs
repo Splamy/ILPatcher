@@ -11,7 +11,7 @@ using System.Xml;
 
 namespace ILPatcher.Interface.Main
 {
-	public class MainPanel : Control
+	public class MainPanel : Swoosh.Control
 	{
 		private DataStruct dataStruct;
 		bool awaitingAssemblySelect = false;
@@ -161,29 +161,26 @@ namespace ILPatcher.Interface.Main
 			//var test = new Finder.EditorFinderClassByName(dataStruct);
 			//var pat = test.CreateNewEntryPart();
 			//test.SetPatchData(pat);
-			//((SwooshPanel)Parent).PushPanel(test, "Debug Disassemble");
+			PushPanel(new DebugPanel(), "Debug Disassemble");
 
 			//TestMet1();
 			//TestMet2();
 			//new CreateTypeForm(dataStruct, (d) => { }).Show();
 
-			MultiPicker<TypeDefinition>.ShowStructure(dataStruct, StructureView.all, (x) => true, (x) => { });
+			//MultiPicker<TypeDefinition>.ShowStructure(dataStruct, StructureView.all, (x) => true, (x) => { });
 		}
 
 		private void NewPatch_Click(object sender, EventArgs e)
 		{
-			EditCluster(null);
+			EditEntry(null);
 		}
 
 		private void EditPatch_Click(object sender, EventArgs e)
 		{
-			DragItem diElemet = lbxPatchEntryListBox.SelectedElement as DragItem;
-			if (diElemet == null)
+			PatchEntry patchEntry = (lbxPatchEntryListBox.SelectedElement as Actions.DefaultDragItem<PatchEntry>)?.Item;
+			if (patchEntry == null)
 				return;
-			PatchEntry patchCluster = null as PatchEntry; // TODO get stuff
-			if (patchCluster == null)
-				return;
-			EditCluster(patchCluster);
+			EditEntry(patchEntry);
 		}
 
 		// Functionality methods
@@ -248,24 +245,31 @@ namespace ILPatcher.Interface.Main
 			PlainTextOutput pto = new PlainTextOutput();
 			ast.GenerateCode(pto);
 
-			var emc = new ILPatcher.Interface.Actions.EditorMethodCreator(dataStruct);
+			var emc = new Actions.EditorMethodCreator(dataStruct);
 			//emc.txtInjectCode.Text = pto.ToString();
-			((SwooshPanel)Parent).PushPanel(emc, "Debug Disassemble");
+			PushPanel(emc, "Debug Disassemble");
 		}
 
-		public void EditCluster(PatchEntry patchcluster)
+		public void EditEntry(PatchEntry patchEntry)
 		{
 			PatchBuilder patchBuilder = new PatchBuilder(dataStruct);
-			patchBuilder.LoadEntry(patchcluster);
-			((SwooshPanel)Parent).PushPanel(patchBuilder, "PatchBuilder");
+			patchBuilder.SetPatchData(patchEntry ?? patchBuilder.CreateNewEntryPart());
+			PushPanel(patchBuilder, patchBuilder.PanelName);
 		}
+
+		public override void LandHereEvent()
+		{
+			RebuildTable(dataStruct);
+        }
 
 		private void RebuildTable(object sender)
 		{
 			DataStruct senderDataStruct = (DataStruct)sender;
-			foreach (var patchEntry in senderDataStruct.PatchEntryList)
+
+			lbxPatchEntryListBox.ClearItems();
+            foreach (var patchEntry in senderDataStruct.PatchEntryList)
 			{
-				lbxPatchEntryListBox.AddItem(new ILPatcher.Interface.Actions.DefaultDragItem<PatchEntry>(patchEntry));
+				lbxPatchEntryListBox.AddItem(new Actions.DefaultDragItem<PatchEntry>(patchEntry));
 			}
 		}
 

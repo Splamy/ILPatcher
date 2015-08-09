@@ -3,7 +3,7 @@ using ILPatcher.Data.Finder;
 
 namespace ILPatcher.Interface.Finder
 {
-	public abstract class EditorTargetFinder<T> : EditorPanel<TargetFinder, T>, IEditorTargetFinder where T : TargetFinder
+	public abstract class EditorTargetFinder<T> : EditorBase<TargetFinder, T>, IEditorTargetFinder where T : TargetFinder
 	{
 		protected EditorTargetFinder(DataStruct dataStruct) : base(dataStruct) { }
 	}

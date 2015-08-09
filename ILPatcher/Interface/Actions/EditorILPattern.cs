@@ -74,7 +74,7 @@ namespace ILPatcher.Interface.Actions
 				dataStruct.PatchActionList.Add(myData);
 			}
 
-			((SwooshPanel)Parent).SwooshBack();
+			SwooshBack();
 		}
 
 		private void btnPickMethod_Click(object sender, EventArgs e)

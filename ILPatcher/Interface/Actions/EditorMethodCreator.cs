@@ -55,7 +55,7 @@ namespace ILPatcher.Interface.Actions
 				myData.Name = txtPatchActionName.Text;
 				dataStruct.PatchActionList.Add(myData);
 			}
-			((SwooshPanel)Parent).SwooshBack();
+			SwooshBack();
 		}
 
 		private void button1_Click(object sender, EventArgs e)

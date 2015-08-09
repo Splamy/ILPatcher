@@ -17,12 +17,17 @@ namespace ILPatcher.Data
 			get
 			{
 				var strb = new StringBuilder();
+				strb.Append(Name);
+				strb.Append(":\n");
 				foreach (var finder in FinderChain)
 				{
 					strb.Append(finder.Name);
 					strb.Append(" ->\n");
 				}
-				strb.Append(PatchAction.Name);
+				if(PatchAction != null)
+					strb.Append(PatchAction.Name);
+				else
+					strb.Append("<X>");
 				return strb.ToString();
 			}
 		}

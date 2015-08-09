@@ -1,106 +1,151 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Actions;
+using ILPatcher.Data.Finder;
 using ILPatcher.Interface.Actions;
+using ILPatcher.Interface.Finder;
 using ILPatcher.Utility;
-using Mono.Cecil;
 using System;
 using System.Windows.Forms;
 
 namespace ILPatcher.Interface.Main
 {
-	public partial class PatchBuilder : UserControl
+	public class PatchBuilder : EditorBase<PatchEntry, PatchEntry>, IEditorPanel
 	{
-		public PatchEntry PatchEntry { get; private set; }
+		public override string PanelName { get { return "Patchbuilder"; } }
+		public override bool IsInline { get { return false; } }
+
 		private bool editMode;
-		private DataStruct dataStruct;
 
-		// TODO: do patchfinder
+		#region Interface Elements
+		GridLineManager glmFinder;
+		Panel mTargetFinder;
+		Panel mPatchAction;
+		TextBox txtName;
+		#endregion
 
-		public PatchBuilder(DataStruct pDataStruct)
+		public PatchBuilder(DataStruct dataStruct) : base(dataStruct)
 		{
-			InitializeComponent();
-
-			editMode = false;
-
-			dataStruct = pDataStruct;
-			LoadDropdownList();
+			InitializeGridLineManager();
 		}
 
-		public void LoadEntry(PatchEntry pPatchEntry)
+		private void InitializeGridLineManager()
+		{
+			mPatchAction = new Panel();
+			mTargetFinder = new Panel();
+			mTargetFinder.BorderStyle = BorderStyle.FixedSingle;
+			glmFinder = new GridLineManager(mTargetFinder, false);
+			glmFinder.ElementDistance = 0;
+			txtName = new TextBox();
+			txtName.TextChanged += TxtName_TextChanged;
+
+			var grid = new GridLineManager(this, true);
+			int line = grid.AddLineFilling(GlobalLayout.LineHeight);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Add Finder", AddFinder_Click), GlobalLayout.LabelWidth);
+			grid.AddElementFilling(line, mTargetFinder, GlobalLayout.MinFill);
+			line = grid.AddLineStrechable(GlobalLayout.MinFill, 150);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Set Action", SetAction_Click), GlobalLayout.LabelWidth);
+			grid.AddElementFilling(line, mPatchAction, GlobalLayout.MinFill);
+			line = grid.AddLineFixed(GlobalLayout.LineHeight);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("Name"), GlobalLayout.LabelWidth);
+			grid.AddElementFilling(line, txtName, GlobalLayout.MinFill);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Save", Save_Click), GlobalLayout.LabelWidth);
+		}
+
+		private void LoadInterfaceContent()
+		{
+			foreach (var finder in myData.FinderChain)
+				AddFinder(finder);
+
+			if (myData.PatchAction != null)
+				SetAction(myData.PatchAction);
+		}
+
+		// Interface tools
+
+		private IEditorTargetFinder GetAssociatedFinderEditor(TargetFinder finder)
+		{
+			switch (finder.TargetFinderType)
+			{
+			case TargetFinderType.ClassByName: return new EditorFinderClassByName(dataStruct);
+			default: return null;
+			}
+		}
+
+		private IEditorPatchAction GetAssociatedActionEditor(PatchAction action)
+		{
+			switch (action.PatchActionType)
+			{
+			case PatchActionType.ILMethodFixed: return new EditorILPattern(dataStruct);
+			case PatchActionType.ILMethodCreator: return new EditorMethodCreator(dataStruct);
+			default: return null;
+			}
+		}
+
+		private void AddFinder(TargetFinder finder)
+		{
+			IEditorTargetFinder fEditor = GetAssociatedFinderEditor(finder);
+			if (fEditor == null)
+			{
+				Log.Write(Log.Level.Error, $"No editor found for {finder.TargetFinderType.ToString()}");
+				return;
+			}
+			var fHolder = new EntryBlockHolder(finder, fEditor);
+			int line = glmFinder.AddLineFixed(fHolder.Height);
+			glmFinder.AddElementFilling(line, fHolder, GlobalLayout.MinFill);
+		}
+
+		private void SetAction(PatchAction action)
+		{
+			IEditorPatchAction aEditor = GetAssociatedActionEditor(action);
+			if (aEditor == null)
+			{
+				Log.Write(Log.Level.Error, $"No editor found for {action.PatchActionType.ToString()}");
+				return;
+			}
+			foreach (Control c in mPatchAction.Controls) c.Dispose();
+			mPatchAction.Controls.Clear();
+
+			var aHolder = new EntryBlockHolder(action, aEditor);
+			mPatchAction.Controls.Add(aHolder);
+			aHolder.Dock = DockStyle.Fill;
+		}
+
+		// Events
+
+		private void AddFinder_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void SetAction_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void Save_Click(object sender, EventArgs e)
+		{
+			if (editMode && myData != null)
+				dataStruct.PatchEntryList.Add(myData);
+			SwooshBack();
+		}
+
+		private void TxtName_TextChanged(object sender, EventArgs e)
+		{
+			myData.Name = txtName.Text;
+		}
+
+		protected override void OnPatchDataSet()
 		{
 			editMode = true;
-			PatchEntry = pPatchEntry;
+			LoadInterfaceContent();
 		}
 
-		private void LoadDropdownList()
+		// Functionality
+
+		public override PatchEntry CreateNewEntryPart()
 		{
-			comboBox2.Items.Clear();
-			foreach (string eName in Enum.GetNames(typeof(PatchActionType)))
-			{
-				comboBox2.Items.Add(eName);
-			}
-		}
-
-		private void button1_Click(object sender, EventArgs e)
-		{
-			SwooshToAction();
-		}
-
-		private void SwooshToAction()
-		{
-			PatchAction patchAction = null;
-			PatchActionType patchActionType;
-			if (PatchEntry == null || PatchEntry.PatchAction == null)
-			{
-				if (!Enum.TryParse(comboBox2.Text, out patchActionType))
-				{
-					throw new InvalidOperationException("PatchActionType not found");
-				}
-			}
-			else
-			{
-				patchAction = PatchEntry.PatchAction;
-				patchActionType = patchAction.PatchActionType;
-			}
-
-			IEditorPatchAction editorform;
-			switch (patchActionType)
-			{
-			case PatchActionType.ILMethodFixed:
-				editorform = new EditorILPattern(dataStruct);
-				break;
-			case PatchActionType.ILMethodDynamic:
-				Log.Write(Log.Level.Info, "ILMethodDynamic not implemented");
-				return;
-			case PatchActionType.ILDynamicScan:
-				Log.Write(Log.Level.Info, "ILDynamicScan not implemented");
-				return;
-			case PatchActionType.AoBRawScan:
-				Log.Write(Log.Level.Info, "AoBRawScan not implemented");
-				return;
-			case PatchActionType.ILMethodCreator:
-				editorform = new EditorMethodCreator(dataStruct);
-				break;
-			default:
-				return;
-			}
-
-			editorform.SetPatchData(patchAction);
-			((SwooshPanel)Parent).PushPanel((Control)editorform, "PatchAction: " + editorform.PanelName);
-		}
-
-		private void SetPatchAction(PatchAction patchAction)
-		{
-			if (PatchEntry == null)
-				PatchEntry = new PatchEntry(dataStruct);
-			PatchEntry.PatchAction = patchAction;
-		}
-
-		private void button2_Click(object sender, EventArgs e)
-		{
-			if (editMode && PatchEntry != null)
-				dataStruct.PatchEntryList.Add(PatchEntry);
-			((SwooshPanel)Parent).SwooshBack();
+			editMode = false;
+			return new PatchEntry(dataStruct);
 		}
 	}
 }

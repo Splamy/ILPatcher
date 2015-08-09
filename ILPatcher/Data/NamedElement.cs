@@ -6,5 +6,10 @@
 		public string ID { get; set; }
 		public abstract string Label { get; }
 		public abstract string Description { get; }
+
+		public override string ToString()
+		{
+			return Label;
+		}
 	}
 }

@@ -1,10 +1,9 @@
 ﻿using ILPatcher.Data;
-using System.Windows.Forms;
 using System;
 
 namespace ILPatcher.Interface
 {
-	public abstract class EditorPanel<Kind, Spec> : UserControl, IEditorPanel where Spec : class, Kind
+	public abstract class EditorBase<Kind, Spec> : Swoosh.Control, IEditorPanel where Spec : class, Kind
 	{
 		protected readonly DataStruct dataStruct;
 		protected Spec myData;
@@ -23,7 +22,7 @@ namespace ILPatcher.Interface
 		}
 		protected abstract void OnPatchDataSet();
 
-		protected EditorPanel(DataStruct dataAssociation) { dataStruct = dataAssociation; }
+		protected EditorBase(DataStruct dataAssociation) { dataStruct = dataAssociation; }
 	}
 
 	public interface IEditorPanel

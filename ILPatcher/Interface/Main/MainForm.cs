@@ -6,7 +6,7 @@ namespace ILPatcher.Interface.Main
 	public class MainForm : Form
 	{
 		#region Interface Elements
-		SwooshPanel swooshPanel;
+		Swoosh swoosh;
 		#endregion
 
 		public MainForm()
@@ -15,10 +15,10 @@ namespace ILPatcher.Interface.Main
 
 			NameCompressor.Instance.CheckUnique();
 
-			swooshPanel = new SwooshPanel();
-			this.Controls.Add(swooshPanel);
-			swooshPanel.Dock = DockStyle.Fill;
-			swooshPanel.PushPanel(new MainPanel(), "Overview");
+			swoosh = new Swoosh();
+			this.Controls.Add(swoosh);
+			swoosh.Dock = DockStyle.Fill;
+			swoosh.PushPanel(new MainPanel(), "Overview");
 
 			Size = new System.Drawing.Size(640, 480);
 		}
