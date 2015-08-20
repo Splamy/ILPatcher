@@ -113,7 +113,7 @@ namespace ILPatcher.Data
 			case OperandType.InlineSig:
 			case OperandType.InlinePhi:
 			default:
-				Log.Write(Log.Level.Error, "Opcode not processed: ", oc.Name);
+				Log.Write(Log.Level.Error, $"Opcode \"{oc.Name}\" not processed");
 				break;
 			}
 		}
@@ -143,7 +143,7 @@ namespace ILPatcher.Data
 				if (xOperandNode.GetAttribute(SST.PrimitiveValue, out primVal))
 					return ILManager.GenInstruction(opcode, primVal);
 				else
-					Log.Write(Log.Level.Error, "Expected 'PrimitiveValue' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
+					Log.Write(Log.Level.Error, $"Expected 'PrimitiveValue' with \"{opcode.Name}\", but no matching Attribute was found in \"{xOperandNode.InnerXml}\"");
 				break;
 
 			case OperandType.InlineField:
@@ -154,7 +154,7 @@ namespace ILPatcher.Data
 				if (!string.IsNullOrEmpty(opVal))
 					return ILManager.GenInstruction(opcode, manager.Resolve(opVal.ToBaseInt()));
 				else
-					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but no matching Attribute was found in ", xOperandNode.InnerXml);
+					Log.Write(Log.Level.Error, $"Expected 'Resolve' with \"{opcode.Name}\", but no matching Attribute was found in \"{xOperandNode.InnerXml}\"");
 				break;
 
 			case OperandType.InlineArg:
@@ -167,7 +167,7 @@ namespace ILPatcher.Data
 					return ILManager.GenInstruction(opcode, workingMethod.Parameters[parIndexVal]);
 				}
 				else
-					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
+					Log.Write(Log.Level.Error, $"Expected 'Resolve' with \"{opcode.Name}\", but the Attribute is either missing or incorrect in \"{xOperandNode.InnerXml}\"");
 				break;
 
 			case OperandType.InlineVar:
@@ -180,7 +180,7 @@ namespace ILPatcher.Data
 					return ILManager.GenInstruction(opcode, workingMethod.Parameters[varIndexVal]);
 				}
 				else
-					Log.Write(Log.Level.Error, "Expected 'Resolve' with '", opcode.Name, "', but the Attribute is either missing or incorrect in ", xOperandNode.InnerXml);
+					Log.Write(Log.Level.Error, $"Expected 'Resolve' with \"{opcode.Name}\", but the Attribute is either missing or incorrect in \"{xOperandNode.InnerXml}\"");
 				break;
 
 			case OperandType.InlineBrTarget:
@@ -213,7 +213,7 @@ namespace ILPatcher.Data
 			case OperandType.InlineSig:
 			case OperandType.InlinePhi:
 			default:
-				Log.Write(Log.Level.Error, "Opcode not processed: ", opcode.Name);
+				Log.Write(Log.Level.Error, $"Opcode \"{opcode.Name}\" not processed");
 				break;
 			}
 			return null;
@@ -226,7 +226,7 @@ namespace ILPatcher.Data
 		private int FindInstruction(Instruction i)
 		{
 			int res = indexFinder(workingInstructionList, i);
-			if (res == -1) Log.Write(Log.Level.Warning, "Instruction not found: ", i.Offset.ToString());
+			if (res == -1) Log.Write(Log.Level.Warning, $"Instruction \"{i.Offset}\" not found");
 			return res;
 		}
 

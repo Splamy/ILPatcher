@@ -12,7 +12,7 @@ namespace ILPatcher.Data.Actions
 		 * -Every PA must be able to Save/Load independently from the managing form and other (non-own) objects
 		 */
 
-		public sealed override EntryKind EntryKind { get { return EntryKind.PatchAction; } }
+		public sealed override EntryKind EntryKind => EntryKind.PatchAction;
 
 		public PatchStatus PatchStatus { get; protected set; }
 		public abstract PatchActionType PatchActionType { get; }

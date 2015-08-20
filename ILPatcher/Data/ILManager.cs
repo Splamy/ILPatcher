@@ -13,6 +13,7 @@ namespace ILPatcher.Data
 	public class ILManager : ISaveToFile
 	{
 		private DataStruct dataStruct;
+		private static NameCompressor nc = NameCompressor.Instance;
 
 		private AnyArray<OperandInfo> MemberList;
 
@@ -38,22 +39,9 @@ namespace ILPatcher.Data
 			}
 		}
 
-		private static ILManager instance; // TODO remove static
-		public static ILManager InstanceX
-		{
-			get { if (instance == null) instance = new ILManager(); return instance; }
-		}
-
-		private static NameCompressor nc = NameCompressor.Instance;
-
-		private ILManager()
+		public ILManager(DataStruct dataStruct)
 		{
 			MemberList = new AnyArray<OperandInfo>();
-		}
-
-		public ILManager(DataStruct dataStruct)
-			: this()
-		{
 			this.dataStruct = dataStruct;
 		}
 
@@ -78,7 +66,7 @@ namespace ILPatcher.Data
 				{
 				case OperandInfoT.ParameterDefinition:
 				case OperandInfoT.ParameterReference:
-					Log.Write(Log.Level.Warning, "PT resolving is obsolete: ", oi.ToString());
+					Log.Write(Log.Level.Warning, $"PT resolving is obsolete: {oi}");
 					//todo reenable
 					if (oi.resolved)
 						Reference(((ParameterReference)oi.operand).ParameterType);
@@ -114,7 +102,7 @@ namespace ILPatcher.Data
 					break;
 				case OperandInfoT.VariableDefinition:
 				case OperandInfoT.VariableReference:
-					Log.Write(Log.Level.Warning, "VD resolving is obsolete: ", oi.ToString());
+					Log.Write(Log.Level.Warning, $"VD resolving is obsolete: {oi}");
 					//todo reenable
 					if (oi.resolved)
 						Reference(((VariableReference)oi.operand).VariableType);
@@ -135,14 +123,14 @@ namespace ILPatcher.Data
 					{
 						XmlNode xElem = xCS.InsertCompressedElement(i);
 						xElem.CreateAttribute(SST.Name, ((CallSite)MemberList[i].operand).FullName);
-						Log.Write(Log.Level.Error, "Unhandled CallSite: ", oi.ToString());
+						Log.Write(Log.Level.Error, $"Unhandled CallSite: {oi}");
 						allOk = false;
 					}
 					else
 						xCS.AppendClonedChild(oi.rawData);
 					break;
 				default:
-					Log.Write(Log.Level.Error, "Not saved Member Entry: ", oi.oit.ToString());
+					Log.Write(Log.Level.Error, $"Not saved Member Entry: {oi}");
 					allOk = false;
 					break;
 				}
@@ -170,7 +158,7 @@ namespace ILPatcher.Data
 			{
 				GenericInstanceMethod git = mr as GenericInstanceMethod;
 				if (git == null)
-					Log.Write(Log.Level.Error, "GenericInstance Type couldn't be converted: ", git.FullName);
+					Log.Write(Log.Level.Error, $"GenericInstance Type \"{git.FullName}\" couldn't be converted.");
 				else
 				{
 					strb.Clear();
@@ -265,7 +253,7 @@ namespace ILPatcher.Data
 					Console.WriteLine("Woah");
 				GenericInstanceType git = tr as GenericInstanceType;
 				if (git == null)
-					Log.Write(Log.Level.Error, "GenericInstance Type couldn't be converted: ", tr.FullName);
+					Log.Write(Log.Level.Error, $"GenericInstance Type \"{tr.FullName}\" couldn't be converted.");
 				else
 				{
 					for (int i = 0; i < git.GenericArguments.Count && git.GenericArguments[i] != null; i++)
@@ -355,7 +343,7 @@ namespace ILPatcher.Data
 			OperandInfoT _oit;
 			if (!Enum.TryParse<OperandInfoT>(t.Name, out _oit))
 			{
-				Log.Write(Log.Level.Error, "Not Listed OperandType: ", t.Name);
+				Log.Write(Log.Level.Error, $"Not Listed OperandType: {t.Name}");
 				return -1;
 			}
 			int len = MemberList.Length;
@@ -389,7 +377,7 @@ namespace ILPatcher.Data
 					else // CalliSite
 					{
 						allOk = false;
-						Log.Write(Log.Level.Careful, "Unknown Resolving Node: ", xElem.Name);
+						Log.Write(Log.Level.Careful, $"Unknown Resolving Node: {xElem.Name}");
 						continue;
 					}
 					oi.rawData = xItem;
@@ -405,7 +393,7 @@ namespace ILPatcher.Data
 		/// <returns>The referenced object if it exists, otherwise null.</returns>
 		public object Resolve(int idNum)
 		{
-			if (idNum >= MemberList.Length) { Log.Write(Log.Level.Error, "Resolve number ", idNum.ToString(), " is not in Range."); return null; }
+			if (idNum >= MemberList.Length) { Log.Write(Log.Level.Error, $"Resolve number {idNum} is not in Range."); return null; }
 			OperandInfo oi = MemberList[idNum];
 
 			if (oi.Status == ResolveStatus.Resolved) return oi.operand;
@@ -420,7 +408,7 @@ namespace ILPatcher.Data
 			else if (oi.oit == OperandInfoT.TypeReference)
 				return ResTElement(oi);
 
-			Log.Write(Log.Level.Error, "Resolve element ", idNum.ToString(), " is failed init.");
+			Log.Write(Log.Level.Error, $"Resolve element {idNum} is failed init.");
 			oi.Status = ResolveStatus.ReferenceNotFound;
 			return null;
 		}
@@ -438,7 +426,7 @@ namespace ILPatcher.Data
 			if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(type))
 			{
 				oi.Status = ResolveStatus.SaveFileError;
-				Log.Write(Log.Level.Error, xDataNode.Name, " - No Name or Parenttype");
+				Log.Write(Log.Level.Error, $"\"{xDataNode.Name}\" has no Name or Parenttype");
 				return null;
 			}
 
@@ -450,7 +438,7 @@ namespace ILPatcher.Data
 			// 1] search in
 			#region search_in
 			TypeDefinition typdef = Resolve(type.ToBaseInt()) as TypeDefinition;
-			if (typdef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, name, "-Type couldn't be resolved"); return null; }
+			if (typdef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, $"Type \"{name}\" couldn't be resolved"); return null; }
 			#endregion
 
 			// 2] search generics
@@ -489,7 +477,7 @@ namespace ILPatcher.Data
 					}
 
 					Type t = metdef.GetType();
-					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " couldn't found"); }
+					if (!Enum.TryParse(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, $"OperandInfoType \"{t.Name}\" not found"); }
 					oi.operand = metdef;
 					oi.Status = ResolveStatus.Resolved;
 					return metdef;
@@ -497,7 +485,7 @@ namespace ILPatcher.Data
 			}
 			#endregion
 
-			Log.Write(Log.Level.Error, "MethodDefinition ", name, " couldn't be found in Type ", typdef.Name);
+			Log.Write(Log.Level.Error, $"MethodDefinition \"{name}\" couldn't be found in Type \"{typdef.Name}\"");
 			return null;
 		}
 
@@ -514,27 +502,27 @@ namespace ILPatcher.Data
 			string DeclaringType = xDataNode.GetAttribute(SST.Module);
 
 			if (string.IsNullOrEmpty(FieldType) || string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(DeclaringType))
-			{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No FieldType/Name/DeclaringType"); }
+			{ oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, $"\"{xDataNode.Name}\" has no FieldType/Name/DeclaringType"); }
 
 			TypeReference TypDefFT = Resolve(FieldType.ToBaseInt()) as TypeReference;
-			if (TypDefFT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "FieldType not found ", FieldType); return null; }
+			if (TypDefFT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, $"FieldType \"{FieldType}\" not found"); return null; }
 
 			TypeDefinition TypDefDT = Resolve(DeclaringType.ToBaseInt()) as TypeDefinition;
-			if (TypDefDT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "DeclaringType not found ", DeclaringType); return null; }
+			if (TypDefDT == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, $"DeclaringType \"{DeclaringType}\" not found "); return null; }
 
 			foreach (FieldDefinition field in TypDefDT.Fields)
 			{
-				if (field.Name == Name && field.FieldType.FullName == TypDefFT.FullName) // TODO: insteal of fullname, make DeepTypeCompare(Type a,Type b)
+				if (field.Name == Name && field.FieldType.FullName == TypDefFT.FullName) // TODO: instead of fullname, make DeepTypeCompare(Type a,Type b) | hint: use cecilhelper
 				{
 					Type t = field.GetType();
-					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
+					if (!Enum.TryParse(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, $"OperandInfoType \"{t.Name}\" was not found"); }
 					oi.operand = field;
 					oi.Status = ResolveStatus.Resolved;
 					return field;
 				}
 			}
 
-			Log.Write(Log.Level.Error, "FieldDefinition ", Name, " coundn't be found in Type ", DeclaringType);
+			Log.Write(Log.Level.Error, $"FieldDefinition \"{Name}\" coundn't be found in Type \"{DeclaringType}\"");
 			return null;
 		}
 
@@ -549,7 +537,7 @@ namespace ILPatcher.Data
 			Mono.Collections.Generic.Collection<TypeDefinition> searchCollection;
 
 			string name = xDataNode.GetAttribute(SST.Name);
-			if (string.IsNullOrEmpty(name)) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, xDataNode.Name, " - No Name"); return null; }
+			if (string.IsNullOrEmpty(name)) { oi.Status = ResolveStatus.SaveFileError; Log.Write(Log.Level.Error, $"\"{xDataNode.Name}\" has No Name"); return null; }
 
 			string namesp = string.Empty;
 			// TODO enable namespace comparison, atm the algorithm will always take the first element.
@@ -593,12 +581,12 @@ namespace ILPatcher.Data
 								ModDef = AssDef.MainModule;
 								break;
 							}
-						if (ModDef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "ModuleDefinition not found ", module); return null; }
+						if (ModDef == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, $"ModuleDefinition \"{module}\" not found"); return null; }
 					}
 					catch
 					{
 						oi.Status = ResolveStatus.ReferenceNotFound;
-						Log.Write(Log.Level.Error, "An Assembly is missing: ", module);
+						Log.Write(Log.Level.Error, $"Assembly \"{module}\" is missing");
 						return null;
 					}
 				}
@@ -610,7 +598,7 @@ namespace ILPatcher.Data
 				isNested = true;
 
 				TypeDefinition nestintyp = Resolve(nestedin.ToBaseInt()) as TypeDefinition;
-				if (nestintyp == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, "Nestparent not found ", nestedin); return null; }
+				if (nestintyp == null) { oi.Status = ResolveStatus.ReferenceNotFound; Log.Write(Log.Level.Error, $"Nestparent \"{nestedin}\" not found"); return null; }
 
 				searchCollection = nestintyp.NestedTypes;
 			}
@@ -658,7 +646,7 @@ namespace ILPatcher.Data
 					}
 
 					Type t = typdef.GetType();
-					if (!Enum.TryParse<OperandInfoT>(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, "OperandInfoType ", t.Name, " was not found"); }
+					if (!Enum.TryParse(t.Name, out oi.oit)) { Log.Write(Log.Level.Warning, $"OperandInfoType \"{t.Name}\" was not found"); }
 					oi.operand = typdef;
 					oi.Status = ResolveStatus.Resolved;
 					return typdef;
@@ -666,7 +654,7 @@ namespace ILPatcher.Data
 			}
 			#endregion
 
-			Log.Write(Log.Level.Error, "TypeDefinition ", name, " coundn't be found in the Module");
+			Log.Write(Log.Level.Error, $"TypeDefinition \"{name}\" coundn't be found in the Module");
 			return null;
 		}
 
@@ -711,7 +699,7 @@ namespace ILPatcher.Data
 					t = val.GetType();
 				else
 				{
-					Log.Write(Log.Level.Error, "Operand <" + opc.Name + "> must not be null with this OpCode.OperandType: ", opc.OperandType.ToString());
+					Log.Write(Log.Level.Error, $"Operand \"{opc.Name}\" must not be null with OpCode.OperandType \"{opc.OperandType}\"");
 					return null;
 				}
 			}
@@ -816,7 +804,7 @@ namespace ILPatcher.Data
 				break;
 			}
 
-			Log.Write(Log.Level.Error, "Operand Type Could not be created. TypeName: ", t.Name, " OperandValue: ", val.ToString());
+			Log.Write(Log.Level.Error, $"Operand Type \"{t.Name}\" with OperandValue \"{val}\" could not be created");
 			return null;
 		}
 

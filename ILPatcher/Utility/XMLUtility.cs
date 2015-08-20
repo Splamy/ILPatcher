@@ -18,7 +18,6 @@ namespace ILPatcher.Utility
 			{
 				XmlWriter xWriter = XmlWriter.Create(fs, settings);
 				doc.Save(xWriter);
-				xWriter.Close();
 			}
 		}
 
@@ -29,7 +28,6 @@ namespace ILPatcher.Utility
 				XmlReader xReader = XmlReader.Create(fs);
 				XmlDocument xDoc = new XmlDocument();
 				xDoc.Load(xReader);
-				xReader.Close();
 				return xDoc;
 			}
 		}

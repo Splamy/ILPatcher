@@ -9,12 +9,11 @@ using System.Windows.Forms;
 
 namespace ILPatcher.Interface.Main
 {
-	public class PatchBuilder : EditorBase<PatchEntry, PatchEntry>, IEditorPanel
+	[EditorAttributes("Patchbuilder")]
+	public class PatchBuilder : EditorBase<PatchEntry, PatchEntry>
 	{
-		public override string PanelName { get { return "Patchbuilder"; } }
-		public override bool IsInline { get { return false; } }
-
 		private bool editMode;
+		private EditorFactory editorFactory;
 
 		#region Interface Elements
 		GridLineManager glmFinder;
@@ -23,10 +22,12 @@ namespace ILPatcher.Interface.Main
 		TextBox txtName;
 		#endregion
 
-		public PatchBuilder(DataStruct dataStruct) : base(dataStruct)
+		public PatchBuilder(DataStruct dataStruct, EditorFactory editorFactory) : base(dataStruct)
 		{
 			InitializeGridLineManager();
-		}
+
+			this.editorFactory = editorFactory;
+        }
 
 		private void InitializeGridLineManager()
 		{
@@ -86,10 +87,10 @@ namespace ILPatcher.Interface.Main
 			IEditorTargetFinder fEditor = GetAssociatedFinderEditor(finder);
 			if (fEditor == null)
 			{
-				Log.Write(Log.Level.Error, $"No editor found for {finder.TargetFinderType.ToString()}");
+				Log.Write(Log.Level.Error, $"No editor found for {finder.TargetFinderType}");
 				return;
 			}
-			var fHolder = new EntryBlockHolder(finder, fEditor);
+			var fHolder = new EntryBlockHolder(finder, editorFactory);
 			int line = glmFinder.AddLineFixed(fHolder.Height);
 			glmFinder.AddElementFilling(line, fHolder, GlobalLayout.MinFill);
 		}
@@ -99,13 +100,13 @@ namespace ILPatcher.Interface.Main
 			IEditorPatchAction aEditor = GetAssociatedActionEditor(action);
 			if (aEditor == null)
 			{
-				Log.Write(Log.Level.Error, $"No editor found for {action.PatchActionType.ToString()}");
+				Log.Write(Log.Level.Error, $"No editor found for {action.PatchActionType}");
 				return;
 			}
 			foreach (Control c in mPatchAction.Controls) c.Dispose();
 			mPatchAction.Controls.Clear();
 
-			var aHolder = new EntryBlockHolder(action, aEditor);
+			var aHolder = new EntryBlockHolder(action, editorFactory);
 			mPatchAction.Controls.Add(aHolder);
 			aHolder.Dock = DockStyle.Fill;
 		}
@@ -114,12 +115,12 @@ namespace ILPatcher.Interface.Main
 
 		private void AddFinder_Click(object sender, EventArgs e)
 		{
-
+			// TODO: implement
 		}
 
 		private void SetAction_Click(object sender, EventArgs e)
 		{
-
+			// TODO: implement
 		}
 
 		private void Save_Click(object sender, EventArgs e)

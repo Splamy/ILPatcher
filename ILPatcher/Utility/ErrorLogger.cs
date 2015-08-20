@@ -40,16 +40,10 @@ namespace ILPatcher.Utility
 			}
 		}
 
-		public static void Write(Level lvl, string errText, params string[] infos)
+		public static void Write(Level lvl, string errText)
 		{
 			if (!Active) return;
 			StringBuilder strb = new StringBuilder();
-			strb.Append(errText);
-			foreach (string s in infos)
-				strb.Append(s);
-			string inputbuffer = strb.ToString();
-			strb.Clear();
-
 			strb.Append(spaceup[(int)lvl]);
 			for (int i = StackLevel; i >= 1; i--)
 			{
@@ -64,9 +58,9 @@ namespace ILPatcher.Utility
 				else
 					strb.Append(": ");
 			}
-			strb.Append(inputbuffer);
+			strb.Append(errText);
 			strb.Append("\r\n");
-			if (callback != null) callback(new ErrorLoggerItem(lvl, inputbuffer));
+			callback?.Invoke(new ErrorLoggerItem(lvl, errText));
 			File.AppendAllText("Output.log", strb.ToString(), Encoding.UTF8);
 		}
 

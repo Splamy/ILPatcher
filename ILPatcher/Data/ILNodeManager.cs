@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Mono.Cecil;
 using System;
+using System.Linq;
 
 namespace ILPatcher.Data
 {
@@ -12,7 +13,7 @@ namespace ILPatcher.Data
 		private DataStruct dataStruct;
 		private readonly Dictionary<string, ILNode> ModuleList;
 		public ILNode StructViewToolBox { get; set; }
-		public static char[] Seperators { get; } = new[] { '.', '/' };
+		public static char[] Seperators { get; } = new[] { '/' };
 
 		public delegate void ModuleChangedDelegate(object sender);
 		public event ModuleChangedDelegate OnModuleChanged;
@@ -35,21 +36,18 @@ namespace ILPatcher.Data
 		/// <returns>Returns the Cecil object if found, otherwise null</returns>
 		public object FindMemberByPath(string path)
 		{
-			return FindNodeByPath(path)?.Name;
+			return FindNodeByPath(path)?.Value;
 		}
 
 		public ILNode FindNodeByPath(string path)
 		{
 			string[] pathbreaks = path.Split(Seperators);
+			pathbreaks = pathbreaks.Select(t => t.Replace("/", ".")).ToArray();
 
 			if (pathbreaks.Length == 0)
 			{
 				Log.Write(Log.Level.Warning, "FindTypeByName path is empty");
 				return null;
-			}
-			else if (pathbreaks.Length >= 2)
-			{
-				pathbreaks[1] = pathbreaks[1].Replace(':', '.');  // HACK: improve
 			}
 
 			if (pathbreaks[0] == "-")
@@ -70,6 +68,7 @@ namespace ILPatcher.Data
 			}
 			return null;
 		}
+		// TODO do inline instead of recursive for better debugging
 
 		/// <summary>Traverses the loaded ILNode children and searches the current path index in its children</summary>
 		/// <param name="searchnode">The ILNode with the children for the current path index</param>
@@ -139,7 +138,7 @@ namespace ILPatcher.Data
 						if (SubResolveDepth > 0)
 							LoadAssembly(AssSubRef, SubResolveDepth - 1);
 					}
-					catch { Log.Write(Log.Level.Warning, "AssemblyReference \"", anr.Name, "\" couldn't be found for \"", ModDef.Name, "\""); }
+					catch { Log.Write(Log.Level.Warning, $"AssemblyReference \"{anr.Name}\" couldn't be found for \"{ ModDef.Name}\""); }
 				}
 
 				Dictionary<string, ILNode> nsDict = new Dictionary<string, ILNode>();

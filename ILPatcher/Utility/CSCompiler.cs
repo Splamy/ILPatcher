@@ -75,7 +75,7 @@ namespace ILPatcher.Utility
 					//if (!cp.ReferencedAssemblies.Contains(fullname))
 					//.Add(fullname);
 				}
-				cp.ReferencedAssemblies.AddRange(adList.ConvertAll<string>(ad => ad.MainModule.FullyQualifiedName).ToArray());
+				cp.ReferencedAssemblies.AddRange(adList.ConvertAll(ad => ad.MainModule.FullyQualifiedName).ToArray());
 			}
 
 			cp.WarningLevel = 3;
@@ -95,7 +95,7 @@ namespace ILPatcher.Utility
 					{
 						errors.AppendFormat("Line {0},{1}\t: {2}\n", error.Line, error.Column, error.ErrorText);
 					}
-					Log.Write(Log.Level.Error, "Compiler Error: ", errors.ToString());
+					Log.Write(Log.Level.Error, $"Compiler Error: \"{errors}\"");
 					if (cr.Errors.HasErrors)
 						return false;
 				}

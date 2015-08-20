@@ -1,7 +1,6 @@
 ﻿using ILPatcher.Data;
 using System;
 using System.Windows.Forms;
-using ILPatcher.Utility;
 
 namespace ILPatcher.Interface
 {

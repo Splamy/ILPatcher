@@ -17,22 +17,18 @@ namespace ILPatcher.Data
 			get
 			{
 				var strb = new StringBuilder();
-				strb.Append(Name);
-				strb.Append(":\n");
+				strb.Append(Name).Append(":\n");
 				foreach (var finder in FinderChain)
 				{
 					strb.Append(finder.Name);
 					strb.Append(" ->\n");
 				}
-				if(PatchAction != null)
-					strb.Append(PatchAction.Name);
-				else
-					strb.Append("<X>");
+				strb.Append(PatchAction?.Name ?? "<X>");
 				return strb.ToString();
 			}
 		}
-		public override string Description { get { return "Provides the way to find and change a part in the targeted binary."; } }
-		public List<TargetFinder> FinderChain { get; set; }
+		public override string Description => "Provides the way to find and change a part in the targeted binary.";
+		public List<TargetFinder> FinderChain { get; private set; }
 		public PatchAction PatchAction { get; set; }
 		private DataStruct dataStruct;
 

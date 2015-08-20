@@ -8,15 +8,15 @@ namespace ILPatcher.Data.Finder
 	class TargetFinderClassByName : TargetFinder
 	{
 		//I: NamedElement
-		public override string Label { get { return ILNodePath; } }
-		public override string Description { get { return "Finds a class descripted with the ILNodePath."; } }
+		public override string Label => ILNodePath;
+		public override string Description => "Finds a class descripted with the ILNodePath.";
 
 		//I: TargetFinder
-		public override TargetFinderType TargetFinderType { get { return TargetFinderType.ClassByName; } }
-		public override bool HasFixedOutput { get { return true; } }
-		public override bool HasMultipleResults { get { return false; } }
-		public override Type TInput { get { return typeof(AssemblyDefinition); } }
-		public override Type TOutput { get { return typeof(TypeDefinition); } }
+		public override TargetFinderType TargetFinderType => TargetFinderType.ClassByName;
+		public override bool HasFixedOutput => true;
+		public override bool HasMultipleResults => false;
+		public override Type TInput => typeof(AssemblyDefinition);
+		public override Type TOutput => typeof(TypeDefinition);
 
 		//Own:
 		public string ILNodePath { get; set; }

@@ -3,13 +3,14 @@ using System;
 
 namespace ILPatcher.Interface
 {
+	[EditorAttributes(null)] // TODO: check ovverriding behaviour (eg. base (1:true, 2:true, 3:true) deriver (2:false) - meaning only overriding one attribute)
 	public abstract class EditorBase<Kind, Spec> : Swoosh.Control, IEditorPanel where Spec : class, Kind
 	{
 		protected readonly DataStruct dataStruct;
 		protected Spec myData;
 
-		public abstract string PanelName { get; }
-		public abstract bool IsInline { get; }
+		public string PanelName => EditorFactory.GetEditorName(GetType());
+		public bool IsInline => EditorFactory.IsInline(GetType());
 
 		public abstract Kind CreateNewEntryPart();
 		public void SetPatchData(Kind pPatchAction)

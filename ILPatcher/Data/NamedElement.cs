@@ -7,9 +7,6 @@
 		public abstract string Label { get; }
 		public abstract string Description { get; }
 
-		public override string ToString()
-		{
-			return Label;
-		}
+		public override string ToString() => Label;
 	}
 }

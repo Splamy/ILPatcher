@@ -42,7 +42,7 @@ namespace ILPatcher.Data
 					Instruction nop = NewInstruction.Operand as Instruction;
 					if (oop == null || nop == null)
 					{
-						Log.Write(Log.Level.Warning, "Operand info wrong: ", NewInstruction.ToString());
+						Log.Write(Log.Level.Warning, $"Operand info \"{NewInstruction}\" is wrong");
 						return true;
 					}
 					return true; // TODO check if br targets differ || same for brarray (witch)

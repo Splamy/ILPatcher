@@ -2,6 +2,7 @@
 
 namespace ILPatcher.Data.Finder
 {
+	[Serializable]
 	public class TargetNotFoundException : Exception
 	{
 		public TargetFinder FailedFinder { get; protected set; }

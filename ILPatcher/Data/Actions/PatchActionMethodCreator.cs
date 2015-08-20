@@ -7,13 +7,13 @@ namespace ILPatcher.Data.Actions
 	public class PatchActionMethodCreator : PatchAction // TODO move to Finder
 	{
 		//I: NamedElement
-		public override string Label { get { return ((FillAction == null) ? "<?>" : FillAction.Name) + " -> " + ((insertClass == null) ? "<?>" : insertClass.FullName); } }
-		public override string Description { get { throw new NotImplementedException(); } }
+		public override string Label => (FillAction?.Name ?? "<?>") + " -> " + (insertClass?.FullName ?? "<?>");
+		public override string Description => "Creates and inserts a new method with the option to implement it";
 
 		//I: PatchAction
-		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodCreator; } }
-		public override bool RequiresFixedOutput { get { return false; } }
-		public override Type TInput { get { return typeof(TypeDefinition); } }
+		public override PatchActionType PatchActionType => PatchActionType.ILMethodCreator;
+		public override bool RequiresFixedOutput => false;
+		public override Type TInput => typeof(TypeDefinition);
 
 		//Own:
 		public PatchAction FillAction { get; set; }

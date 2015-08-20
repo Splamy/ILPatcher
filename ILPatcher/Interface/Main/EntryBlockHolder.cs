@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using MetroObjects;
 using ILPatcher.Data;
 using System.Windows.Forms;
 
@@ -12,17 +8,21 @@ namespace ILPatcher.Interface.Main
 	class EntryBlockHolder : Panel
 	{
 		public EntryBase entryElement { get; protected set; }
-		public IEditorPanel associatedEditor { get; protected set; }
-		private Control editorAsControl;
+
+		private Swoosh swooshManager;
+        private EditorFactory editorFactory;
+		private Control displayControl;
+		private bool isEditorInline;
 
 		public Label lblName { get; protected set; }
 		public Button btnEdit { get; protected set; }
 		public Label lblLabel { get; protected set; }
 
-		public EntryBlockHolder(EntryBase entryElem, IEditorPanel editor)
+		public EntryBlockHolder(EntryBase entryElem, EditorFactory eFactory, Swoosh swooshMgr)
 		{
 			entryElement = entryElem;
-			associatedEditor = editor;
+			editorFactory = eFactory;
+			swooshManager = swooshMgr;
 
 			Height = 100;
 
@@ -35,23 +35,34 @@ namespace ILPatcher.Interface.Main
 			Controls.Add(lblName);
 			Controls.Add(btnEdit);
 
-			if (associatedEditor.IsInline)
+			Type editorType = editorFactory.GetEditorType(entryElem);
+			isEditorInline = EditorFactory.IsInline(editorType);
+			if (isEditorInline)
 			{
-				editorAsControl = (Control)editor;
-				Controls.Add(editorAsControl);
-				editorAsControl.Location = new Point(0, GlobalLayout.LineHeight);
-				editorAsControl.Enabled = false;
+				displayControl = (Control)eFactory.GetEditor(entryElem);
+				displayControl.Location = new Point(0, GlobalLayout.LineHeight);
+				displayControl.Enabled = false;
 			}
 			else
 			{
 				lblLabel = GlobalLayout.GenMetroLabel(entryElem.Label);
-				Controls.Add(lblLabel);
+				displayControl = lblLabel;
 			}
+			Controls.Add(displayControl);
 		}
 
 		protected void Edit_Click(object sender, EventArgs e)
 		{
-			editorAsControl.Enabled = true;
+			if (isEditorInline)
+			{
+				displayControl.Enabled = true;
+			}
+			else
+			{
+				var eType = editorFactory.GetEditorType(entryElement);
+				string panelName = EditorFactory.GetEditorName(eType);
+                swooshManager.PushPanel((Swoosh.ISwoosh)editorFactory.GetEditor(entryElement), panelName);
+            }
 		}
 
 		protected override void OnResize(EventArgs eventargs)
@@ -60,8 +71,8 @@ namespace ILPatcher.Interface.Main
 
 			lblName.Width = Width - GlobalLayout.LabelWidth;
 			btnEdit.Left = Width - GlobalLayout.LabelWidth;
-			
-			(associatedEditor.IsInline ? editorAsControl : lblLabel).Size = new Size(Width, Height - GlobalLayout.LineHeight);
+
+			displayControl.Size = new Size(Width, Height - GlobalLayout.LineHeight);
 		}
 
 		private string GetNameFromEntry(EntryBase element)

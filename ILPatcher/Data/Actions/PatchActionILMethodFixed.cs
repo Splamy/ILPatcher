@@ -13,12 +13,12 @@ namespace ILPatcher.Data.Actions
 	{
 		//I: NamedElement
 		public override string Label { get { return "+/- changes"; } } // TODO: implement
-		public override string Description { get { return "Modifies an entire method by changing/adding instructions individually"; } }
+		public override string Description => "Modifies an entire method by changing/adding instructions individually";
 
 		//I: PatchAction
-		public override PatchActionType PatchActionType { get { return PatchActionType.ILMethodFixed; } }
-		public override bool RequiresFixedOutput { get { return true; } }
-		public override Type TInput { get { return typeof(MethodDefinition); } }
+		public override PatchActionType PatchActionType => PatchActionType.ILMethodFixed;
+		public override bool RequiresFixedOutput => true;
+		public override Type TInput => typeof(MethodDefinition);
 
 		//Own:
 		public MethodDefinition methodDefinition;
@@ -28,7 +28,7 @@ namespace ILPatcher.Data.Actions
 		public PatchActionILMethodFixed(DataStruct dataStruct)
 			: base(dataStruct)
 		{
-
+			
 		}
 
 		/// <summary>Sets the status of the Patch to "WorkingPerfectly" and and saves the given MethodDefinition</summary>
@@ -63,7 +63,7 @@ namespace ILPatcher.Data.Actions
 		{
 			if (methodDefinition == null)
 			{
-				Log.Write(Log.Level.Careful, "The PatchAction(ILMethodFixed) ", this.Name, " is empty and won't be saved!");
+				Log.Write(Log.Level.Careful, $"The PatchAction(ILMethodFixed) {Name} is empty and won't be saved!");
 				return false;
 			}
 
@@ -149,31 +149,29 @@ namespace ILPatcher.Data.Actions
 		public override bool Load(XmlNode input)
 		{
 			NameCompressor nc = NameCompressor.Instance;
+			Validator val = new Validator(() => PatchStatus = PatchStatus.Broken);
 
-			if (input.ChildNodes.Count == 0) { Log.Write(Log.Level.Careful, "Node ", input.Name, " has no Childnodes"); PatchStatus = PatchStatus.Broken; return false; }
+			if (!val.ValidateTrue(input.ChildNodes.Count > 0, $"Node {input.Name} has no Childnodes")) return val.Ok;
 
 			XmlNode PatchList = input.GetChildNode(SST.PatchList, 0);
-			if (PatchList == null) { Log.Write(Log.Level.Error, "No PatchList Child found"); PatchStatus = PatchStatus.Broken; return false; }
+			if (!val.ValidateSet(PatchList, "No PatchList Child found")) return val.Ok;
 
 			string metpathunres = PatchList.GetAttribute(SST.MethodPath);
-			if (string.IsNullOrEmpty(metpathunres)) { Log.Write(Log.Level.Error, "MethodPath Attribute not found or empty"); PatchStatus = PatchStatus.Broken; return false; }
+			if (!val.ValidateStringSet(metpathunres, "MethodPath Attribute not found or empty")) return val.Ok;
 			methodDefinition = dataStruct.ReferenceTable.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
-			if (methodDefinition == null) { Log.Write(Log.Level.Error, "MethodID <", metpathunres, "> couldn't be resolved"); PatchStatus = PatchStatus.Broken; return false; }
+			if (!val.ValidateSet(methodDefinition, $"MethodID \"{metpathunres}\" couldn't be resolved")) return val.Ok;
 
 			// TODO: move methodDef related checks to Execute
 			OriginalInstructionCount = int.Parse(PatchList.GetAttribute(SST.InstructionCount));
-			if (methodDefinition.Body.Instructions.Count != OriginalInstructionCount)
-			{
-				// new method body has changed -> patching the new assembly will not work
-				Log.Write(Log.Level.Error, "The PatchAction \"", this.Name, "\" cannot be applied to a changend method"); PatchStatus = PatchStatus.Broken; return false;
-			}
+			// if new method body has changed -> patching the new assembly will not work
+			if (!val.ValidateTrue(methodDefinition.Body.Instructions.Count == OriginalInstructionCount, $"The PatchAction \" { Name }\" cannot be applied to a changend method")) return val.Ok;
 
 			// TODO: init with given params, instead of static
 			AnyArray<InstructionInfo> iibuffer = new AnyArray<InstructionInfo>(OriginalInstructionCount);
 			bool checkopcdes = true;
 			bool resolveparams = false; // resolves types/methods/...
 			bool checkprimitives = true; // checks if primitive types are identical
-			
+
 			var xmlInstructionLoader = new XMLInstruction<InstructionInfo>(
 				dataStruct.ReferenceTable,
 				methodDefinition);
@@ -181,7 +179,7 @@ namespace ILPatcher.Data.Actions
 			#region Load all InstructionInfo
 			foreach (XmlNode xelem in PatchList.ChildNodes)
 			{
-				if (xelem.Name != nc[SST.Instruction]) { Log.Write(Log.Level.Warning, "PatchList elemtent \"", xelem.Name, "\" is not recognized"); PatchStatus = PatchStatus.Broken; continue; }
+				if (!val.ValidateTrue(xelem.Name == nc[SST.Instruction], $"PatchList elemtent \"{xelem.Name}\" is not recognized")) continue;
 
 				InstructionInfo nII = new InstructionInfo();
 				XmlAttribute xdelatt = xelem.Attributes[nc[SST.Delete]];
@@ -196,12 +194,11 @@ namespace ILPatcher.Data.Actions
 					if (nII.OldInstructionNum < OriginalInstructionCount)
 					{
 						nII.OldInstruction = methodDefinition.Body.Instructions[nII.OldInstructionNum];
-						if (checkopcdes && opcode != nII.OldInstruction.OpCode)
+						val.ValidateTrue(checkopcdes && opcode == nII.OldInstruction.OpCode, () =>
 						{
-							PatchStatus = PatchStatus.Broken;
-							Log.Write(Log.Level.Careful, "Opcode of Instruction ", nII.OldInstructionNum.ToString(), " has changed");
 							nII.OpCodeMismatch = true;
-						}  // TODO: set mismatch | from-to log
+							return $"Opcode of Instruction {nII.OldInstructionNum} has changed";
+						});  // TODO: set mismatch | from-to log
 					}
 					else continue;
 
@@ -256,14 +253,13 @@ namespace ILPatcher.Data.Actions
 					nII.OldInstructionNum = -1;
 					nII.NewInstructionNum = int.Parse(xelem.GetAttribute(SST.InstructionNum));
 					nII.NewInstruction = xmlInstructionLoader.Node2Instruction(xelem, opcode, nII.NewInstructionNum);
-					if (nII.NewInstruction == null)
+					val.ValidateSet(nII.NewInstruction, () =>
 					{
-						PatchStatus = PatchStatus.Broken;
-						Log.Write(Log.Level.Error, "Expected Operand for '", opcode.Name, "', but no matching Attribute was found in ", xelem.InnerXml);
 						nII.NewInstruction = Instruction.Create(OpCodes.Nop);
 						nII.NewInstruction.OpCode = opcode;
 						nII.NewInstruction.Operand = "!!!!! Dummy !!!!!";
-					}
+						return $"Expected Operand for '{opcode.Name}', but no matching Attribute was found in {xelem.InnerXml}";
+					});
 				}
 
 				iibuffer[nII.NewInstructionNum] = nII;
@@ -272,14 +268,8 @@ namespace ILPatcher.Data.Actions
 
 			instructPatchList = new List<InstructionInfo>(iibuffer.ToArray());
 
-			#region Check for not loaded Instructions
-			if (!instructPatchList.All(x => x != null))
-			{
-				Log.Write(Log.Level.Error, "PatchList has holes: ", string.Join(", ", instructPatchList.Select((b, i) => b == null ? i : -1).Where(i => i != -1).ToArray()));
-				PatchStatus = PatchStatus.Broken;
-				return false;
-			}
-			#endregion
+			// Check for not loaded Instructions
+			if (!val.ValidateTrue(instructPatchList.All(x => x != null), () => "PatchList has holes: " + string.Join(", ", instructPatchList.Select((b, i) => b == null ? i : -1).Where(i => i != -1).ToArray()))) return false;
 
 			#region Set all jump operands from PostInitData
 			foreach (PostInitData pid in xmlInstructionLoader.GetPostInitalisationList())
@@ -289,16 +279,16 @@ namespace ILPatcher.Data.Actions
 					bool success = true;
 					instructPatchList[pid.InstructionNum].NewInstruction.Operand = Array.ConvertAll(pid.targetArray, a =>
 					{
-						InstructionInfo pidinstr = instructPatchList.First(x => x.NewInstructionNum == a);
-						if (pidinstr == null) { success = false; Log.Write(Log.Level.Error, "PID_At: ", a.ToString()); return null; }
-						return pidinstr.NewInstruction;
+						InstructionInfo pidinstr = instructPatchList.FirstOrDefault(x => x.NewInstructionNum == a);
+						if (!val.ValidateSet(pidinstr, () => { success = false; return $"PID_At: {a}"; })) return null;
+						else return pidinstr.NewInstruction;
 					});
-					if (!success) { Log.Write(Log.Level.Error, "PostInitData failed: ", pid.ToString()); PatchStatus = PatchStatus.Broken; continue; }
+					if (!val.ValidateTrue(success, $"PostInitData failed: {pid}")) continue;
 				}
 				else
 				{
 					InstructionInfo pidinstr = instructPatchList.First(x => x.NewInstructionNum == pid.targetNum);
-					if (pidinstr == null) { Log.Write(Log.Level.Error, "PostInitData failed: ", pid.ToString()); PatchStatus = PatchStatus.Broken; continue; }
+					if (!val.ValidateSet(pidinstr, $"PostInitData failed: {pid}")) continue;
 					instructPatchList[pid.InstructionNum].NewInstruction.Operand = pidinstr.NewInstruction;
 				}
 			}
@@ -307,7 +297,7 @@ namespace ILPatcher.Data.Actions
 			if (PatchStatus == PatchStatus.Unset)
 				PatchStatus = PatchStatus.WoringPerfectly;
 
-			return true;
+			return val.Ok;
 		}
 	}
 }

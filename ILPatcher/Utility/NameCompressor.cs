@@ -30,15 +30,15 @@ namespace ILPatcher.Utility
 				Tuple<string, string> tpl = lowtable[i];
 				if (tpl == null)
 				{
-					Log.Write(Log.Level.Warning, "SST ID entry does not exist: ", ((SST)i).ToString());
+					Log.Write(Log.Level.Warning, $"SST ID \"{((SST)i).ToString()}\" entry does not exist");
 					continue;
 				}
 				if (LongName.Contains(tpl.Item1))
-					Log.Write(Log.Level.Warning, "LongName Element Doubled: ", tpl.Item1);
+					Log.Write(Log.Level.Warning, $"LongName Element \"{tpl.Item1}\" doubled");
 				else
 					LongName.Add(tpl.Item1);
 				if (CompressName.Contains(tpl.Item2))
-					Log.Write(Log.Level.Warning, "CompressName Element Doubled: ", tpl.Item2);
+					Log.Write(Log.Level.Warning, $"CompressName Element \"{tpl.Item2}\" doubled");
 				else
 					CompressName.Add(tpl.Item2);
 			}
@@ -104,7 +104,7 @@ namespace ILPatcher.Utility
 #if DEBUG
 			if (lowtable[(int)entry] != null)
 			{
-				Log.Write(Log.Level.Error, "NameCompress Value already set: ", entry.ToString());
+				Log.Write(Log.Level.Error, $"NameCompress Value \"{entry}\" already set.");
 			}
 #endif
 			lowtable[(int)entry] = new Tuple<string, string>(entry.ToString(), lowname);
@@ -120,7 +120,7 @@ namespace ILPatcher.Utility
 #if DEBUG
 			if (lowtable[(int)val] == null)
 			{
-				Log.Write(Log.Level.Error, "NameCompress Value not found: ", val.ToString());
+				Log.Write(Log.Level.Error, $"NameCompress Value \"{val}\" not found.");
 				return val.ToString();
 			}
 #endif
@@ -132,7 +132,7 @@ namespace ILPatcher.Utility
 #if DEBUG
 			if (lowtable[(int)val] == null)
 			{
-				Log.Write(Log.Level.Error, "NameCompress Value not found: ", val.ToString());
+				Log.Write(Log.Level.Error, $"NameCompress Value \"{val}\" not found.");
 				return val.ToString();
 			}
 #endif

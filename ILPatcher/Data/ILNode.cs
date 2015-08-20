@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace ILPatcher.Data
 {
 	public class ILNode
 	{
-		private readonly List<ILNode> _children = new List<ILNode>();
+		private readonly List<ILNode> children = new List<ILNode>();
 
-		public string Name { private set; get; }
-		public string FullName { private set; get; }
-		public object Value { private set; get; }
-		public StructureView Flags { private set; get; }
+		public string Name { get; private set; }
+		public string FullName { get; private set; }
+		public object Value { get; private set; }
+		public StructureView Flags { get; private set; }
 
 		public ILNode(string name, string fullname, object value, StructureView viewFlag)
 		{
@@ -25,26 +23,26 @@ namespace ILPatcher.Data
 
 		public ILNode this[int i]
 		{
-			get { return _children[i]; }
+			get { return children[i]; }
 		}
 
 		public ILNode Parent { get; private set; }
 
 		public ReadOnlyCollection<ILNode> Children
 		{
-			get { return _children.AsReadOnly(); }
+			get { return children.AsReadOnly(); }
 		}
 
 		public ILNode Add(string name, string fullname, object value, StructureView flags)
 		{
 			var node = new ILNode(name, fullname, value, flags) { Parent = this };
-			_children.Add(node);
+			children.Add(node);
 			return node;
 		}
 
 		public bool Remove(ILNode node)
 		{
-			return _children.Remove(node);
+			return children.Remove(node);
 		}
 
 		public override string ToString()
@@ -54,12 +52,12 @@ namespace ILPatcher.Data
 
 		public void Sort()
 		{
-			_children.Sort((x, y) =>
+			children.Sort((x, y) =>
 			{
 				var strucdiff = x.Flags - y.Flags;
 				return strucdiff != 0 ? strucdiff : x.Name.CompareTo(y.Name);
 			});
-			_children.ForEach(x => x.Sort());
+			children.ForEach(x => x.Sort());
 		}
 	}
 

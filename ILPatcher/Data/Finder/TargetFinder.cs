@@ -4,7 +4,7 @@ namespace ILPatcher.Data.Finder
 {
 	public abstract class TargetFinder : EntryBase
 	{
-		public sealed override EntryKind EntryKind { get { return EntryKind.TargetFinder; } }
+		public sealed override EntryKind EntryKind => EntryKind.TargetFinder;
 
 		public abstract TargetFinderType TargetFinderType { get; }
 		/// <summary><para>True if the output is already known during patch creation.</para>

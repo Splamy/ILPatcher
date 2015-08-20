@@ -1,20 +1,15 @@
 ﻿using ILPatcher.Data;
 using ILPatcher.Data.Finder;
-using ILPatcher.Utility;
 using System.Windows.Forms;
 using System.Linq;
 using System.Collections.Generic;
 
 namespace ILPatcher.Interface.Finder
 {
+	[EditorAttributes("Class-Finder", Inline = true)]
 	class EditorFinderClassByName : EditorTargetFinder<TargetFinderClassByName>
 	{
-		//I: EditorPanel
-		public override string PanelName { get { return "Class-Finder"; } }
-		public override bool IsInline { get { return true; } }
-
-		//Own:
-		int ilNodePathLevel = -1;
+		private int ilNodePathLevel = -1;
 
 		#region Interface Elements
 		TextBox txtName;
@@ -36,12 +31,12 @@ namespace ILPatcher.Interface.Finder
 			txtClassPath.TextChanged += TxtClassPath_TextChanged;
 
 			var grid = new GridLineManager(this, true);
-			int line = grid.AddLineFilling(GlobalLayout.MinFill);
-			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("Name"), GlobalLayout.LineHeight);
-			grid.AddElementFilling(line, txtName, GlobalLayout.LabelWidth);
-			line = grid.AddLineFilling(GlobalLayout.MinFill);
-			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("ILNodePath"), GlobalLayout.LineHeight);
-			grid.AddElementFilling(line, txtClassPath, GlobalLayout.LabelWidth);
+			int line = grid.AddLineFixed(GlobalLayout.LineHeight);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("Name"), GlobalLayout.LabelWidth);
+			grid.AddElementFilling(line, txtName, GlobalLayout.MinFill);
+			line = grid.AddLineFixed(GlobalLayout.LineHeight);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("ILNodePath"), GlobalLayout.LabelWidth);
+			grid.AddElementFilling(line, txtClassPath, GlobalLayout.MinFill);
 
 		}
 

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Drawing;
 
 namespace ILPatcher.Interface
 {
@@ -220,6 +217,26 @@ namespace ILPatcher.Interface
 			elementList[line].AddElement(element);
 		}
 
+		// Change elements
+
+		public void SwapControl(int line, int controlNum, Control newControl)
+		{
+			LayoutElement lElement = elementList?[line].GetElement(controlNum);
+			if (lElement == null) throw new ArgumentException("The element doesn't exist");
+
+			if (lElement is GridElement)
+			{
+				GridElement gElem = lElement as GridElement;
+				gElem.control = newControl;
+            }
+			else if (lElement is BlankElement)
+			{
+				throw new NotSupportedException("Feature is not yet working");
+			}
+			else
+				throw new InvalidOperationException($"Unknown element type in List: {lElement.GetType().Name}");
+		}
+
 		// Class structures
 
 		private class GridLine : LayoutElement
@@ -245,9 +262,10 @@ namespace ILPatcher.Interface
 				}
 			}
 
-			public override void AddElement(LayoutElement element)
+			public override int AddElement(LayoutElement element)
 			{
 				elementList.Add(element);
+				return elementList.Count - 1;
 			}
 
 			public void RemoveElement(LayoutElement element)
@@ -255,9 +273,9 @@ namespace ILPatcher.Interface
 				elementList.Remove(element);
 			}
 
-			public LayoutElement GetElementAt(int index)
+			public override LayoutElement GetElement(int controlNumber)
 			{
-				return elementList[index];
+				return elementList?[controlNumber];
 			}
 		}
 
@@ -313,13 +331,11 @@ namespace ILPatcher.Interface
 			}
 
 			public abstract void MatchContent();
-			public virtual void AddElement(LayoutElement layoutElement)
-			{
-				throw new NotSupportedException();
-			}
+			public virtual int AddElement(LayoutElement layoutElement) { throw new NotSupportedException(); }
+			public virtual LayoutElement GetElement(int controlNumber) { throw new NotSupportedException(); }
 		}
 
-		enum ArrangementType
+		private enum ArrangementType
 		{
 			None,
 			Fixed,
@@ -343,7 +359,7 @@ namespace ILPatcher.Interface
 				Reduce();
 			}
 
-			public static explicit operator int(Rational rat)
+			public static explicit operator int (Rational rat)
 			{
 				return rat.numerator / rat.denominator;
 			}

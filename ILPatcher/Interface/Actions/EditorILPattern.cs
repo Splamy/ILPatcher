@@ -10,12 +10,9 @@ using System.Windows.Forms;
 
 namespace ILPatcher.Interface.Actions
 {
+	[EditorAttributes("Instruction Editor")]
 	public partial class EditorILPattern : EditorPatchAction<PatchActionILMethodFixed>
 	{
-		//I: EditorPanel
-		public override string PanelName { get { return "Instruction Editor"; } }
-		public override bool IsInline { get { return false; } }
-
 		private MethodDefinition methodDefinition;
 		private Control[] OperandCList;
 		private PickOperandType currentPOT = PickOperandType.None;
@@ -254,7 +251,7 @@ namespace ILPatcher.Interface.Actions
 				txtMethodFullName.Text = methodDefinition.FullName;
 			txtPatchActionName.Text = myData.Name;
 
-			if (myData.instructPatchList == null) { Log.Write(Log.Level.Error, "PatchAction ", myData.Name, " is not initialized correctly"); return; }
+			if (myData.instructPatchList == null) { Log.Write(Log.Level.Error, $"PatchAction \"{myData.Name}\" is not initialized correctly"); return; }
 
 			mInstructBox.Items = myData.instructPatchList.ConvertAll(x => (DragItem)x);
 		}
@@ -384,7 +381,7 @@ namespace ILPatcher.Interface.Actions
 			case OperandType.InlinePhi:
 			case OperandType.InlineSig:
 			default:
-				Log.Write(Log.Level.Warning, "Not switced OperandType: ", instr.OpCode.Name);
+				Log.Write(Log.Level.Warning, $"OperandType \"{instr.OpCode.Name}\" is not processed");
 				break;
 			}
 			#endregion
@@ -451,7 +448,7 @@ namespace ILPatcher.Interface.Actions
 				panTMFPicker.Visible = true;
 				break;
 			default:
-				Log.Write(Log.Level.Warning, "Not switced PickOperadType: ", currentPOT.ToString());
+				Log.Write(Log.Level.Warning, $"PickOperadType \"{currentPOT}\" is not processed");
 				break;
 			}
 			#endregion
@@ -512,7 +509,7 @@ namespace ILPatcher.Interface.Actions
 				II.NewInstruction.Operand = str;
 				break;
 			default:
-				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a textbox: ", currentPOT.ToString());
+				Log.Write(Log.Level.Warning, $"OperandType \"{currentPOT}\" cannot be processed with a textbox");
 				break;
 			}
 
@@ -547,7 +544,7 @@ namespace ILPatcher.Interface.Actions
 				InstructArrPicker.Instance.ShowStructure(mInstructBox.Items, oldop, x => ApplyOperand(x));
 				break;
 			default:
-				Log.Write(Log.Level.Warning, "OperandType cannot be processed with the TMFPicker: ", currentPOT.ToString());
+				Log.Write(Log.Level.Warning, $"OperandType \"{currentPOT}\" cannot be processed with the TMFPicker");
 				break;
 			}
 		}
@@ -586,7 +583,7 @@ namespace ILPatcher.Interface.Actions
 					cbxOperand.Items.Add(CecilFormatter.Format(II.NewInstruction, II.NewInstructionNum));
 				break;
 			default:
-				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());
+				Log.Write(Log.Level.Warning, $"OperandType \"{currentPOT}\" cannot be processed with a Combobox");
 				break;
 			}
 			CecilFormatter.ClearMaxNumer();
@@ -607,7 +604,7 @@ namespace ILPatcher.Interface.Actions
 				II.NewInstruction.Operand = ((InstructionInfo)mInstructBox.Items[cbxOperand.SelectedIndex]).NewInstruction;
 				break;
 			default:
-				Log.Write(Log.Level.Warning, "OperandType cannot be processed with a Combobox: ", currentPOT.ToString());
+				Log.Write(Log.Level.Warning, $"OperandType \"{currentPOT}\" cannot be processed with a Combobox");
 				break;
 			}
 			RedrawBoth();

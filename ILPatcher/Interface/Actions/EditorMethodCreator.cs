@@ -7,11 +7,9 @@ using System.Drawing;
 
 namespace ILPatcher.Interface.Actions
 {
+	[EditorAttributes("Method-Creator")]
 	public partial class EditorMethodCreator : EditorPatchAction<PatchActionMethodCreator>
 	{
-		public override string PanelName { get { return "Method-Creator"; } }
-		public override bool IsInline { get { return false; } }
-
 		private MethodDefinition blankMethodDefinition;
 		private TypeDefinition insertClass;
 

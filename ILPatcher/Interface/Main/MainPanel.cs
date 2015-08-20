@@ -14,6 +14,7 @@ namespace ILPatcher.Interface.Main
 	public class MainPanel : Swoosh.Control
 	{
 		private DataStruct dataStruct;
+		private EditorFactory editorFactory;
 		bool awaitingAssemblySelect = false;
 		string ilpFiletmp;
 
@@ -73,6 +74,13 @@ namespace ILPatcher.Interface.Main
 				openAsm.Filter = ".NET Managed Code | *.exe;*.dll";
 				if (openAsm.ShowDialog() == DialogResult.OK)
 				{
+					// TODO move into seperate logic and do error checking etc
+					if (Control.ModifierKeys == Keys.Shift)
+					{
+						dataStruct.ILNodeManager.LoadAssembly(AssemblyDefinition.ReadAssembly(openAsm.FileName));
+						return;
+                    }
+
 					string assemblyPath = openAsm.FileName;
 					string backupPath = assemblyPath + "_ilpbackup";
 					if (File.Exists(backupPath))
@@ -161,10 +169,11 @@ namespace ILPatcher.Interface.Main
 			//var test = new Finder.EditorFinderClassByName(dataStruct);
 			//var pat = test.CreateNewEntryPart();
 			//test.SetPatchData(pat);
-			PushPanel(new DebugPanel(), "Debug Disassemble");
+			//PushPanel(new DebugPanel(), "Debug Disassemble");
 
 			//TestMet1();
 			//TestMet2();
+			TestMet3();
 			//new CreateTypeForm(dataStruct, (d) => { }).Show();
 
 			//MultiPicker<TypeDefinition>.ShowStructure(dataStruct, StructureView.all, (x) => true, (x) => { });
@@ -250,9 +259,24 @@ namespace ILPatcher.Interface.Main
 			PushPanel(emc, "Debug Disassemble");
 		}
 
+		private void TestMet3()
+		{
+			AssemblyDefinition injectDef = structureViever.SelectedNode.Tag as AssemblyDefinition;
+			if (injectDef == null) return;
+			dataStruct.AssemblyDefinition.MainModule.AssemblyReferences.Add(injectDef.Name);
+
+			var metRef = (MethodDefinition)dataStruct.ILNodeManager.FindMemberByPath("Terraria/Terraria/Program/LaunchGame(String[]) : Void");
+			var ctorDef = (MethodDefinition)dataStruct.ILNodeManager.FindMemberByPath("CSHackPack/CSHackPack/HackPack/LoadAsInterface() : Void");
+			var ctorRef = dataStruct.AssemblyDefinition.MainModule.Import(ctorDef);
+			metRef.Body.Instructions.Insert(0, Mono.Cecil.Cil.Instruction.Create(Mono.Cecil.Cil.OpCodes.Call, ctorRef));
+			//metRef.Body.Instructions.RemoveAt(2);
+			dataStruct.AssemblyDefinition.Write(dataStruct.AssemblyLocation + ".mod");
+		}
+
 		public void EditEntry(PatchEntry patchEntry)
 		{
-			PatchBuilder patchBuilder = new PatchBuilder(dataStruct);
+			if (editorFactory == null) editorFactory = new EditorFactory();
+			PatchBuilder patchBuilder = new PatchBuilder(dataStruct, editorFactory);
 			patchBuilder.SetPatchData(patchEntry ?? patchBuilder.CreateNewEntryPart());
 			PushPanel(patchBuilder, patchBuilder.PanelName);
 		}
@@ -260,14 +284,14 @@ namespace ILPatcher.Interface.Main
 		public override void LandHereEvent()
 		{
 			RebuildTable(dataStruct);
-        }
+		}
 
 		private void RebuildTable(object sender)
 		{
 			DataStruct senderDataStruct = (DataStruct)sender;
 
 			lbxPatchEntryListBox.ClearItems();
-            foreach (var patchEntry in senderDataStruct.PatchEntryList)
+			foreach (var patchEntry in senderDataStruct.PatchEntryList)
 			{
 				lbxPatchEntryListBox.AddItem(new Actions.DefaultDragItem<PatchEntry>(patchEntry));
 			}

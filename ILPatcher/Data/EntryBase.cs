@@ -4,7 +4,7 @@ namespace ILPatcher.Data
 {
 	public abstract class EntryBase : NamedElement, ISaveToFile
 	{
-		protected DataStruct dataStruct;
+		public DataStruct dataStruct { get; }
 
 		public abstract EntryKind EntryKind { get; }
 

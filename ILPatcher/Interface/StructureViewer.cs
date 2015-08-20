@@ -51,9 +51,10 @@ namespace ILPatcher.Interface
 			SetDataAssociation(dataAssociation);
 		}
 
-		~StructureViewer()
+		protected override void Dispose(bool disposing)
 		{
 			ClearEventRegsters();
+			base.Dispose(disposing);
 		}
 
 		public void SetDataAssociation(DataStruct dataAssociation)
