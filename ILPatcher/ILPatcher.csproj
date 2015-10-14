@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="Data\DataStruct.cs" />
     <Compile Include="Data\EntryBase.cs" />
+    <Compile Include="Data\EntryFactory.cs" />
     <Compile Include="Data\Finder\TargetNotFoundException.cs" />
     <Compile Include="Data\ILNode.cs" />
     <Compile Include="Data\ILNodeManager.cs" />

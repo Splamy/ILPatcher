@@ -18,8 +18,8 @@ namespace ILPatcher.Interface
 		public ICollection<Type> FinderEditors => finderEditors.AsReadOnly();
 		public ICollection<Type> ActionEditors => actionEditors.AsReadOnly();
 
-		private static readonly Type[] factoryContructor = new[] { typeof(Data.DataStruct) };
 		private static readonly Type editorBaseType = typeof(EditorBase<,>);
+		private static readonly Type[] factoryContructor = new[] { typeof(Data.DataStruct) };
 
 		public EditorFactory()
 		{
