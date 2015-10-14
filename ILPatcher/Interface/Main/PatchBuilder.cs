@@ -6,6 +6,7 @@ using ILPatcher.Interface.Finder;
 using ILPatcher.Utility;
 using System;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace ILPatcher.Interface.Main
 {
@@ -27,7 +28,7 @@ namespace ILPatcher.Interface.Main
 			InitializeGridLineManager();
 
 			this.editorFactory = editorFactory;
-        }
+		}
 
 		private void InitializeGridLineManager()
 		{
@@ -59,54 +60,26 @@ namespace ILPatcher.Interface.Main
 
 			if (myData.PatchAction != null)
 				SetAction(myData.PatchAction);
+
+			int line = glmFinder.AddLineFixed(30);
+			glmFinder.AddElementFilling(line, new AddBar(editorFactory, dataStruct), GlobalLayout.MinFill);
 		}
 
 		// Interface tools
 
-		private IEditorTargetFinder GetAssociatedFinderEditor(TargetFinder finder)
-		{
-			switch (finder.TargetFinderType)
-			{
-			case TargetFinderType.ClassByName: return new EditorFinderClassByName(dataStruct);
-			default: return null;
-			}
-		}
-
-		private IEditorPatchAction GetAssociatedActionEditor(PatchAction action)
-		{
-			switch (action.PatchActionType)
-			{
-			case PatchActionType.ILMethodFixed: return new EditorILPattern(dataStruct);
-			case PatchActionType.ILMethodCreator: return new EditorMethodCreator(dataStruct);
-			default: return null;
-			}
-		}
-
 		private void AddFinder(TargetFinder finder)
 		{
-			IEditorTargetFinder fEditor = GetAssociatedFinderEditor(finder);
-			if (fEditor == null)
-			{
-				Log.Write(Log.Level.Error, $"No editor found for {finder.TargetFinderType}");
-				return;
-			}
-			var fHolder = new EntryBlockHolder(finder, editorFactory);
+			var fHolder = new EntryBlockHolder(finder, editorFactory, SwooshParent);
 			int line = glmFinder.AddLineFixed(fHolder.Height);
 			glmFinder.AddElementFilling(line, fHolder, GlobalLayout.MinFill);
 		}
 
 		private void SetAction(PatchAction action)
 		{
-			IEditorPatchAction aEditor = GetAssociatedActionEditor(action);
-			if (aEditor == null)
-			{
-				Log.Write(Log.Level.Error, $"No editor found for {action.PatchActionType}");
-				return;
-			}
 			foreach (Control c in mPatchAction.Controls) c.Dispose();
 			mPatchAction.Controls.Clear();
 
-			var aHolder = new EntryBlockHolder(action, editorFactory);
+			var aHolder = new EntryBlockHolder(action, editorFactory, SwooshParent);
 			mPatchAction.Controls.Add(aHolder);
 			aHolder.Dock = DockStyle.Fill;
 		}
@@ -143,10 +116,44 @@ namespace ILPatcher.Interface.Main
 
 		// Functionality
 
-		public override PatchEntry CreateNewEntryPart()
+		protected override PatchEntry GetNewEntryPart()
 		{
 			editMode = false;
 			return new PatchEntry(dataStruct);
+		}
+
+		// TMP IDEA
+		private class AddBar : Control
+		{
+			EditorFactory edFactory;
+			ComboBox eCmbx;
+			DataStruct dataStruct;
+
+			public AddBar(EditorFactory eFactory, DataStruct dS)
+			{
+				edFactory = eFactory;
+				dataStruct = dS;
+
+				eCmbx = new ComboBox();
+				Controls.Add(eCmbx);
+				eCmbx.Location = new System.Drawing.Point(120, 10);
+				eCmbx.Size = new System.Drawing.Size(100, 20);
+
+				foreach (var finder in eFactory.FinderEditors)
+					eCmbx.Items.Add(EditorFactory.GetEditorName(finder));
+
+				var btnAdd = GlobalLayout.GenMetroButton("Add Finder", AddFinder_Click);
+				Controls.Add(btnAdd);
+				btnAdd.Location = new System.Drawing.Point(10, 10);
+				btnAdd.Size = new System.Drawing.Size(100, 20);
+			}
+
+			private void AddFinder_Click(object sender, EventArgs e)
+			{
+				var edT = edFactory.FinderEditors.ToArray()[eCmbx.SelectedIndex];
+				var edi = edFactory.CreateEditorByType(edT, dataStruct);
+				edi.CreateNewEntryPart();
+			}
 		}
 	}
 }

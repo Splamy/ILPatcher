@@ -12,7 +12,8 @@ namespace ILPatcher.Interface
 		public string PanelName => EditorFactory.GetEditorName(GetType());
 		public bool IsInline => EditorFactory.IsInline(GetType());
 
-		public abstract Kind CreateNewEntryPart();
+		public void CreateNewEntryPart() => SetPatchData(GetNewEntryPart());
+		protected abstract Kind GetNewEntryPart();
 		public void SetPatchData(Kind pPatchAction)
 		{
 			if (pPatchAction == null) throw new ArgumentNullException(nameof(pPatchAction));
@@ -30,5 +31,7 @@ namespace ILPatcher.Interface
 	{
 		string PanelName { get; }
 		bool IsInline { get; }
-	}
+
+		void CreateNewEntryPart();
+    }
 }

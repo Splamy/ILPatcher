@@ -121,7 +121,7 @@ namespace ILPatcher.Utility
 
 			foreach (TypeDefinition td in ad.MainModule.Types)
 			{
-				if ((td.Name != "<Module>" && string.IsNullOrEmpty(typeName)) || typeName == td.Name)
+				if ((td.Name != "<Module>" && (string.IsNullOrEmpty(typeName)) || typeName == td.Name))
 				{
 					return td;
 				}
@@ -142,7 +142,7 @@ namespace ILPatcher.Utility
 
 			foreach (MethodDefinition md in td.Methods)
 			{
-				if ((md.Name != ".ctor" && string.IsNullOrEmpty(methodName)) || methodName == md.Name)
+				if ((md.Name != ".ctor" && (string.IsNullOrEmpty(methodName)) || methodName == md.Name))
 				{
 					return md;
 				}

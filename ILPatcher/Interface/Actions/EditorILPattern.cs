@@ -239,7 +239,7 @@ namespace ILPatcher.Interface.Actions
 
 		// LOAD METHODS ******************************************************
 
-		public override PatchAction CreateNewEntryPart()
+		protected override PatchAction GetNewEntryPart()
 		{
 			return new PatchActionILMethodFixed(dataStruct);
 		}

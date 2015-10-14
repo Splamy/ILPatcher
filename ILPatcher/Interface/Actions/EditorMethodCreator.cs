@@ -62,7 +62,7 @@ namespace ILPatcher.Interface.Actions
 			//MethodDefinition md = csc.InjectCode(txtInjectCode.Text);
 		}
 
-		public override PatchAction CreateNewEntryPart()
+		protected override PatchAction GetNewEntryPart()
 		{
 			throw new NotImplementedException();
 		}

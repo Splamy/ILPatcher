@@ -172,7 +172,7 @@ namespace ILPatcher.Interface
 			public LayerLevel(Swoosh _parent, ISwoosh c, string name)
 			{
 				parent = _parent;
-				c.swooshParent = _parent;
+				c.SwooshParent = _parent;
 				ctrl = c;
 				ctrl.Parent = _parent;
 				btn = new CustomButton(name);
@@ -233,7 +233,7 @@ namespace ILPatcher.Interface
 
 		public interface ISwoosh : IDisposable
 		{
-			Swoosh swooshParent { get; set; }
+			Swoosh SwooshParent { get; set; }
 			void PushPanel(ISwoosh c, string name);
 			void SwooshBack();
 			void LandHereEvent();
@@ -252,18 +252,18 @@ namespace ILPatcher.Interface
 
 		public abstract class Control : System.Windows.Forms.Control, ISwoosh
 		{
-			public Swoosh swooshParent { get; set; }
-			public void PushPanel(ISwoosh c, string name) { swooshParent.PushPanel(c, name); }
-			public void SwooshBack() { swooshParent.SwooshBack(); }
-			public virtual void LandHereEvent() { }
+			public Swoosh SwooshParent { get; set; }
+			public void PushPanel(ISwoosh c, string name) { SwooshParent.PushPanel(c, name); }
+			public void SwooshBack() { SwooshParent.SwooshBack(); }
+			public virtual void LandHereEvent() { } // TODO: maybe abstract ?
 		}
 
 		public abstract class Panel : System.Windows.Forms.Panel, ISwoosh
 		{
-			public Swoosh swooshParent { get; set; }
-			public void PushPanel(ISwoosh c, string name) { swooshParent.PushPanel(c, name); }
-			public void SwooshBack() { swooshParent.SwooshBack(); }
-			public virtual void LandHereEvent() { }
+			public Swoosh SwooshParent { get; set; }
+			public void PushPanel(ISwoosh c, string name) { SwooshParent.PushPanel(c, name); }
+			public void SwooshBack() { SwooshParent.SwooshBack(); }
+			public virtual void LandHereEvent() { }// TODO: maybe abstract ?
 		}
 	}
 }

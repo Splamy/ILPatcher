@@ -79,7 +79,7 @@ namespace ILPatcher.Interface.Main
 					{
 						dataStruct.ILNodeManager.LoadAssembly(AssemblyDefinition.ReadAssembly(openAsm.FileName));
 						return;
-                    }
+					}
 
 					string assemblyPath = openAsm.FileName;
 					string backupPath = assemblyPath + "_ilpbackup";
@@ -149,9 +149,12 @@ namespace ILPatcher.Interface.Main
 
 		private void ExecutePatches_Click(object sender, EventArgs e)
 		{
-			// XXX: Maby move into dataStruct or make own backup manager (incl. readonly stuff after writing)
+			// TODO: Maby move into dataStruct or make own backup manager (incl. readonly stuff after writing)
 			try
 			{
+				if (string.IsNullOrEmpty(dataStruct.AssemblyLocation))
+					return;
+
 				string backupPath = dataStruct.AssemblyLocation + "_ilpbackup";
 				if (!File.Exists(backupPath))
 					File.Copy(dataStruct.AssemblyLocation, backupPath);
@@ -261,7 +264,7 @@ namespace ILPatcher.Interface.Main
 
 		private void TestMet3()
 		{
-			AssemblyDefinition injectDef = structureViever.SelectedNode.Tag as AssemblyDefinition;
+			AssemblyDefinition injectDef = structureViever.SelectedNode?.Tag as AssemblyDefinition;
 			if (injectDef == null) return;
 			dataStruct.AssemblyDefinition.MainModule.AssemblyReferences.Add(injectDef.Name);
 
@@ -277,7 +280,10 @@ namespace ILPatcher.Interface.Main
 		{
 			if (editorFactory == null) editorFactory = new EditorFactory();
 			PatchBuilder patchBuilder = new PatchBuilder(dataStruct, editorFactory);
-			patchBuilder.SetPatchData(patchEntry ?? patchBuilder.CreateNewEntryPart());
+			if (patchEntry == null)
+				patchBuilder.CreateNewEntryPart();
+			else
+				patchBuilder.SetPatchData(patchEntry);
 			PushPanel(patchBuilder, patchBuilder.PanelName);
 		}
 

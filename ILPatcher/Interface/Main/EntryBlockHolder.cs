@@ -10,7 +10,7 @@ namespace ILPatcher.Interface.Main
 		public EntryBase entryElement { get; protected set; }
 
 		private Swoosh swooshManager;
-        private EditorFactory editorFactory;
+		private EditorFactory editorFactory;
 		private Control displayControl;
 		private bool isEditorInline;
 
@@ -21,6 +21,18 @@ namespace ILPatcher.Interface.Main
 		public EntryBlockHolder(EntryBase entryElem, EditorFactory eFactory, Swoosh swooshMgr)
 		{
 			entryElement = entryElem;
+		}
+
+		public EntryBlockHolder(Type editorType, EditorFactory eFactory, Swoosh swooshMgr)
+		{
+
+
+
+			entryElement = entryElem;
+		}
+
+		private void Initialize(IEditorPanel editor, DataStruct dataStruct, EditorFactory eFactory, Swoosh swooshMgr)
+		{
 			editorFactory = eFactory;
 			swooshManager = swooshMgr;
 
@@ -39,7 +51,7 @@ namespace ILPatcher.Interface.Main
 			isEditorInline = EditorFactory.IsInline(editorType);
 			if (isEditorInline)
 			{
-				displayControl = (Control)eFactory.GetEditor(entryElem);
+				displayControl = (Control)eFactory.CreateEditorByType(editorType, entryElem.dataStruct);
 				displayControl.Location = new Point(0, GlobalLayout.LineHeight);
 				displayControl.Enabled = false;
 			}
@@ -61,8 +73,8 @@ namespace ILPatcher.Interface.Main
 			{
 				var eType = editorFactory.GetEditorType(entryElement);
 				string panelName = EditorFactory.GetEditorName(eType);
-                swooshManager.PushPanel((Swoosh.ISwoosh)editorFactory.GetEditor(entryElement), panelName);
-            }
+				swooshManager.PushPanel((Swoosh.ISwoosh)editorFactory.CreateEditorByEntry(entryElement), panelName);
+			}
 		}
 
 		protected override void OnResize(EventArgs eventargs)

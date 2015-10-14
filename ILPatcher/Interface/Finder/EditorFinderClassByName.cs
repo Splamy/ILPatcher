@@ -79,7 +79,7 @@ namespace ILPatcher.Interface.Finder
 
 		}
 
-		public override TargetFinder CreateNewEntryPart()
+		protected override TargetFinder GetNewEntryPart()
 		{
 			return new TargetFinderClassByName(dataStruct);
 		}

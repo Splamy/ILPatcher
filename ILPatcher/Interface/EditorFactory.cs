@@ -35,7 +35,7 @@ namespace ILPatcher.Interface
 			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 			{
 				var derivedOptions = asm.GetTypes().
-					Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(editorBaseType));
+					Where(myType => myType.IsClass && !myType.IsAbstract && HasGenericBaseType(myType, editorBaseType));
 
 				foreach (var checkEditorType in derivedOptions)
 				{
@@ -44,9 +44,9 @@ namespace ILPatcher.Interface
 					var validConstructor = checkEditorType.GetConstructor(factoryContructor);
 					if (validConstructor != null)
 					{
-						if (typeof(EditorPatchAction<>).IsAssignableFrom(checkEditorType))
+						if (HasGenericBaseType(checkEditorType, typeof(EditorPatchAction<>)))
 							actionEditors.Add(checkEditorType);
-						else if (typeof(EditorTargetFinder<>).IsAssignableFrom(checkEditorType))
+						else if (HasGenericBaseType(checkEditorType, typeof(EditorTargetFinder<>)))
 							finderEditors.Add(checkEditorType);
 					}
 					else
@@ -57,13 +57,19 @@ namespace ILPatcher.Interface
 			}
 		}
 
-		public IEditorPanel GetEditor(Data.EntryBase entry)
+		public IEditorPanel CreateEditorByEntry(Data.EntryBase entry)
 		{
 			if (entry == null) throw new ArgumentNullException(nameof(entry));
 
 			Type editorType = GetEditorType(entry);
-			return (IEditorPanel)Activator.CreateInstance(editorType, new[] { entry.dataStruct });
-        }
+			return CreateEditorByType(editorType, entry.dataStruct);
+		}
+
+		public IEditorPanel CreateEditorByType(Type editorType, Data.DataStruct dataStruct)
+		{
+			ValidateType(editorType);
+			return (IEditorPanel)Activator.CreateInstance(editorType, new[] { dataStruct });
+		}
 
 		public Type GetEditorType(Data.EntryBase entry)
 		{
@@ -85,8 +91,29 @@ namespace ILPatcher.Interface
 
 		private static void ValidateType(Type editorType)
 		{
-			if (!editorBaseType.IsAssignableFrom(editorType))
+			if (!HasGenericBaseType(editorType, editorBaseType))
 				throw new ArgumentException("The argument does not describe an editor", nameof(editorType));
+		}
+
+		private static bool HasGenericBaseType(Type checkType, Type baseType)
+		{
+			if (baseType == null) throw new ArgumentNullException(nameof(baseType));
+
+			while (checkType != null)
+			{
+				if (checkType.IsGenericType)
+					checkType = checkType.GetGenericTypeDefinition();
+
+				if (checkType == baseType)
+					return true;
+				else
+				{
+					checkType = checkType.BaseType;
+					if (checkType == typeof(object))
+						return false;
+				}
+			}
+			return false;
 		}
 
 		private static EditorAttributes GetEditorAttribute(Type editorType)
