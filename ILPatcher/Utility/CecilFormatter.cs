@@ -12,16 +12,19 @@ namespace ILPatcher.Utility
 		{
 			if (objref == null)
 				return string.Empty;
-			else if (objref is VariableReference)
-				return CecilFormatter.Format((VariableReference)objref);
-			else if (objref is ParameterReference)
-				return CecilFormatter.Format((ParameterReference)objref);
-			else if (objref is Instruction)
-				return CecilFormatter.Format((Instruction)objref);
-			else if (objref is MemberReference)
-				return CecilFormatter.Format((MemberReference)objref);
-			else
-				return objref.ToString();
+
+			VariableReference vr = objref as VariableReference;
+			if (vr != null) return Format((VariableReference)objref);
+
+			ParameterReference pr = objref as ParameterReference;
+			if (pr != null) return Format((ParameterReference)objref);
+
+			ParameterReference instr = objref as ParameterReference;
+			if (instr != null) return Format((Instruction)objref);
+
+			if (objref is MemberReference) return Format((MemberReference)objref);
+
+			return objref.ToString();
 		}
 
 		public static string Format(VariableReference varref)

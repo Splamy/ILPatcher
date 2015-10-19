@@ -75,16 +75,16 @@ namespace ILPatcher.Data.Actions
 			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.IsOld);
 
 			XmlNode xListPatched = output.InsertCompressedElement(SST.PatchList);
-			xListPatched.CreateAttribute(SST.MethodPath, dataStruct.ReferenceTable.Reference(methodDefinition).ToBaseAlph());
+			xListPatched.CreateAttribute(SST.MethodPath, DataStruct.ReferenceTable.Reference(methodDefinition).ToBaseAlph());
 			xListPatched.CreateAttribute(SST.InstructionCount, OriginalInstructionCount.ToString());
 
 			var xmlInstructionOriginalMethod = new XMLInstruction<Instruction>(
-				dataStruct.ReferenceTable,
+				DataStruct.ReferenceTable,
 				methodDefinition.Body.Instructions,
 				(list, instruct) => list.IndexOf(instruct));
 
 			var xmlInstructionModifiedList = new XMLInstruction<InstructionInfo>(
-				dataStruct.ReferenceTable,
+				DataStruct.ReferenceTable,
 				instructPatchList,
 				(list, instruct) => { var res = list.FirstOrDefault(x => x.NewInstruction == instruct); return res != null ? res.NewInstructionNum : -1; });
 
@@ -158,7 +158,7 @@ namespace ILPatcher.Data.Actions
 
 			string metpathunres = PatchList.GetAttribute(SST.MethodPath);
 			if (!val.ValidateStringSet(metpathunres, "MethodPath Attribute not found or empty")) return val.Ok;
-			methodDefinition = dataStruct.ReferenceTable.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
+			methodDefinition = DataStruct.ReferenceTable.Resolve(metpathunres.ToBaseInt()) as MethodDefinition;
 			if (!val.ValidateSet(methodDefinition, $"MethodID \"{metpathunres}\" couldn't be resolved")) return val.Ok;
 
 			// TODO: move methodDef related checks to Execute
@@ -173,7 +173,7 @@ namespace ILPatcher.Data.Actions
 			bool checkprimitives = true; // checks if primitive types are identical
 
 			var xmlInstructionLoader = new XMLInstruction<InstructionInfo>(
-				dataStruct.ReferenceTable,
+				DataStruct.ReferenceTable,
 				methodDefinition);
 
 			#region Load all InstructionInfo

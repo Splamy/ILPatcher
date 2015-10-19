@@ -76,7 +76,7 @@ namespace ILPatcher.Interface.Actions
 
 		private void btnPickMethod_Click(object sender, EventArgs e)
 		{
-			MultiPicker<MethodDefinition>.ShowStructure(dataStruct, StructureView.methods, x => true, LoadMetDef, true);
+			MultiPicker<MethodDefinition>.ShowStructure(dataStruct, StructureView.Methods, x => true, LoadMetDef, true);
 		}
 
 		private void btnNewOpCode_Click(object sender, EventArgs e)
@@ -175,13 +175,13 @@ namespace ILPatcher.Interface.Actions
 				Log.Write(Log.Level.Careful, "Not OCTI Type Element in List");
 				return;
 			}
-			if (II.dragFrom == -1)
+			if (II.DragFrom == -1)
 			{
 				Log.Write(Log.Level.Warning, "OCTI Drag start was saved wrongly");
 				mInstructBox.Items.Insert(0, II);
 			}
 			else
-				mInstructBox.Items.Insert(II.dragFrom, II);
+				mInstructBox.Items.Insert(II.DragFrom, II);
 			RefershInstructionList();
 		}
 
@@ -238,11 +238,6 @@ namespace ILPatcher.Interface.Actions
 		}
 
 		// LOAD METHODS ******************************************************
-
-		protected override PatchAction GetNewEntryPart()
-		{
-			return new PatchActionILMethodFixed(dataStruct);
-		}
 
 		protected override void OnPatchDataSet()
 		{
@@ -526,17 +521,17 @@ namespace ILPatcher.Interface.Actions
 				RedrawBoth();
 				break;
 			case PickOperandType.FieldReference:
-				MultiPicker<FieldReference>.ShowStructure(dataStruct, StructureView.fields, x => true, ApplyOperand);
+				MultiPicker<FieldReference>.ShowStructure(dataStruct, StructureView.Fields, x => true, ApplyOperand);
 				break;
 			case PickOperandType.MethodReference:
-				MultiPicker<MethodReference>.ShowStructure(dataStruct, StructureView.methods, x => true, ApplyOperand);
+				MultiPicker<MethodReference>.ShowStructure(dataStruct, StructureView.Methods, x => true, ApplyOperand);
 				break;
 			case PickOperandType.TypeReference:
-				var typPicker = MultiPicker<TypeReference>.ShowStructure(dataStruct, StructureView.classes, x => true, ApplyOperand);
+				var typPicker = MultiPicker<TypeReference>.ShowStructure(dataStruct, StructureView.Classes, x => true, ApplyOperand);
 				AddGenericsToToolBox(typPicker);
 				break;
 			case PickOperandType.TMFReferenceDynamic:
-				var mrfPicker = MultiPicker<MemberReference>.ShowStructure(dataStruct, StructureView.all, x => true, ApplyOperand);
+				var mrfPicker = MultiPicker<MemberReference>.ShowStructure(dataStruct, StructureView.All, x => true, ApplyOperand);
 				AddGenericsToToolBox(mrfPicker);
 				break;
 			case PickOperandType.InstructionArrReference:
@@ -612,17 +607,17 @@ namespace ILPatcher.Interface.Actions
 
 		private void AddGenericsToToolBox<T>(MultiPicker<T> picker) where T : class
 		{
-			ILNode AddToolBoxNode = new ILNode(null, null, null, StructureView.none);
-			ILNode GenericExtension = AddToolBoxNode.Add("<Local GenericParameter>", "<Local GenericParameter>", null, StructureView.structure);
+			ILNode AddToolBoxNode = new ILNode(null, null, null, StructureView.None);
+			ILNode GenericExtension = AddToolBoxNode.Add("<Local GenericParameter>", "<Local GenericParameter>", null, StructureView.Structure);
 			if (methodDefinition.HasGenericParameters)
 				foreach (GenericParameter gpar in methodDefinition.GenericParameters)
-					GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.classes);
+					GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.Classes);
 			TypeDefinition recdef = methodDefinition.DeclaringType;
 			while (recdef != null)
 			{
 				if (recdef.HasGenericParameters)
 					foreach (GenericParameter gpar in recdef.GenericParameters)
-						GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.classes);
+						GenericExtension.Add(gpar.Name, gpar.FullName, gpar, StructureView.Classes);
 				if (recdef.IsNested)
 					recdef = recdef.DeclaringType;
 				else

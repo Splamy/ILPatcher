@@ -11,8 +11,8 @@ namespace ILPatcher.Interface
 {
 	public class StructureViewer : TreeView
 	{
-		[DefaultValue(StructureView.all)]
-		public StructureView FilterElements { get; set; } = StructureView.all;
+		[DefaultValue(StructureView.All)]
+		public StructureView FilterElements { get; set; } = StructureView.All;
 
 		[DefaultValue(false)]
 		public bool UseFullName { get; set; } = false;
@@ -144,9 +144,9 @@ namespace ILPatcher.Interface
 				Nodes.Clear();
 				ExtensionNode.Nodes.Clear();
 			}
-			foreach (ILNode iln in dataStruct.ILNodeManager.GetAllModules())
+			foreach (ILNode iln in dataStruct.ILNodeManager.AllModules)
 			{
-				if ((iln.Flags & (StructureView.basestructure | FilterElements)) != StructureView.none)
+				if ((iln.VisibleMembers & (StructureView.Basestructure | FilterElements)) != StructureView.None)
 				{
 					TreeNode nMain = new TreeNode(UseFullName ? iln.FullName : iln.Name);
 					nMain.Tag = iln.Value;
@@ -165,7 +165,7 @@ namespace ILPatcher.Interface
 		private void RecursiveRebuild(TreeNode tnParent, ILNode ilParent)
 		{
 			foreach (ILNode iln in ilParent.Children)
-				if ((iln.Flags & (StructureView.basestructure | FilterElements)) != StructureView.none)
+				if ((iln.VisibleMembers & (StructureView.Basestructure | FilterElements)) != StructureView.None)
 				{
 					TreeNode tnSub = new TreeNode(UseFullName ? iln.FullName : iln.Name);
 					tnSub.Tag = iln.Value;

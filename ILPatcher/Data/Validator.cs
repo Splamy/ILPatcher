@@ -13,45 +13,45 @@ namespace ILPatcher.Data
 			Ok = true;
 		}
 
-		public bool ValidateSet(object validateObject, string errEessage)
+		public bool ValidateSet(object validateObject, string errMessage)
 		{
 			if (validateObject != null) return true;
-			SetError(errEessage);
+			SetError(errMessage);
 			return false;
 		}
 
-		public bool ValidateSet(object validateObject, Func<string> errEessage)
+		public bool ValidateSet(object validateObject, Func<string> errMessage)
 		{
 			if (validateObject != null) return true;
-			SetError(errEessage());
+			SetError(errMessage());
 			return false;
 		}
 
-		public bool ValidateStringSet(string validateString, string errEessage)
+		public bool ValidateStringSet(string validateString, string errMessage)
 		{
 			if (!string.IsNullOrEmpty(validateString)) return true;
-			SetError(errEessage);
+			SetError(errMessage);
 			return false;
 		}
 
-		public bool ValidateStringSet(string validateString, Func<string> errEessage)
+		public bool ValidateStringSet(string validateString, Func<string> errMessage)
 		{
 			if (!string.IsNullOrEmpty(validateString)) return true;
-			SetError(errEessage());
+			SetError(errMessage());
 			return false;
 		}
 
-		public bool ValidateTrue(bool result, string errEessage)
+		public bool ValidateTrue(bool result, string errMessage)
 		{
 			if (result) return true;
-			SetError(errEessage);
+			SetError(errMessage);
 			return false;
 		}
 
-		public bool ValidateTrue(bool result, Func<string> errEessage)
+		public bool ValidateTrue(bool result, Func<string> errMessage)
 		{
 			if (result) return true;
-			SetError(errEessage());
+			SetError(errMessage());
 			return false;
 		}
 		

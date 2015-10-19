@@ -45,14 +45,14 @@ namespace ILPatcher.Interface.Finder
 			myData.Name = txtName.Text;
 		}
 
-		private void TxtClassPath_TextChanged(object sender, System.EventArgs e) // TODO: test
+		private void TxtClassPath_TextChanged(object sender, System.EventArgs e) // TODO: test,... and improve
 		{
 			string txtVaue = txtClassPath.Text;
 			myData.ILNodePath = txtVaue;
 			string[] pathParts = txtVaue.Split(new[] { '.', '/' });
 			if (pathParts.Length == ilNodePathLevel) return;
 
-			int okTextIndex = txtVaue.LastIndexOfAny(ILNodeManager.Seperators);
+			int okTextIndex = txtVaue.LastIndexOfAny(ILNodeManager.Seperators); // check stuff...
 			string okText = txtVaue.Substring(0, okTextIndex + 1);
 			var source = new AutoCompleteStringCollection();
 
@@ -60,11 +60,11 @@ namespace ILPatcher.Interface.Finder
 			ilNodePathLevel = pathParts.Length;
 			if (ilNodePathLevel <= 1) // module
 			{
-				sourceCollection = dataStruct.ILNodeManager.GetAllModules();
+				sourceCollection = dataStruct.ILNodeManager.AllModules;
 			}
 			else // rest
 			{
-				sourceCollection = dataStruct.ILNodeManager.FindNodeByPath(txtVaue.Substring(0, okTextIndex))?.Children;
+				sourceCollection = dataStruct.ILNodeManager.FindNodeByPath(txtVaue.Substring(0, okTextIndex))?.Children; // crashing here cause okTextIndex was -1
 			}
 
 			if (sourceCollection != null)
@@ -79,14 +79,12 @@ namespace ILPatcher.Interface.Finder
 
 		}
 
-		protected override TargetFinder GetNewEntryPart()
-		{
-			return new TargetFinderClassByName(dataStruct);
-		}
-
 		protected override void OnPatchDataSet()
 		{
 			txtClassPath.Text = myData.ILNodePath;
+			txtName.TextChanged -= TxtName_TextChanged;
+			txtName.Text = myData.Name;
+			txtName.TextChanged += TxtName_TextChanged;
 		}
 	}
 }

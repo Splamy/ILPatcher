@@ -9,6 +9,9 @@ namespace ILPatcher.Data.Finder
 
 		public TargetNotFoundException(TargetFinder failedFinder) : base(failedFinder.Label)
 		{
+			if (failedFinder == null)
+				throw new ArgumentNullException(nameof(failedFinder));
+
 			FailedFinder = failedFinder;
 		}
 	}

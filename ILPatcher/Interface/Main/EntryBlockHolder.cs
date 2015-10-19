@@ -21,18 +21,6 @@ namespace ILPatcher.Interface.Main
 		public EntryBlockHolder(EntryBase entryElem, EditorFactory eFactory, Swoosh swooshMgr)
 		{
 			entryElement = entryElem;
-		}
-
-		public EntryBlockHolder(Type editorType, EditorFactory eFactory, Swoosh swooshMgr)
-		{
-
-
-
-			entryElement = entryElem;
-		}
-
-		private void Initialize(IEditorPanel editor, DataStruct dataStruct, EditorFactory eFactory, Swoosh swooshMgr)
-		{
 			editorFactory = eFactory;
 			swooshManager = swooshMgr;
 
@@ -47,11 +35,11 @@ namespace ILPatcher.Interface.Main
 			Controls.Add(lblName);
 			Controls.Add(btnEdit);
 
-			Type editorType = editorFactory.GetEditorType(entryElem);
+			Type editorType = editorFactory.GetEditorTypeByEntry(entryElem);
 			isEditorInline = EditorFactory.IsInline(editorType);
 			if (isEditorInline)
 			{
-				displayControl = (Control)eFactory.CreateEditorByType(editorType, entryElem.dataStruct);
+				displayControl = (Control)editorFactory.CreateEditorForEntry(entryElem);
 				displayControl.Location = new Point(0, GlobalLayout.LineHeight);
 				displayControl.Enabled = false;
 			}
@@ -71,9 +59,9 @@ namespace ILPatcher.Interface.Main
 			}
 			else
 			{
-				var eType = editorFactory.GetEditorType(entryElement);
+				var eType = editorFactory.GetEditorTypeByEntry(entryElement);
 				string panelName = EditorFactory.GetEditorName(eType);
-				swooshManager.PushPanel((Swoosh.ISwoosh)editorFactory.CreateEditorByEntry(entryElement), panelName);
+				swooshManager.PushPanel((Swoosh.ISwoosh)editorFactory.CreateEditorForEntry(entryElement), panelName);
 			}
 		}
 
@@ -87,7 +75,7 @@ namespace ILPatcher.Interface.Main
 			displayControl.Size = new Size(Width, Height - GlobalLayout.LineHeight);
 		}
 
-		private string GetNameFromEntry(EntryBase element)
+		private static string GetNameFromEntry(EntryBase element)
 		{
 			string typeName;
 			switch (element.EntryKind)

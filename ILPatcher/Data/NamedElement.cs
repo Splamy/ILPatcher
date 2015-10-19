@@ -3,7 +3,7 @@
 	public abstract class NamedElement
 	{
 		public string Name { get; set; }
-		public string ID { get; set; }
+		public string Id { get; set; }
 		public abstract string Label { get; }
 		public abstract string Description { get; }
 

@@ -21,6 +21,7 @@ namespace ILPatcher.Data
 		public List<PatchEntry> PatchEntryList { get; }
 		public ILNodeManager ILNodeManager { get; }
 		public ILManager ReferenceTable { get; }
+		public EntryFactory EntryFactory { get; }
 
 		public delegate void FileLoadedDelegate(object sender);
 		public event FileLoadedDelegate OnILPFileLoaded;
@@ -33,6 +34,7 @@ namespace ILPatcher.Data
 			PatchEntryList = new List<PatchEntry>();
 			ReferenceTable = new ILManager(this);
 			ILNodeManager = new ILNodeManager(this);
+			EntryFactory = new EntryFactory(this);
 
 			ClearASM();
 		}
@@ -46,18 +48,18 @@ namespace ILPatcher.Data
 			bool allOk = true;
 
 			XmlNode xILPTableNode = output.InsertCompressedElement(SST.ILPTable);
-			
+
 			XmlNode xPatchActionTable = xILPTableNode.InsertCompressedElement(SST.PatchActionTable);
 			foreach (PatchAction pa in PatchActionList)
 				allOk &= Save(xPatchActionTable, pa, (idNum++).ToBaseAlph());
 
 			XmlNode xTargetFinderTable = xILPTableNode.InsertCompressedElement(SST.TargetFinderTable);
 			foreach (TargetFinder tf in TargetFinderList)
-				allOk &= Save(xPatchActionTable, tf, (idNum++).ToBaseAlph());
-
+				allOk &= Save(xTargetFinderTable, tf, (idNum++).ToBaseAlph());
+			
 			XmlNode xPatchEntryTable = xILPTableNode.InsertCompressedElement(SST.PatchEntryTable);
 			foreach (PatchEntry pe in PatchEntryList)
-				allOk &= Save(xPatchActionTable, pe);
+				allOk &= Save(xPatchEntryTable, pe);
 
 			XmlNode xReferenceTable = xILPTableNode.InsertCompressedElement(SST.ReferenceTable);
 			allOk &= ReferenceTable.Save(xReferenceTable);
@@ -65,27 +67,27 @@ namespace ILPatcher.Data
 			return allOk;
 		}
 
-		private bool Save(XmlNode xGroupNode, PatchAction patchAction, string ID)
+		private static bool Save(XmlNode xGroupNode, PatchAction patchAction, string ID)
 		{
-			patchAction.ID = "PA_" + ID;
-            XmlNode xPatchAction = xGroupNode.InsertCompressedElement(SST.PatchAction);
+			patchAction.Id = "PA_" + ID;
+			XmlNode xPatchAction = xGroupNode.InsertCompressedElement(SST.PatchAction);
 			xPatchAction.CreateAttribute(SST.PatchType, patchAction.PatchActionType.ToString());
-			xPatchAction.CreateAttribute(SST.ID, patchAction.ID);
+			xPatchAction.CreateAttribute(SST.ID, patchAction.Id);
 			xPatchAction.CreateAttribute(SST.Name, patchAction.Name);
 			return patchAction.Save(xPatchAction);
 		}
 
-		private bool Save(XmlNode xGroupNode, TargetFinder targetFinder, string ID)
+		private static bool Save(XmlNode xGroupNode, TargetFinder targetFinder, string ID)
 		{
-			targetFinder.ID = "TF_" + ID;
+			targetFinder.Id = "TF_" + ID;
 			XmlNode xPatchAction = xGroupNode.InsertCompressedElement(SST.TargetFinder);
 			xPatchAction.CreateAttribute(SST.PatchType, targetFinder.TargetFinderType.ToString());
-			xPatchAction.CreateAttribute(SST.ID, targetFinder.ID);
+			xPatchAction.CreateAttribute(SST.ID, targetFinder.Id);
 			xPatchAction.CreateAttribute(SST.Name, targetFinder.Name);
 			return targetFinder.Save(xPatchAction);
 		}
 
-		private bool Save(XmlNode xGroupNode, PatchEntry patchEntry)
+		private static bool Save(XmlNode xGroupNode, PatchEntry patchEntry)
 		{
 			XmlNode xPatchAction = xGroupNode.InsertCompressedElement(SST.PatchEntry);
 			xPatchAction.CreateAttribute(SST.Name, patchEntry.Name);

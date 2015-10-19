@@ -95,7 +95,7 @@ namespace ILPatcher.Utility
 
 		public void CopyTo(T[] destination, int arrayIndex)
 		{
-			if (array == null)
+			if (destination == null)
 				throw new ArgumentNullException(nameof(destination));
 			if (max + arrayIndex >= destination.Length)
 				throw new ArgumentException("The destination array is not big enough for the data");

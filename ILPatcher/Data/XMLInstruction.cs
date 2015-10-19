@@ -247,13 +247,13 @@ namespace ILPatcher.Data
 	public class PostInitData
 	{
 		/// <summary>The index of the branch Instruction after the patch</summary>
-		public int InstructionNum;
+		public int InstructionNum { get; set; }
 		/// <summary>True if the Instruction is a switch, false if single branch</summary>
-		public bool isArray;
+		public bool isArray { get; set; }
 		/// <summary>The branch target index after the patch</summary>
-		public int targetNum;
+		public int targetNum { get; set; }
 		/// <summary>The switch targets after the patch</summary>
-		public int[] targetArray;
+		public int[] targetArray { get; set; }
 
 		/// <summary>Prints a human readable branch patch</summary>
 		/// <returns>Returns the String</returns>
@@ -269,6 +269,5 @@ namespace ILPatcher.Data
 			else
 				return InstructionNum + " -> " + targetNum;
 		}
-
 	}
 }

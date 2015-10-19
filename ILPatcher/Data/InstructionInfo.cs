@@ -1,14 +1,15 @@
-﻿using ILPatcher.Utility;
+﻿using System;
+using System.Drawing;
+using ILPatcher.Utility;
 using MetroObjects;
 using Mono.Cecil.Cil;
-using System.Drawing;
 
 namespace ILPatcher.Data
 {
 	// TODO: rework! seperate data and interface
 	public class InstructionInfo : DragItem
 	{
-		public int dragFrom = -1;
+		public int DragFrom { get; set; } = -1;
 		private static Brush _hbrMismatch = null;
 		private static Brush hbrMismatch
 		{
@@ -20,13 +21,13 @@ namespace ILPatcher.Data
 			}
 		}
 
-		public Instruction OldInstruction;
-		public Instruction NewInstruction;
-		public int OldInstructionNum;
-		public int NewInstructionNum;
+		public Instruction OldInstruction { get; set; }
+		public Instruction NewInstruction { get; set; }
+		public int OldInstructionNum { get; set; }
+		public int NewInstructionNum { get; set; }
 
 		//PatchInfo
-		public bool Delete = false;
+		public bool Delete { get; set; } = false;
 		public bool InstructionOperandPatch
 		{
 			get
@@ -55,27 +56,30 @@ namespace ILPatcher.Data
 				return !OldInstruction.Operand.Equals(NewInstruction.Operand);
 			}
 		}
-		public bool InstructionOpCodePatch { get { return OldInstructionNum != -1 && OldInstruction.OpCode != NewInstruction.OpCode; } }
-		public bool InstructionNumPatch { get { return OldInstructionNum != -1 && OldInstructionNum != NewInstructionNum; } }
-		public bool IsNew { get { return OldInstructionNum == -1; } }
-		public bool IsOld { get { return OldInstructionNum != -1; } }
+		public bool InstructionOpCodePatch => OldInstructionNum != -1 && OldInstruction.OpCode != NewInstruction.OpCode;
+		public bool InstructionNumPatch => OldInstructionNum != -1 && OldInstructionNum != NewInstructionNum;
+		public bool IsNew => OldInstructionNum == -1;
+		public bool IsOld => OldInstructionNum != -1;
 
 		//LoadInfo
-		public bool OpCodeMismatch = false;
-		public bool PrimitiveMismatch = false;
-		public bool ReferenceMismatch = false;
-		public bool OperandMismatch { get { return PrimitiveMismatch || ReferenceMismatch; } }
+		public bool OpCodeMismatch { get; set; } = false;
+		public bool PrimitiveMismatch { get; set; } = false;
+		public bool ReferenceMismatch { get; set; } = false;
+		public bool OperandMismatch => PrimitiveMismatch || ReferenceMismatch;
 
 		public InstructionInfo() { }
 
 		protected override void DrawBuffer(Graphics g)
 		{
+			if (g == null)
+				throw new ArgumentNullException(nameof(g));
+
 			int split = (int)g.MeasureString("999>999", Font).Width;
 
 			if (Delete)
 				g.DrawString(OldInstructionNum + ">X", Font, Brushes.Black, 0, 1);
 			else if (NewInstructionNum == -1)
-				g.DrawString("(" + dragFrom + ")", Font, Brushes.Black, 0, 1);
+				g.DrawString("(" + DragFrom + ")", Font, Brushes.Black, 0, 1);
 			else if (IsOld && InstructionNumPatch)
 				g.DrawString(OldInstructionNum + ">" + NewInstructionNum, Font, Brushes.Black, 0, 1);
 			else if (IsNew)

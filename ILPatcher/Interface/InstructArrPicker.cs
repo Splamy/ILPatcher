@@ -50,7 +50,7 @@ namespace ILPatcher.Interface
 			lbxAllInstruct.Items = inlist;
 			if (oldlist != null)
 			{
-				List<InstructionInfo> inlistconv = inlist.ConvertAll<InstructionInfo>(x => (InstructionInfo)x);
+				List<InstructionInfo> inlistconv = inlist.ConvertAll(x => (InstructionInfo)x);
 				Array.ForEach(oldlist, instr => lbxSwitchInstruct.AddItem(new InstructElement(instr, inlistconv.Find(x => x.NewInstruction == instr).NewInstructionNum)));
 			}
 			this.Show();

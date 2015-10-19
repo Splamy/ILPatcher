@@ -18,6 +18,9 @@ namespace ILPatcher.Utility
 		/// <returns>Returns the new Instruction if ILManager.GenInstruction was successful, otherwise null</returns>
 		public static Instruction Clone(this Instruction instr)
 		{
+			if (instr == null)
+				throw new ArgumentNullException(nameof(instr));
+
 			return ILManager.GenInstruction(instr.OpCode, instr.Operand);
 		}
 
@@ -151,55 +154,52 @@ namespace ILPatcher.Utility
 		// Point ********************************************************************
 
 		/// <summary>Adds the Points memberwise and returns a new Point</summary>
-		/// <param name="p">The first Point</param>
+		/// <param name="point">The first Point</param>
 		/// <param name="add">The Point to be added</param>
 		/// <returns>Returns a new Point with the sum</returns>
-		public static Point Add(this Point p, Point other)
-		{
-			return new Point(p.X + other.X, p.Y + other.Y);
-		}
+		public static Point Add(this Point point, Point other) => new Point(point.X + other.X, point.Y + other.Y);
 
 		// int & string *************************************************************
 
 		/// <summary>Converts a non-negative number into an alphabetical string.</summary>
 		/// <param name="n">The number to convert</param>
 		/// <returns>Resturns the converted number if successful, othersiwe the given number converted with ToString</returns>
-		public static string ToBaseAlph(this int n)
+		public static string ToBaseAlph(this int number)
 		{
-			if (n < 0) { Log.Write(Log.Level.Error, "Couldn't convert number"); return n.ToString(); }
+			if (number < 0) { Log.Write(Log.Level.Error, "Couldn't convert number"); return number.ToString(); }
 			string res = string.Empty;
 			do
 			{
-				res = abc[n % 26] + res;
-				n = (n / 26);
-			} while (n > 0);
+				res = abc[number % 26] + res;
+				number = (number / 26);
+			} while (number > 0);
 			return res;
 		}
 
 		/// <summary>Converts an alphabetical string into a number</summary>
-		/// <param name="n">The string to convert</param>
+		/// <param name="alphanum">The string to convert</param>
 		/// <returns>Returns the converted number</returns>
-		public static int ToBaseInt(this string n)
+		public static int ToBaseInt(this string alphanum)
 		{
 			int x = 0;
-			for (int i = n.Length - 1; i >= 0; i--)
-				x += Pow(26, (n.Length - 1) - i) * (n[i] - 'a');
+			for (int i = alphanum.Length - 1; i >= 0; i--)
+				x += Pow(26, (alphanum.Length - 1) - i) * (alphanum[i] - 'a');
 			return x;
 		}
 
 		/// <summary>Calculates the power of two non-negative integers</summary>
-		/// <param name="a">Base number</param>
-		/// <param name="b">Exponent number</param>
+		/// <param name="basis">Base number</param>
+		/// <param name="exponent">Exponent number</param>
 		/// <returns>Returns the calculated value in any case; be careful with your params</returns>
-		public static int Pow(int a, int b)
+		public static int Pow(int basis, int exponent)
 		{
 			int ret = 1;
-			while (b != 0)
+			while (exponent != 0)
 			{
-				if ((b & 1) == 1)
-					ret *= a;
-				a *= a;
-				b >>= 1;
+				if ((exponent & 1) == 1)
+					ret *= basis;
+				basis *= basis;
+				exponent >>= 1;
 			}
 			return ret;
 		}

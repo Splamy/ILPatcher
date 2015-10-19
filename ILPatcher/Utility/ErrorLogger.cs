@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ILPatcher.Utility
 {
-	public class Log
+	public static class Log
 	{
 		public static bool Active { get; set; }
 		public static int StackLevel { get; set; }

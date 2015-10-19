@@ -11,8 +11,12 @@ using System.Linq;
 namespace ILPatcher.Interface.Main
 {
 	[EditorAttributes("Patchbuilder")]
-	public class PatchBuilder : EditorBase<PatchEntry, PatchEntry>
+	public class PatchBuilder : EditorBase<PatchEntry>
 	{
+		/// <summary>
+		/// false if the current PatchEntry should be added to the parent list after saving
+		/// true if it alreay is in the list, and just opened to edit.
+		/// </summary>
 		private bool editMode;
 		private EditorFactory editorFactory;
 
@@ -50,28 +54,30 @@ namespace ILPatcher.Interface.Main
 			line = grid.AddLineFixed(GlobalLayout.LineHeight);
 			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("Name"), GlobalLayout.LabelWidth);
 			grid.AddElementFilling(line, txtName, GlobalLayout.MinFill);
-			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Save", Save_Click), GlobalLayout.LabelWidth);
+			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Back", Save_Click), GlobalLayout.LabelWidth);
 		}
 
 		private void LoadInterfaceContent()
 		{
 			foreach (var finder in myData.FinderChain)
-				AddFinder(finder);
+				AddFinder(finder, false);
 
 			if (myData.PatchAction != null)
 				SetAction(myData.PatchAction);
 
 			int line = glmFinder.AddLineFixed(30);
-			glmFinder.AddElementFilling(line, new AddBar(editorFactory, dataStruct), GlobalLayout.MinFill);
+			glmFinder.AddElementFilling(line, new AddBar(this), GlobalLayout.MinFill);
 		}
 
 		// Interface tools
 
-		private void AddFinder(TargetFinder finder)
+		private void AddFinder(TargetFinder finder, bool applyRefresh)
 		{
 			var fHolder = new EntryBlockHolder(finder, editorFactory, SwooshParent);
 			int line = glmFinder.AddLineFixed(fHolder.Height);
 			glmFinder.AddElementFilling(line, fHolder, GlobalLayout.MinFill);
+			if (applyRefresh)
+				glmFinder.InvokeResize();
 		}
 
 		private void SetAction(PatchAction action)
@@ -94,12 +100,11 @@ namespace ILPatcher.Interface.Main
 		private void SetAction_Click(object sender, EventArgs e)
 		{
 			// TODO: implement
+
 		}
 
 		private void Save_Click(object sender, EventArgs e)
 		{
-			if (editMode && myData != null)
-				dataStruct.PatchEntryList.Add(myData);
 			SwooshBack();
 		}
 
@@ -110,36 +115,27 @@ namespace ILPatcher.Interface.Main
 
 		protected override void OnPatchDataSet()
 		{
-			editMode = true;
 			LoadInterfaceContent();
 		}
 
 		// Functionality
 
-		protected override PatchEntry GetNewEntryPart()
-		{
-			editMode = false;
-			return new PatchEntry(dataStruct);
-		}
-
 		// TMP IDEA
 		private class AddBar : Control
 		{
-			EditorFactory edFactory;
+			PatchBuilder builder;
 			ComboBox eCmbx;
-			DataStruct dataStruct;
 
-			public AddBar(EditorFactory eFactory, DataStruct dS)
+			public AddBar(PatchBuilder parent)
 			{
-				edFactory = eFactory;
-				dataStruct = dS;
+				builder = parent;
 
 				eCmbx = new ComboBox();
 				Controls.Add(eCmbx);
 				eCmbx.Location = new System.Drawing.Point(120, 10);
 				eCmbx.Size = new System.Drawing.Size(100, 20);
 
-				foreach (var finder in eFactory.FinderEditors)
+				foreach (var finder in builder.editorFactory.FinderEditors)
 					eCmbx.Items.Add(EditorFactory.GetEditorName(finder));
 
 				var btnAdd = GlobalLayout.GenMetroButton("Add Finder", AddFinder_Click);
@@ -150,9 +146,12 @@ namespace ILPatcher.Interface.Main
 
 			private void AddFinder_Click(object sender, EventArgs e)
 			{
-				var edT = edFactory.FinderEditors.ToArray()[eCmbx.SelectedIndex];
-				var edi = edFactory.CreateEditorByType(edT, dataStruct);
-				edi.CreateNewEntryPart();
+				var edT = builder.editorFactory.FinderEditors.ToArray()[eCmbx.SelectedIndex];
+				var entryT = builder.editorFactory.GetEntryTypeByEditorType(edT);
+				var entry = builder.dataStruct.EntryFactory.CreateEntryByType(entryT);
+				var finder = (TargetFinder)entry;
+				builder.myData.FinderChain.Add(finder);
+				builder.AddFinder(finder, true);
 			}
 		}
 	}

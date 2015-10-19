@@ -49,13 +49,13 @@ namespace ILPatcher.Data
 
 		/// <summary>Saves the current reference list of this ILM into a xml parent node.
 		/// If an entry is not resolved it will copy the raw data read back again.</summary>
-		/// <param name="xNode">The parent node for the new reference nodes</param>
-		public bool Save(XmlNode xNode)
+		/// <param name="output">The parent node for the new reference nodes</param>
+		public bool Save(XmlNode output)
 		{
-			XmlNode xM = xNode.InsertCompressedElement(SST.MethodReference);
-			XmlNode xF = xNode.InsertCompressedElement(SST.FieldReference);
-			XmlNode xT = xNode.InsertCompressedElement(SST.TypeReference);
-			XmlNode xCS = xNode.InsertCompressedElement(SST.CallSite);
+			XmlNode xM = output.InsertCompressedElement(SST.MethodReference);
+			XmlNode xF = output.InsertCompressedElement(SST.FieldReference);
+			XmlNode xT = output.InsertCompressedElement(SST.TypeReference);
+			XmlNode xCS = output.InsertCompressedElement(SST.CallSite);
 
 			bool allOk = true;
 
@@ -314,11 +314,11 @@ namespace ILPatcher.Data
 
 		/// <summary>Looks for the given object in the ILM list and returns its ID,
 		/// if the object doesn't exists the method saves it and returns the new ID</summary>
-		/// <param name="_operand">The object to be referenced</param>
+		/// <param name="operand">The object to be referenced</param>
 		/// <returns>Unique ID for each object</returns>
-		public int Reference(object _operand)
+		public int Reference(object operand)
 		{
-			if (_operand == null)
+			if (operand == null)
 			{
 				Log.Write(Log.Level.Warning, "Can't reference <null>");
 				return -1;
@@ -329,25 +329,25 @@ namespace ILPatcher.Data
 				if (!MemberList[i].resolved)
 				{
 					object res = Resolve(i);
-					if (res != null && res.ToString() == _operand.ToString())
+					if (res != null && res.ToString() == operand.ToString())
 						return i;
 				}
 				else
 				{
-					if (MemberList[i].operand.ToString() == _operand.ToString())
+					if (MemberList[i].operand.ToString() == operand.ToString())
 						return i;
 				}
 			}
 
-			Type t = _operand.GetType();
-			OperandInfoT _oit;
-			if (!Enum.TryParse<OperandInfoT>(t.Name, out _oit))
+			Type operandType = operand.GetType();
+			OperandInfoT operandInfoType;
+			if (!Enum.TryParse(operandType.Name, out operandInfoType))
 			{
-				Log.Write(Log.Level.Error, $"Not Listed OperandType: {t.Name}");
+				Log.Write(Log.Level.Error, $"Not Listed OperandType: {operandType.Name}");
 				return -1;
 			}
 			int len = MemberList.Length;
-			MemberList[len] = new OperandInfo() { oit = _oit, operand = _operand, Status = ResolveStatus.Resolved };
+			MemberList[len] = new OperandInfo() { oit = operandInfoType, operand = operand, Status = ResolveStatus.Resolved };
 			return len;
 		}
 
@@ -355,14 +355,17 @@ namespace ILPatcher.Data
 
 		/// <summary>Loads the reference table from a node and itserts the unresolved
 		/// references into the ILM list. Those can then be resoved on demand</summary>
-		/// <param name="xNode">The reference table containing node</param>
-		public bool Load(XmlNode xNode)
+		/// <param name="input">The reference table containing node</param>
+		public bool Load(XmlNode input)
 		{
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+
 			Clear();
 
 			bool allOk = true;
 
-			foreach (XmlNode xElem in xNode.ChildNodes)
+			foreach (XmlNode xElem in input.ChildNodes)
 			{
 				// TODO: rework load scheme
 				foreach (XmlNode xItem in xElem.ChildNodes)

@@ -11,19 +11,19 @@ namespace ILPatcher.Data
 		public string Name { get; private set; }
 		public string FullName { get; private set; }
 		public object Value { get; private set; }
-		public StructureView Flags { get; private set; }
+		public StructureView VisibleMembers { get; private set; }
 
-		public ILNode(string name, string fullname, object value, StructureView viewFlag)
+		public ILNode(string name, string fullname, object value, StructureView visibleMembers)
 		{
 			Value = value;
 			Name = name;
 			FullName = fullname;
-			Flags = viewFlag;
+			VisibleMembers = visibleMembers;
 		}
 
-		public ILNode this[int i]
+		public ILNode this[int childIndex]
 		{
-			get { return children[i]; }
+			get { return children[childIndex]; }
 		}
 
 		public ILNode Parent { get; private set; }
@@ -33,9 +33,9 @@ namespace ILPatcher.Data
 			get { return children.AsReadOnly(); }
 		}
 
-		public ILNode Add(string name, string fullname, object value, StructureView flags)
+		public ILNode Add(string name, string fullname, object value, StructureView visibleMembers)
 		{
-			var node = new ILNode(name, fullname, value, flags) { Parent = this };
+			var node = new ILNode(name, fullname, value, visibleMembers) { Parent = this };
 			children.Add(node);
 			return node;
 		}
@@ -54,7 +54,7 @@ namespace ILPatcher.Data
 		{
 			children.Sort((x, y) =>
 			{
-				var strucdiff = x.Flags - y.Flags;
+				var strucdiff = x.VisibleMembers - y.VisibleMembers;
 				return strucdiff != 0 ? strucdiff : x.Name.CompareTo(y.Name);
 			});
 			children.ForEach(x => x.Sort());
@@ -64,13 +64,13 @@ namespace ILPatcher.Data
 	[Flags]
 	public enum StructureView : int
 	{
-		none = 0,
-		structure = 1 << 0,
-		namesp = 1 << 1,
-		methods = 1 << 2,
-		fields = 1 << 3,
-		classes = 1 << 4,
-		basestructure = structure | namesp | classes,
-		all = structure | methods | namesp | classes | fields,
+		None = 0,
+		Structure = 1 << 0,
+		Namesp = 1 << 1,
+		Methods = 1 << 2,
+		Fields = 1 << 3,
+		Classes = 1 << 4,
+		Basestructure = Structure | Namesp | Classes,
+		All = Structure | Methods | Namesp | Classes | Fields,
 	}
 }

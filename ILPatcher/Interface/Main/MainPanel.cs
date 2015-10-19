@@ -280,10 +280,7 @@ namespace ILPatcher.Interface.Main
 		{
 			if (editorFactory == null) editorFactory = new EditorFactory();
 			PatchBuilder patchBuilder = new PatchBuilder(dataStruct, editorFactory);
-			if (patchEntry == null)
-				patchBuilder.CreateNewEntryPart();
-			else
-				patchBuilder.SetPatchData(patchEntry);
+			patchBuilder.SetPatchData(patchEntry ?? dataStruct.EntryFactory.CreateEntryByType(typeof(PatchEntry)));
 			PushPanel(patchBuilder, patchBuilder.PanelName);
 		}
 

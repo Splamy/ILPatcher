@@ -234,7 +234,7 @@ namespace ILPatcher.Interface
 		public interface ISwoosh : IDisposable
 		{
 			Swoosh SwooshParent { get; set; }
-			void PushPanel(ISwoosh c, string name);
+			void PushPanel(ISwoosh control, string name);
 			void SwooshBack();
 			void LandHereEvent();
 
@@ -253,7 +253,7 @@ namespace ILPatcher.Interface
 		public abstract class Control : System.Windows.Forms.Control, ISwoosh
 		{
 			public Swoosh SwooshParent { get; set; }
-			public void PushPanel(ISwoosh c, string name) { SwooshParent.PushPanel(c, name); }
+			public void PushPanel(ISwoosh control, string name) { SwooshParent.PushPanel(control, name); }
 			public void SwooshBack() { SwooshParent.SwooshBack(); }
 			public virtual void LandHereEvent() { } // TODO: maybe abstract ?
 		}
@@ -261,7 +261,7 @@ namespace ILPatcher.Interface
 		public abstract class Panel : System.Windows.Forms.Panel, ISwoosh
 		{
 			public Swoosh SwooshParent { get; set; }
-			public void PushPanel(ISwoosh c, string name) { SwooshParent.PushPanel(c, name); }
+			public void PushPanel(ISwoosh control, string name) { SwooshParent.PushPanel(control, name); }
 			public void SwooshBack() { SwooshParent.SwooshBack(); }
 			public virtual void LandHereEvent() { }// TODO: maybe abstract ?
 		}

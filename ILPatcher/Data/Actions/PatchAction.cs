@@ -24,7 +24,7 @@ namespace ILPatcher.Data.Actions
 		/// <returns>Returns true if it succeeded, false otherwise</returns>
 		public abstract bool Execute(object target);
 
-		public PatchAction(DataStruct dataStruct) : base(dataStruct) { }
+		protected PatchAction(DataStruct dataStruct) : base(dataStruct) { }
 	}
 
 	public enum PatchActionType

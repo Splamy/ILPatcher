@@ -28,7 +28,7 @@ namespace ILPatcher.Data.Finder
 
 		public override object FilterInput(object input)
 		{
-			object targetElement = dataStruct.ILNodeManager.FindMemberByPath(ILNodePath);
+			object targetElement = DataStruct.ILNodeManager.FindMemberByPath(ILNodePath);
 			TypeDefinition optionalTypeDefinition = targetElement as TypeDefinition;
 			if (optionalTypeDefinition == null)
 				throw new TargetNotFoundException(this);

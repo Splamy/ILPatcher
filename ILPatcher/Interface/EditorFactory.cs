@@ -4,22 +4,26 @@ using System.Linq;
 using ILPatcher.Interface.Finder;
 using ILPatcher.Interface.Actions;
 using ILPatcher.Utility;
+using ILPatcher.Data;
 
 namespace ILPatcher.Interface
 {
-	public class EditorFactory
+	public sealed class EditorFactory
 	{
-		protected List<Type> allEditors;
-		protected List<Type> finderEditors;
-		protected List<Type> actionEditors;
-		protected Dictionary<Type, Type> dataToEditorMap;
+		private List<Type> allEditors;
+		private List<Type> finderEditors;
+		private List<Type> actionEditors;
+		private Dictionary<Type, Type> dataToEditorMap;
+		private Dictionary<Type, Type> editorToEntryMap;
 
 		public ICollection<Type> AllEditors => allEditors.AsReadOnly();
 		public ICollection<Type> FinderEditors => finderEditors.AsReadOnly();
 		public ICollection<Type> ActionEditors => actionEditors.AsReadOnly();
 
-		private static readonly Type editorBaseType = typeof(EditorBase<,>);
-		private static readonly Type[] factoryContructor = new[] { typeof(Data.DataStruct) };
+		private static readonly Type editorBaseType = typeof(EditorBase<>);
+		private static readonly Type editorActionType = typeof(EditorPatchAction<>);
+		private static readonly Type editorFinderType = typeof(EditorTargetFinder<>);
+		private static readonly Type[] factoryContructor = new[] { typeof(DataStruct) };
 
 		public EditorFactory()
 		{
@@ -31,6 +35,8 @@ namespace ILPatcher.Interface
 			allEditors = new List<Type>();
 			finderEditors = new List<Type>();
 			actionEditors = new List<Type>();
+			dataToEditorMap = new Dictionary<Type, Type>();
+			editorToEntryMap = new Dictionary<Type, Type>();
 
 			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 			{
@@ -44,9 +50,9 @@ namespace ILPatcher.Interface
 					var validConstructor = checkEditorType.GetConstructor(factoryContructor);
 					if (validConstructor != null)
 					{
-						if (HasGenericBaseType(checkEditorType, typeof(EditorPatchAction<>)))
+						if (HasGenericBaseType(checkEditorType, editorActionType))
 							actionEditors.Add(checkEditorType);
-						else if (HasGenericBaseType(checkEditorType, typeof(EditorTargetFinder<>)))
+						else if (HasGenericBaseType(checkEditorType, editorFinderType))
 							finderEditors.Add(checkEditorType);
 					}
 					else
@@ -55,23 +61,26 @@ namespace ILPatcher.Interface
 					}
 				}
 			}
+
+			foreach (var editorType in AllEditors)
+			{
+				Type entryType = GetEditorTarget(editorType);
+				dataToEditorMap.Add(entryType, editorType);
+				editorToEntryMap.Add(editorType, entryType);
+			}
 		}
 
-		public IEditorPanel CreateEditorByEntry(Data.EntryBase entry)
+		public IEditorPanel<EntryBase> CreateEditorForEntry(EntryBase entry)
 		{
 			if (entry == null) throw new ArgumentNullException(nameof(entry));
 
-			Type editorType = GetEditorType(entry);
-			return CreateEditorByType(editorType, entry.dataStruct);
+			Type editorType = GetEditorTypeByEntry(entry);
+			var editor = (IEditorPanel<EntryBase>)Activator.CreateInstance(editorType, new[] { entry.DataStruct });
+			editor.SetPatchData(entry);
+			return editor;
 		}
 
-		public IEditorPanel CreateEditorByType(Type editorType, Data.DataStruct dataStruct)
-		{
-			ValidateType(editorType);
-			return (IEditorPanel)Activator.CreateInstance(editorType, new[] { dataStruct });
-		}
-
-		public Type GetEditorType(Data.EntryBase entry)
+		public Type GetEditorTypeByEntry(EntryBase entry)
 		{
 			if (entry == null) throw new ArgumentNullException(nameof(entry));
 
@@ -83,6 +92,22 @@ namespace ILPatcher.Interface
 			else
 			{
 				Log.Write(Log.Level.Warning, "There is no editor registered for this entry.");
+				return null;
+			}
+		}
+
+		public Type GetEntryTypeByEditorType(Type editorType)
+		{
+			if (editorType == null) throw new ArgumentNullException(nameof(editorType));
+
+			Type entryType;
+			if (editorToEntryMap.TryGetValue(editorType, out entryType))
+			{
+				return entryType;
+			}
+			else
+			{
+				Log.Write(Log.Level.Warning, "There is no entry registered for this editor.");
 				return null;
 			}
 		}
@@ -126,10 +151,17 @@ namespace ILPatcher.Interface
 
 		public static string GetEditorName(Type editorType) => GetEditorAttribute(editorType).EditorName;
 
-		public static Type GetDataTarget(Type editorType)
+		public static Type GetEditorTarget(Type editorType)
 		{
-			ValidateType(editorType);
-			return editorType.GetGenericArguments()[1]; // second parameter in <Kind, Spec>
+			for (Type checkType = editorType; checkType != null; checkType = checkType.BaseType)
+			{
+				if (checkType.IsGenericType && checkType.GetGenericTypeDefinition() == editorBaseType)
+				{
+					// generic parameter in EditorBase<Spec>
+					return checkType.GetGenericArguments()[0];
+				}
+			}
+			throw new InvalidOperationException();
 		}
 	}
 }

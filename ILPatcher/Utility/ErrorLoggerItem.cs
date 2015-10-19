@@ -8,10 +8,10 @@ namespace ILPatcher.Utility
 		public string error; // HACK
 		private Log.Level level;
 
-		public ErrorLoggerItem(Log.Level _level, string _error)
+		public ErrorLoggerItem(Log.Level level, string error)
 		{
-			level = _level;
-			error = _error;
+			this.level = level;
+			this.error = error;
 		}
 
 		protected override void DrawBuffer(Graphics g)

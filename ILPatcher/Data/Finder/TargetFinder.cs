@@ -18,7 +18,7 @@ namespace ILPatcher.Data.Finder
 
 		public abstract object FilterInput(object input);
 
-		public TargetFinder(DataStruct dataStruct) : base(dataStruct) { }
+		protected TargetFinder(DataStruct dataStruct) : base(dataStruct) { }
 	}
 
 	public enum TargetFinderType

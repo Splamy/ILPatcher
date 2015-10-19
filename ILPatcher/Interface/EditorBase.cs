@@ -4,20 +4,18 @@ using System;
 namespace ILPatcher.Interface
 {
 	[EditorAttributes(null)] // TODO: check ovverriding behaviour (eg. base (1:true, 2:true, 3:true) deriver (2:false) - meaning only overriding one attribute)
-	public abstract class EditorBase<Kind, Spec> : Swoosh.Control, IEditorPanel where Spec : class, Kind
+	public abstract class EditorBase<TSpec> : Swoosh.Control, IEditorPanel<TSpec> where TSpec : EntryBase
 	{
-		protected readonly DataStruct dataStruct;
-		protected Spec myData;
+		protected DataStruct dataStruct { get; }
+		protected TSpec myData { get; set; }
 
 		public string PanelName => EditorFactory.GetEditorName(GetType());
 		public bool IsInline => EditorFactory.IsInline(GetType());
 
-		public void CreateNewEntryPart() => SetPatchData(GetNewEntryPart());
-		protected abstract Kind GetNewEntryPart();
-		public void SetPatchData(Kind pPatchAction)
+		public void SetPatchData(EntryBase pPatchAction)
 		{
 			if (pPatchAction == null) throw new ArgumentNullException(nameof(pPatchAction));
-			var tmp = pPatchAction as Spec;
+			var tmp = pPatchAction as TSpec;
 			if (tmp == null) throw new InvalidOperationException("The passed parameter is not designed for this interface element");
 			myData = tmp;
 			OnPatchDataSet();
@@ -27,11 +25,11 @@ namespace ILPatcher.Interface
 		protected EditorBase(DataStruct dataAssociation) { dataStruct = dataAssociation; }
 	}
 
-	public interface IEditorPanel
+	public interface IEditorPanel<out T>
 	{
 		string PanelName { get; }
 		bool IsInline { get; }
 
-		void CreateNewEntryPart();
-    }
+		void SetPatchData(EntryBase pPatchAction);
+	}
 }

@@ -10,8 +10,10 @@ using System.Linq;
 
 namespace ILPatcher.Data
 {
-	public class PatchEntry : NamedElement, ISaveToFile
+	public class PatchEntry : EntryBase, ISaveToFile
 	{
+		public sealed override EntryKind EntryKind => EntryKind.PatchEntry;
+
 		public override string Label
 		{
 			get
@@ -30,14 +32,12 @@ namespace ILPatcher.Data
 		public override string Description => "Provides the way to find and change a part in the targeted binary.";
 		public List<TargetFinder> FinderChain { get; private set; }
 		public PatchAction PatchAction { get; set; }
-		private DataStruct dataStruct;
 
-		public PatchEntry(DataStruct dataStruct)
+		public PatchEntry(DataStruct dataStruct) : base(dataStruct)
 		{
 			FinderChain = new List<TargetFinder>();
 			PatchAction = null;
 			Name = string.Empty;
-			this.dataStruct = dataStruct;
 		}
 
 		public void Execute()
@@ -51,7 +51,7 @@ namespace ILPatcher.Data
 				return;
 			}
 
-			object currentInput = dataStruct.AssemblyDefinition;
+			object currentInput = DataStruct.AssemblyDefinition;
 			try
 			{
 				foreach (var tf in FinderChain)
@@ -84,18 +84,18 @@ namespace ILPatcher.Data
 			return PatchAction.TInput == currentType;
 		}
 
-		public bool Save(XmlNode output)
+		public override bool Save(XmlNode output)
 		{
 			var xTargetFinder = output.InsertCompressedElement(SST.TargetFinder);
-			xTargetFinder.Value = string.Join(" ", FinderChain.Select(x => x.ID));
+			xTargetFinder.Value = string.Join(" ", FinderChain.Select(x => x.Id));
 
 			var xPatchAction = output.InsertCompressedElement(SST.PatchAction);
-			xTargetFinder.Value = PatchAction.ID;
+			xTargetFinder.Value = PatchAction.Id;
 
 			return true;
 		}
 
-		public bool Load(XmlNode input)
+		public override bool Load(XmlNode input)
 		{
 			Validator val = new Validator();
 			var xTargetFinder = input.GetChildNode(SST.TargetFinder, 0);
@@ -107,7 +107,7 @@ namespace ILPatcher.Data
 			string[] finderIds = xTargetFinder.Value.Split(' ');
 			foreach (string finderId in finderIds)
 			{
-				var targetFinder = dataStruct.TargetFinderList.FirstOrDefault(tf => tf.ID == finderId);
+				var targetFinder = DataStruct.TargetFinderList.FirstOrDefault(tf => tf.Id == finderId);
 				if (!val.ValidateSet(targetFinder, () => $"TargetFinder with the ID \"{finderId}\" was not found")) continue;
 				FinderChain.Add(targetFinder);
 			}

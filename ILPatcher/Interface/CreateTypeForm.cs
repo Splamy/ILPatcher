@@ -57,7 +57,7 @@ namespace ILPatcher.Interface
 
 		private void PickMethod_Click(object sender, EventArgs e)
 		{
-			MultiPicker<TypeReference>.ShowStructure(dataStruct, StructureView.classes, x => true, SetTypeReference);
+			MultiPicker<TypeReference>.ShowStructure(dataStruct, StructureView.Classes, x => true, SetTypeReference);
 		}
 
 		private void OK_Click(object sender, EventArgs e)

@@ -27,7 +27,12 @@ namespace ILPatcher.Interface
 			parent.Resize += parent_Resize;
 		}
 
-		void parent_Resize(object sender, EventArgs e)
+		private void parent_Resize(object sender, EventArgs e)
+		{
+			InvokeResize();
+		}
+
+		public void InvokeResize()
 		{
 			GenerateAxisPositionValues(elementList, parent.ClientRectangle.Height);
 			parent.SuspendLayout();
@@ -40,6 +45,7 @@ namespace ILPatcher.Interface
 			parent.ResumeLayout();
 		}
 
+		// TODO: move lists to cache/buffer and only refresh on add/delete/swap/etc.. calls
 		private void GenerateAxisPositionValues(List<LayoutElement> listToSize, int targetSize)
 		{
 			var fixedElements = new List<LayoutElement>();
@@ -224,11 +230,11 @@ namespace ILPatcher.Interface
 			LayoutElement lElement = elementList?[line].GetElement(controlNum);
 			if (lElement == null) throw new ArgumentException("The element doesn't exist");
 
-			if (lElement is GridElement)
+			GridElement gElem = lElement as GridElement;
+			if (gElem != null)
 			{
-				GridElement gElem = lElement as GridElement;
 				gElem.control = newControl;
-            }
+			}
 			else if (lElement is BlankElement)
 			{
 				throw new NotSupportedException("Feature is not yet working");
@@ -410,7 +416,7 @@ namespace ILPatcher.Interface
 				}
 			}
 
-			private int GgT(int a, int b)
+			private static int GgT(int a, int b)
 			{
 				if (b == 0) return 0;
 				int zahl1 = a;
@@ -424,7 +430,7 @@ namespace ILPatcher.Interface
 				return zahl2;
 			}
 
-			private int KgV(int zahl1, int zahl2)
+			private static int KgV(int zahl1, int zahl2)
 			{
 				return (zahl1 * zahl2) / GgT(zahl1, zahl2);
 			}

@@ -13,13 +13,21 @@ namespace ILPatcher.Data
 		private DataStruct dataStruct;
 		private readonly Dictionary<string, ILNode> ModuleList;
 		public ILNode StructViewToolBox { get; set; }
-		public static char[] Seperators { get; } = new[] { '/' };
+		private static readonly char[] seperators = new[] { '/' };
+		public static char[] Seperators => seperators;
+
+		/// <summary>Returns a collection of all loaded ILNode Assemblys.</summary>
+		/// <returns>Returns a ILNode Assembly collection.</returns>
+		public ICollection<ILNode> AllModules => ModuleList.Values;
 
 		public delegate void ModuleChangedDelegate(object sender);
 		public event ModuleChangedDelegate OnModuleChanged;
 
 		public ILNodeManager(DataStruct dataStruct)
 		{
+			if (dataStruct == null)
+				throw new ArgumentNullException(nameof(dataStruct));
+
 			ModuleList = new Dictionary<string, ILNode>();
 			this.dataStruct = dataStruct;
 			dataStruct.OnASMFileLoaded += DataStruct_OnASMFileLoaded;
@@ -41,6 +49,9 @@ namespace ILPatcher.Data
 
 		public ILNode FindNodeByPath(string path)
 		{
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
+
 			string[] pathbreaks = path.Split(Seperators);
 			pathbreaks = pathbreaks.Select(t => t.Replace("/", ".")).ToArray();
 
@@ -90,13 +101,6 @@ namespace ILPatcher.Data
 			return null;
 		}
 
-		/// <summary>Returns a collection of all loaded ILNode Assemblys.</summary>
-		/// <returns>Returns a ILNode Assembly collection.</returns>
-		public ICollection<ILNode> GetAllModules()
-		{
-			return ModuleList.Values;
-		}
-
 		private bool IsModuleLoaded(string name)
 		{
 			return ModuleList.ContainsKey(name);
@@ -109,21 +113,21 @@ namespace ILPatcher.Data
 
 		/// <summary>Creates an ILNode-Tree representing the structure of the given Assembly
 		/// and stores it in the ModuleList Dictionary with the AssemblyDefinition name as key.</summary>
-		/// <param name="AssDef">The AssemblyDefinition which should be loaded into the searchlist</param>
-		/// <param name="SubResolveDepth">When the given AssemblyDefinition uses references to other Assemblys
+		/// <param name="assDef">The AssemblyDefinition which should be loaded into the searchlist</param>
+		/// <param name="subResolveDepth">When the given AssemblyDefinition uses references to other Assemblys
 		/// the method will add them recursivly to the given depth</param>
-		public void LoadAssembly(AssemblyDefinition AssDef, int SubResolveDepth = 0)
+		public void LoadAssembly(AssemblyDefinition assDef, int subResolveDepth = 0)
 		{
-			if (AssDef == null) throw new ArgumentNullException(nameof(AssDef));
-			if (SubResolveDepth < 0) throw new ArgumentException(nameof(SubResolveDepth) + " must be non-negative.");
-			if (IsModuleLoaded(AssDef.Name.Name)) return;
+			if (assDef == null) throw new ArgumentNullException(nameof(assDef));
+			if (subResolveDepth < 0) throw new ArgumentException(nameof(subResolveDepth) + " must be non-negative.");
+			if (IsModuleLoaded(assDef.Name.Name)) return;
 
-			ILNode ilParent = new ILNode(AssDef.Name.Name, AssDef.FullName, AssDef, StructureView.structure); // StructureView.Module
-			AddModule(AssDef.Name.Name, ilParent);
+			ILNode ilParent = new ILNode(assDef.Name.Name, assDef.FullName, assDef, StructureView.Structure); // StructureView.Module
+			AddModule(assDef.Name.Name, ilParent);
 
-			foreach (ModuleDefinition ModDef in AssDef.Modules)
+			foreach (ModuleDefinition ModDef in assDef.Modules)
 			{
-				ILNode tnModDef = ilParent.Add(ModDef.Name, ModDef.Name, ModDef, StructureView.structure);
+				ILNode tnModDef = ilParent.Add(ModDef.Name, ModDef.Name, ModDef, StructureView.Structure);
 				DefaultAssemblyResolver dar = (DefaultAssemblyResolver)ModDef.AssemblyResolver;
 				Array.ForEach(dar.GetSearchDirectories(), dar.RemoveSearchDirectory);
 				dar.AddSearchDirectory(Path.GetDirectoryName(dataStruct.AssemblyLocation));
@@ -134,9 +138,9 @@ namespace ILPatcher.Data
 					try
 					{
 						AssemblyDefinition AssSubRef = ModDef.AssemblyResolver.Resolve(anr);
-						tnModDef.Add(anr.Name, AssSubRef.FullName, AssSubRef, StructureView.structure);
-						if (SubResolveDepth > 0)
-							LoadAssembly(AssSubRef, SubResolveDepth - 1);
+						tnModDef.Add(anr.Name, AssSubRef.FullName, AssSubRef, StructureView.Structure);
+						if (subResolveDepth > 0)
+							LoadAssembly(AssSubRef, subResolveDepth - 1);
 					}
 					catch { Log.Write(Log.Level.Warning, $"AssemblyReference \"{anr.Name}\" couldn't be found for \"{ ModDef.Name}\""); }
 				}
@@ -149,19 +153,19 @@ namespace ILPatcher.Data
 					if (!nsDict.ContainsKey(nsstr))
 					{
 						string displaystr = string.IsNullOrEmpty(nsstr) ? "<Default Namespace>" : nsstr;
-						tnAssemblyContainer = ilParent.Add(displaystr, displaystr, new NamespaceHolder(displaystr), StructureView.namesp);
+						tnAssemblyContainer = ilParent.Add(displaystr, displaystr, new NamespaceHolder(displaystr), StructureView.Namesp);
 						nsDict.Add(nsstr, tnAssemblyContainer);
 					}
 					else
 						tnAssemblyContainer = nsDict[nsstr];
 
-					ILNode tnTypDef = tnAssemblyContainer.Add(TypDef.Name, TypDef.FullName, TypDef, StructureView.classes);
+					ILNode tnTypDef = tnAssemblyContainer.Add(TypDef.Name, TypDef.FullName, TypDef, StructureView.Classes);
 					LoadSubItemsRecursive(tnTypDef, TypDef);
 				}
 			}
 			ilParent.Sort();
 
-			if (SubResolveDepth == 0) // If this is the last LoadAssembly recursion call then invoke the callback
+			if (subResolveDepth == 0) // If this is the last LoadAssembly recursion call then invoke the callback
 				OnModuleChanged?.Invoke(this);
 		}
 
@@ -191,7 +195,7 @@ namespace ILPatcher.Data
 				strb.Append(") : "); strbfn.Append(") : ");
 				strbfn.Append(MetDef.ReturnType.FullName);
 				strb.Append(MetDef.ReturnType.Name);
-				parentNode.Add(strb.ToString(), strbfn.ToString(), MetDef, StructureView.methods);
+				parentNode.Add(strb.ToString(), strbfn.ToString(), MetDef, StructureView.Methods);
 			}
 			#endregion
 
@@ -207,14 +211,14 @@ namespace ILPatcher.Data
 				strbfn.Append(FieDef.FieldType.FullName);
 				strb.Append(FieDef.FieldType.Name);
 
-				parentNode.Add(strb.ToString(), strbfn.ToString(), FieDef, StructureView.fields);
+				parentNode.Add(strb.ToString(), strbfn.ToString(), FieDef, StructureView.Fields);
 			}
 			#endregion
 
 			#region SubClasses
 			foreach (TypeDefinition SubTypDef in TypDef.NestedTypes)
 			{
-				ILNode tnSubTypDef = parentNode.Add(SubTypDef.Name, SubTypDef.Name, SubTypDef, StructureView.classes);
+				ILNode tnSubTypDef = parentNode.Add(SubTypDef.Name, SubTypDef.Name, SubTypDef, StructureView.Classes);
 				LoadSubItemsRecursive(tnSubTypDef, SubTypDef);
 			}
 			#endregion
@@ -230,9 +234,9 @@ namespace ILPatcher.Data
 	{
 		public string Namespace { get; private set; }
 
-		public NamespaceHolder(string _nns)
+		public NamespaceHolder(string nameSpace)
 		{
-			Namespace = _nns;
+			Namespace = nameSpace;
 		}
 	}
 }
