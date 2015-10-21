@@ -213,7 +213,7 @@ namespace ILPatcher.Interface
 			return (int)ImageMap.Assembly;
 		}
 
-		public void AddToolBoxNode(ILNode extNode)
+		public void AddToolboxNode(ILNode extNode)
 		{
 			// TODO: fix icon for special nodes (also genericparameter from EditoILPattern)
 			if (!Nodes.Contains(ExtensionNode))

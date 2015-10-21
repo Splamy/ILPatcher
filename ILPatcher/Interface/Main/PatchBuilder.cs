@@ -13,11 +13,6 @@ namespace ILPatcher.Interface.Main
 	[EditorAttributes("Patchbuilder")]
 	public class PatchBuilder : EditorBase<PatchEntry>
 	{
-		/// <summary>
-		/// false if the current PatchEntry should be added to the parent list after saving
-		/// true if it alreay is in the list, and just opened to edit.
-		/// </summary>
-		private bool editMode;
 		private EditorFactory editorFactory;
 
 		#region Interface Elements

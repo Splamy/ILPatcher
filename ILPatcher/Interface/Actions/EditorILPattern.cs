@@ -623,7 +623,7 @@ namespace ILPatcher.Interface.Actions
 				else
 					recdef = null;
 			}
-			picker.AddToolBoxNode(AddToolBoxNode);
+			picker.AddToolboxNode(AddToolBoxNode);
 		}
 
 		public enum PickOperandType

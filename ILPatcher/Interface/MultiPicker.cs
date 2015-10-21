@@ -57,9 +57,9 @@ namespace ILPatcher.Interface
 
 		/// <summary>Method to add Nodes in the StructureViewer to the seperated ToolBoxNode</summary>
 		/// <param name="extNode">ILNode to be added</param>
-		public void AddToolBoxNode(ILNode extNode)
+		public void AddToolboxNode(ILNode extNode)
 		{
-			structureViever.AddToolBoxNode(extNode);
+			structureViever.AddToolboxNode(extNode);
 		}
 
 		private void structureViever1_AfterSelect(object sender, TreeViewEventArgs e)
