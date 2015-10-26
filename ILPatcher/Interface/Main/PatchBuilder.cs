@@ -20,6 +20,7 @@ namespace ILPatcher.Interface.Main
 		Panel mTargetFinder;
 		Panel mPatchAction;
 		TextBox txtName;
+		TreeView finderPoolView;
 		#endregion
 
 		public PatchBuilder(DataStruct dataStruct, EditorFactory editorFactory) : base(dataStruct)
@@ -38,10 +39,15 @@ namespace ILPatcher.Interface.Main
 			glmFinder.ElementDistance = 0;
 			txtName = new TextBox();
 			txtName.TextChanged += TxtName_TextChanged;
+			finderPoolView = new TreeView();
+			finderPoolView.ShowPlusMinus = false;
+			finderPoolView.ShowRootLines = false;
+			finderPoolView.DoubleClick += PoolView_DoubleClick;
 
 			var grid = new GridLineManager(this, true);
 			int line = grid.AddLineFilling(GlobalLayout.LineHeight);
-			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Add Finder", AddFinder_Click), GlobalLayout.LabelWidth);
+			//grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Add Finder", AddFinder_Click), GlobalLayout.LabelWidth);
+			grid.AddElementFixed(line, finderPoolView, GlobalLayout.LabelWidth);
 			grid.AddElementFilling(line, mTargetFinder, GlobalLayout.MinFill);
 			line = grid.AddLineStrechable(GlobalLayout.MinFill, 150);
 			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Set Action", SetAction_Click), GlobalLayout.LabelWidth);
@@ -52,6 +58,31 @@ namespace ILPatcher.Interface.Main
 			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Back", Save_Click), GlobalLayout.LabelWidth);
 		}
 
+		private void PoolView_DoubleClick(object sender, EventArgs e)
+		{
+			object tag = finderPoolView.SelectedNode?.Tag;
+			if (tag == null)
+				return;
+
+			TargetFinder targetFinder = tag as TargetFinder;
+			if (targetFinder != null)
+			{
+				AddFinder(targetFinder, true);
+				return;
+			}
+
+			Type finderEditorType = tag as Type;
+			if (finderEditorType != null)
+			{
+				var entryType = editorFactory.GetEntryTypeByEditorType(finderEditorType);
+				var finder = (TargetFinder)dataStruct.EntryFactory.CreateEntryByType(entryType);
+				AddNewFinder(finder);
+				return;
+			}
+
+			throw new InvalidOperationException("PoolView node could not be processed");
+		}
+
 		private void LoadInterfaceContent()
 		{
 			foreach (var finder in myData.FinderChain)
@@ -60,8 +91,23 @@ namespace ILPatcher.Interface.Main
 			if (myData.PatchAction != null)
 				SetAction(myData.PatchAction);
 
-			int line = glmFinder.AddLineFixed(30);
-			glmFinder.AddElementFilling(line, new AddBar(this), GlobalLayout.MinFill);
+			var nodeExist = finderPoolView.Nodes.Add("Add Existing:");
+			foreach (var finder in dataStruct.TargetFinderList)
+				nodeExist.Nodes.Add(new TreeNode(finder.Name) { Tag = finder, ToolTipText = finder.Description });
+			var nodeNew = finderPoolView.Nodes.Add("Add New:");
+			foreach (var edi in editorFactory.FinderEditors)
+				nodeNew.Nodes.Add(new TreeNode(EditorFactory.GetEditorName(edi)) { Tag = edi });
+			finderPoolView.ExpandAll();
+		}
+
+		private void RealoadInterfaceContent()
+		{
+			foreach (Control c in mTargetFinder.Controls) c.Dispose();
+			mTargetFinder.Controls.Clear();
+
+			finderPoolView.Nodes.Clear();
+
+			LoadInterfaceContent();
 		}
 
 		// Interface tools
@@ -73,6 +119,12 @@ namespace ILPatcher.Interface.Main
 			glmFinder.AddElementFilling(line, fHolder, GlobalLayout.MinFill);
 			if (applyRefresh)
 				glmFinder.InvokeResize();
+		}
+
+		private void AddNewFinder(TargetFinder finder)
+		{
+			myData.FinderChain.Add(finder);
+			AddFinder(finder, true);
 		}
 
 		private void SetAction(PatchAction action)
@@ -142,11 +194,7 @@ namespace ILPatcher.Interface.Main
 			private void AddFinder_Click(object sender, EventArgs e)
 			{
 				var edT = builder.editorFactory.FinderEditors.ToArray()[eCmbx.SelectedIndex];
-				var entryT = builder.editorFactory.GetEntryTypeByEditorType(edT);
-				var entry = builder.dataStruct.EntryFactory.CreateEntryByType(entryT);
-				var finder = (TargetFinder)entry;
-				builder.myData.FinderChain.Add(finder);
-				builder.AddFinder(finder, true);
+
 			}
 		}
 	}
