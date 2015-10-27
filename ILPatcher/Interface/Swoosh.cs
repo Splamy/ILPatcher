@@ -45,7 +45,7 @@ namespace ILPatcher.Interface
 				}
 				ResizeAll(true);
 				TabList.Peek().ctrl.LandHereEvent();
-            }
+			}
 		}
 
 		public void PushPanel(ISwoosh c, string name)
@@ -164,9 +164,9 @@ namespace ILPatcher.Interface
 
 		private class LayerLevel : IDisposable
 		{
-			public ISwoosh ctrl;
-			public CustomButton btn;
-			public Label lbl;
+			public ISwoosh ctrl { get; private set; }
+			public CustomButton btn { get; private set; }
+			public Label lbl { get; private set; }
 			private Swoosh parent;
 
 			public LayerLevel(Swoosh _parent, ISwoosh c, string name)

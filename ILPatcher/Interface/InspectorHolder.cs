@@ -7,28 +7,6 @@ namespace ILPatcher.Interface
 {
 	class InspectorHolder : MetroClass, IAcceptDropItems
 	{
-		private Brush _BackBrush;
-		public override Color ColorTwo
-		{
-			set
-			{
-				_ColorTwo = value;
-				_BackBrush = new SolidBrush(value);
-				this.Invalidate();
-			}
-		}
-
-		private Brush _GripBrush;
-		public override Color ColorThree
-		{
-			set
-			{
-				_ColorThree = value;
-				_GripBrush = new SolidBrush(value);
-				this.Invalidate();
-			}
-		}
-
 		private Brush _BackgrColor;
 
 		private bool drawOnHover;
@@ -38,10 +16,9 @@ namespace ILPatcher.Interface
 			get { return dragItem; }
 			set { dragItem = value; Invalidate(); }
 		}
-
-		private bool _AllowDrag = true;
+		
 		[DefaultValue(true)]
-		public bool AllowDrag { get { return _AllowDrag; } set { _AllowDrag = value; } }
+		public bool AllowDrag { get; set; } = true;
 
 		private bool Drag;
 		private bool TookElement;
@@ -79,14 +56,10 @@ namespace ILPatcher.Interface
 		{
 			if (_BackgrColor == null)
 				_BackgrColor = new SolidBrush(BackColor);
-			if (_BackBrush == null)
-				_BackBrush = new SolidBrush(_ColorTwo);
-			if (_GripBrush == null)
-				_GripBrush = new SolidBrush(_ColorThree);
 
 			Graphics g = e.Graphics;
 
-			g.FillRectangle(drawOnHover ? _GripBrush : _BackBrush, 0, 0, Width, Height); // draw the nice border
+			g.FillRectangle(drawOnHover ? BrushContent : BrushOutline, 0, 0, Width, Height); // draw the nice border
 			g.FillRectangle(_BackgrColor, _Border, _Border, Width - (_Border * 2), Height - (_Border * 2)); // fill in the inner ractangle with bg color
 
 			if (dragItem != null)
