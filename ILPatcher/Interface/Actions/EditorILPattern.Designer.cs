@@ -88,6 +88,7 @@
 			this.txtPatchActionName.Size = new System.Drawing.Size(500, 20);
 			this.txtPatchActionName.TabIndex = 11;
 			this.txtPatchActionName.Text = "DefaultName";
+			this.txtPatchActionName.TextChanged += new System.EventHandler(this.txtPatchActionName_TextChanged);
 			// 
 			// label2
 			// 

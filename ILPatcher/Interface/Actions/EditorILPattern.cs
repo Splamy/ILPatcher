@@ -44,6 +44,11 @@ namespace ILPatcher.Interface.Actions
 
 		// INTERFACE *********************************************************
 
+		private void txtPatchActionName_TextChanged(object sender, EventArgs e)
+		{
+			myData.Name = txtMethodFullName.Text;
+		}
+
 		private void chbDelete_OnChange(MCheckBox source, bool value)
 		{
 			if (mInstructBox.SelectedItems.Count <= 0)

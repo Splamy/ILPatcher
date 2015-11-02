@@ -16,9 +16,9 @@ namespace ILPatcher.Data
 
 		public string ILPLocation { get; private set; }
 
-		public List<PatchAction> PatchActionList { get; }
-		public List<TargetFinder> TargetFinderList { get; }
-		public List<PatchEntry> PatchEntryList { get; }
+		public IList<PatchAction> PatchActionList { get; }
+		public IList<TargetFinder> TargetFinderList { get; }
+		public IList<PatchEntry> PatchEntryList { get; }
 		public ILNodeManager ILNodeManager { get; }
 		public ILManager ReferenceTable { get; }
 		public EntryFactory EntryFactory { get; }

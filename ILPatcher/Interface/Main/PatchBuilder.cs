@@ -6,6 +6,7 @@ using ILPatcher.Interface.Finder;
 using ILPatcher.Utility;
 using System;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ILPatcher.Interface.Main
@@ -21,7 +22,12 @@ namespace ILPatcher.Interface.Main
 		Panel mPatchAction;
 		TextBox txtName;
 		TreeView finderPoolView;
+		TreeView actionPoolView;
 		#endregion
+
+		//TODO:
+		// move textbox for name of entryBase to the Entryblockholder so the clumsy editors dont need to bother.
+		// add Tinput/Toutput to the EntryBlockholders
 
 		public PatchBuilder(DataStruct dataStruct, EditorFactory editorFactory) : base(dataStruct)
 		{
@@ -39,18 +45,19 @@ namespace ILPatcher.Interface.Main
 			glmFinder.ElementDistance = 0;
 			txtName = new TextBox();
 			txtName.TextChanged += TxtName_TextChanged;
+			actionPoolView = new TreeView();
 			finderPoolView = new TreeView();
-			finderPoolView.ShowPlusMinus = false;
-			finderPoolView.ShowRootLines = false;
+			finderPoolView.ShowPlusMinus = actionPoolView.ShowPlusMinus = false;
+			finderPoolView.ShowRootLines = actionPoolView.ShowRootLines = false;
+			actionPoolView.DoubleClick += PoolView_DoubleClick;
 			finderPoolView.DoubleClick += PoolView_DoubleClick;
 
 			var grid = new GridLineManager(this, true);
 			int line = grid.AddLineFilling(GlobalLayout.LineHeight);
-			//grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Add Finder", AddFinder_Click), GlobalLayout.LabelWidth);
 			grid.AddElementFixed(line, finderPoolView, GlobalLayout.LabelWidth);
 			grid.AddElementFilling(line, mTargetFinder, GlobalLayout.MinFill);
 			line = grid.AddLineStrechable(GlobalLayout.MinFill, 150);
-			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Set Action", SetAction_Click), GlobalLayout.LabelWidth);
+			grid.AddElementFixed(line, actionPoolView, GlobalLayout.LabelWidth);
 			grid.AddElementFilling(line, mPatchAction, GlobalLayout.MinFill);
 			line = grid.AddLineFixed(GlobalLayout.LineHeight);
 			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("Name"), GlobalLayout.LabelWidth);
@@ -58,68 +65,51 @@ namespace ILPatcher.Interface.Main
 			grid.AddElementFixed(line, GlobalLayout.GenMetroButton("Back", Save_Click), GlobalLayout.LabelWidth);
 		}
 
-		private void PoolView_DoubleClick(object sender, EventArgs e)
+		private void RealoadAll()
 		{
-			object tag = finderPoolView.SelectedNode?.Tag;
-			if (tag == null)
-				return;
-
-			TargetFinder targetFinder = tag as TargetFinder;
-			if (targetFinder != null)
-			{
-				AddFinder(targetFinder, true);
-				return;
-			}
-
-			Type finderEditorType = tag as Type;
-			if (finderEditorType != null)
-			{
-				var entryType = editorFactory.GetEntryTypeByEditorType(finderEditorType);
-				var finder = (TargetFinder)dataStruct.EntryFactory.CreateEntryByType(entryType);
-				AddNewFinder(finder);
-				return;
-			}
-
-			throw new InvalidOperationException("PoolView node could not be processed");
+			ReloadPools();
+			ReloadAction();
+			ReloadFinder();
 		}
 
-		private void LoadInterfaceContent()
+		private void ReloadAction()
 		{
+			foreach (Control c in mPatchAction.Controls)
+				c.Dispose();
+			mPatchAction.Controls.Clear();
+			if (myData.PatchAction != null)
+				SetAction(myData.PatchAction, false);
+		}
+
+		private void ReloadFinder()
+		{
+			foreach (Control c in mTargetFinder.Controls)
+				c.Dispose();
+			mTargetFinder.Controls.Clear();
 			foreach (var finder in myData.FinderChain)
 				AddFinder(finder, false);
-
-			if (myData.PatchAction != null)
-				SetAction(myData.PatchAction);
-
-			var nodeExist = finderPoolView.Nodes.Add("Add Existing:");
-			foreach (var finder in dataStruct.TargetFinderList)
-				nodeExist.Nodes.Add(new TreeNode(finder.Name) { Tag = finder, ToolTipText = finder.Description });
-			var nodeNew = finderPoolView.Nodes.Add("Add New:");
-			foreach (var edi in editorFactory.FinderEditors)
-				nodeNew.Nodes.Add(new TreeNode(EditorFactory.GetEditorName(edi)) { Tag = edi });
-			finderPoolView.ExpandAll();
 		}
 
-		private void RealoadInterfaceContent()
+		private void ReloadPools()
 		{
-			foreach (Control c in mTargetFinder.Controls) c.Dispose();
-			mTargetFinder.Controls.Clear();
-
+			actionPoolView.Nodes.Clear();
 			finderPoolView.Nodes.Clear();
+			FillPoolTreeWithData(finderPoolView, dataStruct.TargetFinderList, editorFactory.FinderEditors);
+			FillPoolTreeWithData(actionPoolView, dataStruct.PatchActionList, editorFactory.ActionEditors);
+		}
 
-			LoadInterfaceContent();
+		private void FillPoolTreeWithData<T>(TreeView tree, IList<T> existing, ICollection<Type> editors) where T : EntryBase
+		{
+			var nodeExist = tree.Nodes.Add("Add Existing:");
+			foreach (var finder in existing)
+				nodeExist.Nodes.Add(new TreeNode(finder.Name) { Tag = finder, ToolTipText = finder.Description });
+			var nodeNew = tree.Nodes.Add("Add New:");
+			foreach (var edi in editors)
+				nodeNew.Nodes.Add(new TreeNode(EditorFactory.GetEditorName(edi)) { Tag = edi });
+			tree.ExpandAll();
 		}
 
 		// Interface tools
-
-		private void AddFinder(TargetFinder finder, bool applyRefresh)
-		{
-			var fHolder = new EntryBlockHolder(finder, editorFactory, SwooshParent);
-			int line = glmFinder.AddLineFixed(fHolder.Height);
-			glmFinder.AddElementFilling(line, fHolder, GlobalLayout.MinFill);
-			if (applyRefresh)
-				glmFinder.InvokeResize();
-		}
 
 		private void AddNewFinder(TargetFinder finder)
 		{
@@ -127,7 +117,19 @@ namespace ILPatcher.Interface.Main
 			AddFinder(finder, true);
 		}
 
-		private void SetAction(PatchAction action)
+		private void AddFinder(TargetFinder finder, bool applyRefresh)
+		{
+			var fHolder = new EntryBlockHolder(finder, editorFactory, SwooshParent);
+			int line = glmFinder.AddLineFixed(fHolder.Height);
+			glmFinder.AddElementFilling(line, fHolder, GlobalLayout.MinFill);
+			if (applyRefresh)
+			{
+				ReloadPools();
+				glmFinder.InvokeResize();
+			}
+		}
+
+		private void SetAction(PatchAction action, bool applyRefresh)
 		{
 			foreach (Control c in mPatchAction.Controls) c.Dispose();
 			mPatchAction.Controls.Clear();
@@ -135,19 +137,55 @@ namespace ILPatcher.Interface.Main
 			var aHolder = new EntryBlockHolder(action, editorFactory, SwooshParent);
 			mPatchAction.Controls.Add(aHolder);
 			aHolder.Dock = DockStyle.Fill;
+			if (applyRefresh)
+			{
+				ReloadPools();
+				glmFinder.InvokeResize();
+			}
 		}
 
 		// Events
 
-		private void AddFinder_Click(object sender, EventArgs e)
+		enum InvokePool
 		{
-			// TODO: implement
+			Undefined,
+			Action,
+			Finder,
 		}
 
-		private void SetAction_Click(object sender, EventArgs e)
+		private void PoolView_DoubleClick(object sender, EventArgs e)
 		{
-			// TODO: implement
+			InvokePool invoker = InvokePool.Undefined;
+			if (sender == actionPoolView) invoker = InvokePool.Action;
+			else if (sender == finderPoolView) invoker = InvokePool.Finder;
 
+			if (invoker == InvokePool.Undefined) throw new InvalidOperationException();
+
+			object tag = ((TreeView)sender).SelectedNode?.Tag;
+			if (tag == null)
+				return;
+
+			if ((invoker == InvokePool.Action && tag is PatchAction)
+				|| (invoker == InvokePool.Finder && tag is TargetFinder))
+			{
+				if (invoker == InvokePool.Action)
+					SetAction((PatchAction)tag, true);
+				else if (invoker == InvokePool.Finder)
+					AddFinder((TargetFinder)tag, true);
+				return;
+			}
+
+			Type patchActionType = tag as Type;
+			if (patchActionType != null)
+			{
+				var entryType = editorFactory.GetEntryTypeByEditorType(patchActionType);
+				var finder = dataStruct.EntryFactory.CreateEntryByType(entryType);
+				if (invoker == InvokePool.Action)
+					SetAction((PatchAction)finder, true);
+				else if (invoker == InvokePool.Finder)
+					AddNewFinder((TargetFinder)finder);
+				return;
+			}
 		}
 
 		private void Save_Click(object sender, EventArgs e)
@@ -162,40 +200,7 @@ namespace ILPatcher.Interface.Main
 
 		protected override void OnPatchDataSet()
 		{
-			LoadInterfaceContent();
-		}
-
-		// Functionality
-
-		// TMP IDEA
-		private class AddBar : Control
-		{
-			PatchBuilder builder;
-			ComboBox eCmbx;
-
-			public AddBar(PatchBuilder parent)
-			{
-				builder = parent;
-
-				eCmbx = new ComboBox();
-				Controls.Add(eCmbx);
-				eCmbx.Location = new System.Drawing.Point(120, 10);
-				eCmbx.Size = new System.Drawing.Size(100, 20);
-
-				foreach (var finder in builder.editorFactory.FinderEditors)
-					eCmbx.Items.Add(EditorFactory.GetEditorName(finder));
-
-				var btnAdd = GlobalLayout.GenMetroButton("Add Finder", AddFinder_Click);
-				Controls.Add(btnAdd);
-				btnAdd.Location = new System.Drawing.Point(10, 10);
-				btnAdd.Size = new System.Drawing.Size(100, 20);
-			}
-
-			private void AddFinder_Click(object sender, EventArgs e)
-			{
-				var edT = builder.editorFactory.FinderEditors.ToArray()[eCmbx.SelectedIndex];
-
-			}
+			RealoadAll();
 		}
 	}
 }
