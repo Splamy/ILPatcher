@@ -1,29 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Xml;
+using System.Text;
 
-namespace ILPatcher
+namespace ILPatcher.Utility
 {
-	public class Log
+	public static class Log
 	{
-		private static Log instance;
-		private static Log Instance
+		public static bool Active { get; set; }
+		public static int StackLevel { get; set; }
+		public static Action<ErrorLoggerItem> callback { get; set; } // TODO make callback -> event
+
+		private static string[] spaceup;
+
+		static Log()
 		{
-			get { if (instance == null) instance = new Log(); return instance; }
-			set { }
+			StackLevel = 2;
+			Active = true;
+
+			CalcSpaceLength();
 		}
 
-		public static bool Active = true;
-		private static int level = 2;
-
-		private string[] spaceup;
-
-		public Log()
+		private static void CalcSpaceLength()
 		{
 			string[] earr = Enum.GetNames(typeof(Level));
 			int longestelem = 0;
@@ -42,18 +40,12 @@ namespace ILPatcher
 			}
 		}
 
-		public static void Write(Level lvl, string errText, params string[] infos)
+		public static void Write(Level lvl, string errText)
 		{
 			if (!Active) return;
 			StringBuilder strb = new StringBuilder();
-			strb.Append(errText);
-			foreach (string s in infos)
-				strb.Append(s);
-			string inputbuffer = strb.ToString();
-			strb.Clear();
-
-			strb.Append(Instance.spaceup[(int)lvl]);
-			for (int i = level; i >= 1; i--)
+			strb.Append(spaceup[(int)lvl]);
+			for (int i = StackLevel; i >= 1; i--)
 			{
 				StackFrame frame = new StackFrame(i);
 				var method = frame.GetMethod();
@@ -66,11 +58,9 @@ namespace ILPatcher
 				else
 					strb.Append(": ");
 			}
-			string stackbuffer = strb.ToString();
-			strb.Append(inputbuffer);
+			strb.Append(errText);
 			strb.Append("\r\n");
-			MainPanel.Instance.lbxErrors.AddItem(new ErrorLoggerItem(lvl, inputbuffer));
-			MainPanel.Instance.lbxErrors.InvalidateChildren();
+			callback?.Invoke(new ErrorLoggerItem(lvl, errText));
 			File.AppendAllText("Output.log", strb.ToString(), Encoding.UTF8);
 		}
 

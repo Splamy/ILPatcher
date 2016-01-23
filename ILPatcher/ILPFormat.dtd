@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!ELEMENT PatchTable (ActionTable, FinderTable, ReferenceTable, EntryTable)>
+<!ELEMENT ActionTable (PatchAction*)>
+<!ELEMENT PatchAction (#PCDATA)> <!--or ANY-->
+<!ELEMENT FinderTable (TargetFinder*)>
+<!ELEMENT TargetFinder (#PCDATA)> <!--or ANY-->
+<!ELEMENT PatchEntry (PatchEntry*)>
+<!ELEMENT ReferenceTable (MethodReference | TypeReference | FieldReference)*>
+<!ELEMENT MethodReference EMPTY>
+<!ELEMENT FieldReference EMPTY>
+<!ELEMENT TypeReference EMPTY>
+<!ELEMENT Instruction (Instruction?)>
+
+<!ATTLIST PatchTable
+	Version CDATA #REQUIRED>
+<!ATTLIST PatchAction
+	Version CDATA #REQUIRED
+	ActionType (ILMethodFixed | ILMethodReplace) #REQUIRED
+	Name CDATA #REQUIRED>
+<!ATTLIST TargetFinder
+	Version CDATA #REQUIRED
+	FinderType (ILMethodFixed | ILMethodReplace) #REQUIRED
+	Name CDATA #REQUIRED>
+<!ATTLIST PatchEntry
+	>
+<!ATTLIST MethodReference
+	REFID ID #REQUIRED
+	RETURN IDREF #REQUIRED
+	TYPE IDREF #REQUIRED
+	NAME CDATA #REQUIRED>
+<!ATTLIST TypeReference
+	REFID ID #REQUIRED
+	TYPE CDATA #REQUIRED
+	MODULE CDATA #REQUIRED
+	NAMESPACE CDATA #REQUIRED>
+<!ATTLIST FieldReference
+	REFID ID #REQUIRED
+	TYPE IDREF #REQUIRED
+	MODULE IDREF #REQUIRED
+	NAME CDATA #REQUIRED>
+<!ATTLIST Instruction
+	InstructionNum CDATA #IMPLIED
+	OpCode CDATA #IMPLIED
+	Delete CDATA #IMPLIED
+	Resolve IDREF #IMPLIED
+	PrimitiveValue CDATA #IMPLIED>
