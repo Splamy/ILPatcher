@@ -1,5 +1,6 @@
-﻿using ILPatcher.Utility;
+using ILPatcher.Utility;
 using System.Windows.Forms;
+using System;
 
 namespace ILPatcher.Interface.Main
 {

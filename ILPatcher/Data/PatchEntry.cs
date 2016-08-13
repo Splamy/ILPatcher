@@ -1,4 +1,4 @@
-﻿using ILPatcher.Data.Actions;
+using ILPatcher.Data.Actions;
 using ILPatcher.Data.Finder;
 using System.Collections.Generic;
 using System.Text;
@@ -20,23 +20,20 @@ namespace ILPatcher.Data
 			{
 				var strb = new StringBuilder();
 				strb.Append(Name).Append(":\n");
-				foreach (var finder in FinderChain)
+				foreach (var finder in PatchChain)
 				{
 					strb.Append(finder.Name);
 					strb.Append(" ->\n");
 				}
-				strb.Append(PatchAction?.Name ?? "<X>");
 				return strb.ToString();
 			}
 		}
 		public override string Description => "Provides the way to find and change a part in the targeted binary.";
-		public List<TargetFinder> FinderChain { get; private set; }
-		public PatchAction PatchAction { get; set; }
+		public List<EntryBase> PatchChain { get; private set; }
 
 		public PatchEntry(DataStruct dataStruct) : base(dataStruct)
 		{
-			FinderChain = new List<TargetFinder>();
-			PatchAction = null;
+			PatchChain = new List<EntryBase>();
 			Name = string.Empty;
 		}
 
@@ -45,19 +42,25 @@ namespace ILPatcher.Data
 			if (!Validate())
 				return;
 
-			if (PatchAction.PatchStatus != PatchStatus.WoringPerfectly)
-			{
-				Log.Write(Log.Level.Info, $"Patch \"{PatchAction.Name}\" is broken and won't be executed");
-				return;
-			}
-
 			object currentInput = DataStruct.AssemblyDefinition;
 			try
 			{
-				foreach (var tf in FinderChain)
+				foreach (var entry in PatchChain)
 				{
-					currentInput = tf.FilterInput(currentInput);
-					throw new InvalidOperationException($"{tf.TargetFinderType} gave out wrong output type");
+					if (entry is TargetFinder)
+					{
+						var targetFinder = (TargetFinder)entry;
+						currentInput = targetFinder.FilterInput(currentInput);
+						if (!targetFinder.TOutput.IsAssignableFrom(currentInput.GetType())) // TODO: check other way round
+							throw new InvalidOperationException($"{targetFinder.TargetFinderType} gave out wrong output type");
+					}
+					else if (entry is PatchAction)
+					{
+						var patchAction = (PatchAction)entry;
+						bool result = patchAction.Execute(currentInput);
+						if (!result)
+							Log.Write(Log.Level.Info, $"Action \"{patchAction.Name}\" failed");
+					}
 				}
 			}
 			catch (TargetNotFoundException tnf)
@@ -71,45 +74,50 @@ namespace ILPatcher.Data
 		{
 			Validator val = new Validator();
 
-			if (!val.ValidateSet(PatchAction, () => $"\"{Name}\": No action defined")) return false;
-			if (!val.ValidateTrue(FinderChain.Count == 0, () => $"\"{Name}\": No finders defined")) return false;
-			if (!val.ValidateTrue(FinderChain[0].TInput != typeof(AssemblyDefinition), () => $"\"{Name}\": Starting finder has no AssemblyDefinition input")) return false;
+			if (!val.ValidateTrue(PatchChain.Count == 0, () => $"\"{Name}\": No finders defined")) return false;
+			var chainStart = PatchChain.First() as TargetFinder;
+			if (!val.ValidateTrue(chainStart.TInput != typeof(AssemblyDefinition), () => $"\"{Name}\": Starting finder has no AssemblyDefinition input")) return false;
 
 			Type currentType = typeof(AssemblyDefinition);
-			foreach (var tf in FinderChain)
+			foreach (var entry in PatchChain)
 			{
-				if (!val.ValidateTrue(currentType != tf.TInput, () => $"\"{Name}\": Mismatch in the finder chain for \"{tf.Name}\"")) return false;
-				currentType = tf.TOutput;
+				if (entry is TargetFinder)
+				{
+					var targetFinder = (TargetFinder)entry;
+					if (!val.ValidateTrue(currentType != targetFinder.TInput, () => $"\"{Name}\": Mismatch in the finder chain for \"{targetFinder.Name}\"")) return false;
+					currentType = targetFinder.TOutput;
+				}
+				else if (entry is PatchAction)
+				{
+					var patchAction = (PatchAction)entry;
+					if (!val.ValidateTrue(patchAction.PatchStatus != PatchStatus.WoringPerfectly, () => $"Patch \"{patchAction.Name}\" is broken and won't be executed")) return false;
+					if (!val.ValidateTrue(currentType != patchAction.TInput, () => $"\"{Name}\": Mismatch in the finder chain for \"{patchAction.Name}\"")) return false;
+					return val.Ok;
+				}
 			}
-			return PatchAction.TInput == currentType;
+			val.ValidateTrue(false, () => $"\"{Name}\": No action defined");
+			return val.Ok;
 		}
 
 		public override bool Save(XmlNode output)
 		{
-			var xTargetFinder = output.InsertCompressedElement(SST.TargetFinder);
-			xTargetFinder.Value = string.Join(" ", FinderChain.Select(x => x.Id));
-
-			var xPatchAction = output.InsertCompressedElement(SST.PatchAction);
-			xTargetFinder.Value = PatchAction.Id;
-
+			var xTargetFinder = output.InsertCompressedElement(SST.EntryList);
+			xTargetFinder.CreateAttribute(SST.Name, string.Join(" ", PatchChain.Select(x => x.Id)));
 			return true;
 		}
 
 		public override bool Load(XmlNode input)
 		{
 			Validator val = new Validator();
-			var xTargetFinder = input.GetChildNode(SST.TargetFinder, 0);
-			if (!val.ValidateSet(xTargetFinder, () => "No TargetFinder element found!")) return false;
+			var xTargetFinder = input.GetChildNode(SST.EntryList, 0);
+			if (!val.ValidateSet(xTargetFinder, () => "No EntryList element found!")) return false;
 
-			var xPatchAction = input.GetChildNode(SST.PatchAction, 1);
-			if (!val.ValidateSet(xPatchAction, () => "No PatchAction element found!")) return false;
-
-			string[] finderIds = xTargetFinder.Value.Split(' ');
+			string[] finderIds = xTargetFinder.GetAttribute(SST.Name).Split(' ');
 			foreach (string finderId in finderIds)
 			{
-				var targetFinder = DataStruct.TargetFinderList.FirstOrDefault(tf => tf.Id == finderId);
-				if (!val.ValidateSet(targetFinder, () => $"TargetFinder with the ID \"{finderId}\" was not found")) continue;
-				FinderChain.Add(targetFinder);
+				var entry = DataStruct.EntryBaseList.FirstOrDefault(tf => tf.Id == finderId);
+				if (!val.ValidateSet(entry, () => $"Entry with the ID \"{finderId}\" was not found")) continue;
+				PatchChain.Add(entry);
 			}
 
 			return val.Ok;

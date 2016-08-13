@@ -1,14 +1,15 @@
-﻿using ILPatcher.Data.Actions;
+using ILPatcher.Data.Actions;
 using ILPatcher.Data.Finder;
 using ILPatcher.Utility;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using System.Linq;
 
 namespace ILPatcher.Data
 {
-	public sealed class DataStruct : ISaveToFile // TODO: Find a better name ^^
+	public sealed class DataStruct : ISaveToFile
 	{
 		public AssemblyDefinition AssemblyDefinition { get; private set; }
 		public string AssemblyLocation { get; private set; }
@@ -18,6 +19,7 @@ namespace ILPatcher.Data
 
 		public IList<PatchAction> PatchActionList { get; }
 		public IList<TargetFinder> TargetFinderList { get; }
+		public IEnumerable<EntryBase> EntryBaseList => PatchActionList.Cast<EntryBase>().Concat(TargetFinderList);
 		public IList<PatchEntry> PatchEntryList { get; }
 		public ILNodeManager ILNodeManager { get; }
 		public ILManager ReferenceTable { get; }
@@ -56,7 +58,7 @@ namespace ILPatcher.Data
 			XmlNode xTargetFinderTable = xILPTableNode.InsertCompressedElement(SST.TargetFinderTable);
 			foreach (TargetFinder tf in TargetFinderList)
 				allOk &= Save(xTargetFinderTable, tf, (idNum++).ToBaseAlph());
-			
+
 			XmlNode xPatchEntryTable = xILPTableNode.InsertCompressedElement(SST.PatchEntryTable);
 			foreach (PatchEntry pe in PatchEntryList)
 				allOk &= Save(xPatchEntryTable, pe);
@@ -105,7 +107,7 @@ namespace ILPatcher.Data
 
 			// TODO: load everyting
 
-			XmlNode xReferenceTable = input.SelectSingleNode("/" + nc[SST.ReferenceTable]);
+			XmlNode xReferenceTable = input.SelectSingleNode(nc[SST.ReferenceTable]);
 			if (xReferenceTable != null)
 			{
 				allOk &= ReferenceTable.Load(xReferenceTable);

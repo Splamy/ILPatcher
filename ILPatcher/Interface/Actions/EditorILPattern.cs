@@ -1,4 +1,4 @@
-﻿using ILPatcher.Data;
+using ILPatcher.Data;
 using ILPatcher.Data.Actions;
 using ILPatcher.Utility;
 using MetroObjects;
@@ -16,6 +16,9 @@ namespace ILPatcher.Interface.Actions
 		private MethodDefinition methodDefinition;
 		private Control[] OperandCList;
 		private PickOperandType currentPOT = PickOperandType.None;
+
+		public override bool FixedHeight => false;
+		public override int DefaultHeight => 300;
 
 		//openrand combo box add: wildcard, custom value(+default)
 		//predeclared variables
@@ -130,7 +133,7 @@ namespace ILPatcher.Interface.Actions
 			btnPickMethod.Left = Width - (space + btnPickMethod.Width);
 			mInstructBox.Width = Width - (labelspace + space);
 
-			mInstructBox.Height = Height - (mInstructBox.Top + cbxOpcode.Height + txtOperand.Height + instructionEditor.Height + 5 * space);
+			mInstructBox.Height = Math.Max(0, Height - (mInstructBox.Top + cbxOpcode.Height + txtOperand.Height + instructionEditor.Height + 5 * space));
 			btnNewOpCode.Top = mInstructBox.Bottom + space;
 			cbxOpcode.Top = btnNewOpCode.Top;
 			cbxOpcode.Width = (Width - (3 * space + labelspace + btnDone.Width)) / 2;
@@ -152,7 +155,7 @@ namespace ILPatcher.Interface.Actions
 
 			lblDnD.Top = lblOperand.Bottom + space;
 			instructionEditor.Top = lblDnD.Top;
-			instructionEditor.Width = Width - (4 * space + labelspace + btnDone.Width + lblDelete.Width + chbDelete.Width);
+			instructionEditor.Width = Math.Max(0, Width - (4 * space + labelspace + btnDone.Width + lblDelete.Width + chbDelete.Width));
 			lblDelete.Top = lblDnD.Top;
 			lblDelete.Left = instructionEditor.Right + space;
 			chbDelete.Top = lblDnD.Top;

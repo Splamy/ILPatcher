@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ILPatcher.Interface.Finder;
@@ -70,12 +70,12 @@ namespace ILPatcher.Interface
 			}
 		}
 
-		public IEditorPanel<EntryBase> CreateEditorForEntry(EntryBase entry)
+		public EditorPanel CreateEditorForEntry(EntryBase entry)
 		{
 			if (entry == null) throw new ArgumentNullException(nameof(entry));
 
 			Type editorType = GetEditorTypeByEntry(entry);
-			var editor = (IEditorPanel<EntryBase>)Activator.CreateInstance(editorType, new[] { entry.DataStruct });
+			var editor = (EditorPanel)Activator.CreateInstance(editorType, new[] { entry.DataStruct });
 			editor.SetPatchData(entry);
 			return editor;
 		}
@@ -146,8 +146,6 @@ namespace ILPatcher.Interface
 			ValidateType(editorType);
 			return editorType.GetCustomAttributes(typeof(EditorAttributes), true).OfType<EditorAttributes>().FirstOrDefault();
 		}
-
-		public static bool IsInline(Type editorType) => GetEditorAttribute(editorType).Inline;
 
 		public static string GetEditorName(Type editorType) => GetEditorAttribute(editorType).EditorName;
 

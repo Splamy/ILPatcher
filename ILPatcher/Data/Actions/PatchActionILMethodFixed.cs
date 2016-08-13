@@ -1,4 +1,4 @@
-﻿using ILPatcher.Utility;
+using ILPatcher.Utility;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
@@ -70,7 +70,7 @@ namespace ILPatcher.Data.Actions
 			NameCompressor nc = NameCompressor.Instance;
 
 			output.Attributes[nc[SST.PatchType]].Value = PatchActionType.ToString();
-			output.Attributes[nc[SST.Name]].Value = this.Name;
+			output.Attributes[nc[SST.Name]].Value = Name;
 
 			instructPatchList = instructPatchList.FindAll(x => !x.Delete || x.IsOld);
 

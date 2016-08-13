@@ -1,4 +1,4 @@
-﻿using ILPatcher.Data;
+using ILPatcher.Data;
 using ILPatcher.Data.Actions;
 using MetroObjects;
 using Mono.Cecil;
@@ -12,6 +12,9 @@ namespace ILPatcher.Interface.Actions
 	{
 		private MethodDefinition blankMethodDefinition;
 		private TypeDefinition insertClass;
+
+		public override bool FixedHeight => false;
+		public override int DefaultHeight => 300;
 
 		//https://github.com/PavelTorgashov/FastColoredTextBox
 

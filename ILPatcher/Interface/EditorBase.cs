@@ -1,18 +1,16 @@
-﻿using ILPatcher.Data;
+using ILPatcher.Data;
 using System;
+using System.Windows.Forms;
 
 namespace ILPatcher.Interface
 {
-	[EditorAttributes(null)] // TODO: check ovverriding behaviour (eg. base (1:true, 2:true, 3:true) deriver (2:false) - meaning only overriding one attribute)
-	public abstract class EditorBase<TSpec> : Swoosh.Control, IEditorPanel<TSpec> where TSpec : EntryBase
+	[EditorAttributes(null)]
+	public abstract class EditorBase<TSpec> : EditorPanel where TSpec : EntryBase
 	{
 		protected DataStruct dataStruct { get; }
 		protected TSpec myData { get; set; }
 
-		public string PanelName => EditorFactory.GetEditorName(GetType());
-		public bool IsInline => EditorFactory.IsInline(GetType());
-
-		public void SetPatchData(EntryBase pPatchAction)
+		public override sealed void SetPatchData(EntryBase pPatchAction)
 		{
 			if (pPatchAction == null) throw new ArgumentNullException(nameof(pPatchAction));
 			var tmp = pPatchAction as TSpec;
@@ -25,11 +23,12 @@ namespace ILPatcher.Interface
 		protected EditorBase(DataStruct dataAssociation) { dataStruct = dataAssociation; }
 	}
 
-	public interface IEditorPanel<out T>
+	public abstract class EditorPanel : Swoosh.Control
 	{
-		string PanelName { get; }
-		bool IsInline { get; }
+		public virtual string PanelName => EditorFactory.GetEditorName(GetType());
+		public abstract bool FixedHeight { get; }
+		public abstract int DefaultHeight { get; }
 
-		void SetPatchData(EntryBase pPatchAction);
+		public abstract void SetPatchData(EntryBase pPatchAction);
 	}
 }

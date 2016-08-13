@@ -1,8 +1,9 @@
-﻿using ILPatcher.Data;
+using ILPatcher.Data;
 using Mono.Cecil.Cil;
 using System;
 using System.Drawing;
 using System.Xml;
+using System.Collections.Generic;
 
 namespace ILPatcher.Utility
 {
@@ -204,5 +205,13 @@ namespace ILPatcher.Utility
 			return ret;
 		}
 
+		// Lists ********************************************************************
+
+		public static void MoveItem<T>(this IList<T> list, int from, int to)
+		{
+			T item = list[from];
+			list.RemoveAt(from);
+			list.Insert(to, item);
+		}
 	}
 }

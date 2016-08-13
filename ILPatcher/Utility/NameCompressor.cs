@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -57,6 +57,7 @@ namespace ILPatcher.Utility
 			InitializeValue(SST.PatchEntryTable, "PET");
 			InitializeValue(SST.ReferenceTable, "RFT");
 
+			InitializeValue(SST.EntryList, "EL");
 			InitializeValue(SST.PatchAction, "PA");
 			InitializeValue(SST.TargetFinder, "TF");
 			InitializeValue(SST.PatchEntry, "PE");
@@ -151,6 +152,7 @@ namespace ILPatcher.Utility
 		PatchEntryTable,
 		ReferenceTable,
 
+		EntryList,
 		PatchAction,
 		TargetFinder,
 		PatchEntry,

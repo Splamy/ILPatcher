@@ -1,4 +1,4 @@
-﻿using ILPatcher.Data;
+using ILPatcher.Data;
 using ILPatcher.Data.Finder;
 using System.Windows.Forms;
 using System.Linq;
@@ -6,13 +6,15 @@ using System.Collections.Generic;
 
 namespace ILPatcher.Interface.Finder
 {
-	[EditorAttributes("Class-Finder", Inline = true)]
+	[EditorAttributes("Class-Finder")]
 	class EditorFinderClassByName : EditorTargetFinder<TargetFinderClassByName>
 	{
 		private int ilNodePathLevel = -1;
 
+		public override bool FixedHeight => true;
+		public override int DefaultHeight => 50;
+
 		#region Interface Elements
-		TextBox txtName;
 		TextBox txtClassPath;
 		#endregion
 
@@ -23,8 +25,6 @@ namespace ILPatcher.Interface.Finder
 
 		private void InitializeGridLineManager()
 		{
-			txtName = new TextBox();
-			txtName.TextChanged += TxtName_TextChanged;
 			txtClassPath = new TextBox();
 			txtClassPath.AutoCompleteMode = AutoCompleteMode.Suggest;
 			txtClassPath.AutoCompleteSource = AutoCompleteSource.CustomSource;
@@ -32,17 +32,8 @@ namespace ILPatcher.Interface.Finder
 
 			var grid = new GridLineManager(this, true);
 			int line = grid.AddLineFixed(GlobalLayout.LineHeight);
-			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("Name"), GlobalLayout.LabelWidth);
-			grid.AddElementFilling(line, txtName, GlobalLayout.MinFill);
-			line = grid.AddLineFixed(GlobalLayout.LineHeight);
 			grid.AddElementFixed(line, GlobalLayout.GenMetroLabel("ILNodePath"), GlobalLayout.LabelWidth);
 			grid.AddElementFilling(line, txtClassPath, GlobalLayout.MinFill);
-
-		}
-
-		private void TxtName_TextChanged(object sender, System.EventArgs e)
-		{
-			myData.Name = txtName.Text;
 		}
 
 		private void TxtClassPath_TextChanged(object sender, System.EventArgs e) // TODO: test,... and improve
@@ -82,9 +73,6 @@ namespace ILPatcher.Interface.Finder
 		protected override void OnPatchDataSet()
 		{
 			txtClassPath.Text = myData.ILNodePath;
-			txtName.TextChanged -= TxtName_TextChanged;
-			txtName.Text = myData.Name;
-			txtName.TextChanged += TxtName_TextChanged;
 		}
 	}
 }
